@@ -1,0 +1,37 @@
+---
+import BlogLayout from '@layouts/BlogLayout.astro';
+import BlogCard from '@components/blog/BlogCard.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+const blogPosts = (await getCollection('blog'))
+  .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BlogLayout 
+  title="Blog Technique - Adonai Nangui"
+  description="Articles sur le développement frontend, architecture et productivité développeur"
+>
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-12">
+      <h1 class="font-heading font-semibold text-4xl md:text-5xl mb-4 text-primary">
+        Blog Technique
+      </h1>
+      <p class="text-lg text-secondary">
+        Retours d'expérience et connaissances sur le développement frontend, 
+        l'architecture et la productivité développeur.
+      </p>
+    </header>
+
+    <section class="space-y-8">
+      {blogPosts.map((post: CollectionEntry<'blog'>) => (
+        <BlogCard entry={post} />
+      ))}
+    </section>
+
+    {blogPosts.length === 0 && (
+      <p class="text-center text-secondary py-12">
+        Aucun article pour le moment.
+      </p>
+    )}
+  </main>
+</BlogLayout>

@@ -1,0 +1,59 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Button from '@components/ui/Button.astro';
+
+const allProjects = await getCollection('projects').catch(() => []) as CollectionEntry<'projects'>[];
+const featuredProjects = allProjects
+  .filter((project: CollectionEntry<'projects'>) => project.data.featured !== false)
+  .slice(0, 6)
+  .sort((a: CollectionEntry<'projects'>, b: CollectionEntry<'projects'>) => {
+    // Sort by priority if necessary
+    return 0;
+  });
+
+// Helper function to get slug from entry
+// With glob loader, id contains the file path relative to base
+const getSlug = (entry: CollectionEntry<'projects'>): string => {
+  if (entry.data.slug) return entry.data.slug;
+  // Extract filename from id and remove extension
+  const filename = entry.id.split('/').pop() || entry.id;
+  return filename.replace(/\.(md|mdx)$/, '');
+};
+---
+
+<section id="projects" class="py-section bg-primary">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-12 text-primary">
+      Projets Sélectionnés
+    </h2>
+    
+    {featuredProjects.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {featuredProjects.map((project: CollectionEntry<'projects'>) => (
+            <article class="bg-secondary border border-border-default rounded-lg p-6 hover:border-border-light transition-colors">
+              <h3 class="font-heading font-semibold text-xl mb-2 text-primary">
+                {project.data.title}
+              </h3>
+              <p class="text-secondary mb-4 line-clamp-3">
+                {project.data.description}
+              </p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                {project.data.stack.slice(0, 3).map((tech: string) => (
+                  <span class="px-2 py-1 bg-bg-tertiary text-xs text-secondary rounded">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+              <Button href={`/projects/${getSlug(project)}`} variant="ghost" size="sm">
+                En savoir plus →
+              </Button>
+            </article>
+          ))}
+      </div>
+    ) : (
+      <p class="text-secondary text-center py-12">
+        Les projets seront affichés ici une fois ajoutés dans le dossier content/projects.
+      </p>
+    )}
+  </div>
+</section>

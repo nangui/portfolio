@@ -1,0 +1,29 @@
+---
+const contactLinks = [
+  { label: 'Email', href: 'mailto:contact@adonainangui.dev', icon: 'email' },
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/adonai-nangui', icon: 'linkedin' },
+  { label: 'GitHub', href: 'https://github.com/nangui', icon: 'github' },
+  { label: 'CV', href: '/resume', icon: 'cv' },
+];
+---
+
+<section id="contact" class="py-section bg-secondary mb-16">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-8 text-primary">
+      Contact
+    </h2>
+    
+    <div class="flex flex-col sm:flex-row gap-6">
+      {contactLinks.map((link) => (
+        <a 
+          href={link.href}
+          target={link.href.startsWith('http') ? '_blank' : undefined}
+          rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+          class="text-secondary hover:text-accent transition-colors font-medium"
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

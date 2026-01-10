@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Colors - Backgrounds */
+  --color-bg-primary: #0F1117;
+  --color-bg-secondary: #1A1D24;
+  --color-bg-tertiary: #252932;
+  
+  /* Colors - Text */
+  --color-text-primary: #F5F5F5;
+  --color-text-secondary: #A1A8B3;
+  --color-text-tertiary: #6B7280;
+  
+  /* Colors - Accent */
+  --color-accent: #3B82F6;
+  --color-accent-hover: #2563EB;
+  --color-accent-light: #60A5FA;
+  
+  /* Colors - Borders */
+  --color-border-default: #1F2937;
+  --color-border-light: #374151;
+  
+  /* Spacing */
+  --spacing-section: 6rem;
+  --spacing-section-mobile: 4rem;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    scroll-behavior: smooth;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+  
+  body {
+    margin: 0;
+    line-height: 1.6;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  
+  .font-body {
+    font-family: var(--font-sans);
+  }
+  
+  .text-accent {
+    color: var(--color-accent);
+  }
+  
+  .bg-primary {
+    background-color: var(--color-bg-primary);
+  }
+  
+  .bg-secondary {
+    background-color: var(--color-bg-secondary);
+  }
+  
+  .text-primary {
+    color: var(--color-text-primary);
+  }
+  
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+  
+  .py-section {
+    padding-top: var(--spacing-section);
+    padding-bottom: var(--spacing-section);
+  }
+  
+  @media (max-width: 768px) {
+    .py-section {
+      padding-top: var(--spacing-section-mobile);
+      padding-bottom: var(--spacing-section-mobile);
+    }
+  }
+}
+
+/* Transitions globales */
+* {
+  transition-property: color, background-color, border-color, opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Focus states pour accessibilité */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}

@@ -6,9 +6,14 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check": "astro check"
   },
   "dependencies": {
-    "astro": "^5.16.6"
+    "@tailwindcss/vite": "^4.1.18",
+    "astro": "^5.16.6",
+    "gsap": "^3.14.2",
+    "lottie-web": "^5.13.0",
+    "tailwindcss": "^4.1.18"
   }
 }

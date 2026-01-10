@@ -1,0 +1,14 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Articles techniques sur le développement frontend, l'architecture et la productivité développeur" } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <slot />
+</BaseLayout>

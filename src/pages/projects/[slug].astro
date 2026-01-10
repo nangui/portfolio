@@ -1,0 +1,295 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Button from '@components/ui/Button.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  // Helper function to get slug from entry
+  // With glob loader, id contains the file path relative to base
+  const getSlug = (entry: CollectionEntry<'projects'>) => {
+    if (entry.data.slug) return entry.data.slug;
+    // Extract filename from id and remove extension
+    const filename = entry.id.split('/').pop() || entry.id;
+    return filename.replace(/\.(md|mdx)$/, '');
+  };
+  return projects.map((project: CollectionEntry<'projects'>) => {
+    const slug = getSlug(project);
+    return {
+      params: { slug },
+      props: { project },
+    };
+  });
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+---
+
+<BaseLayout 
+  title={`${project.data.title} - Adonai Nangui`}
+  description={project.data.description}
+>
+  <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
+    <!-- Breadcrumb amélioré -->
+    <nav class="mb-8 scroll-animate" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-2 text-sm text-secondary">
+        <li>
+          <a href="/" class="hover:text-accent transition-colors">Accueil</a>
+        </li>
+        <li class="text-secondary/60">/</li>
+        <li>
+          <a href="/#projects" class="hover:text-accent transition-colors">Projets</a>
+        </li>
+        <li class="text-secondary/60">/</li>
+        <li class="text-primary truncate max-w-[200px] md:max-w-none" aria-current="page">
+          {project.data.title}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Hero Image -->
+    {project.data.image && (
+      <div class="mb-12 scroll-animate">
+        <img 
+          src={project.data.image} 
+          alt={project.data.title}
+          class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
+          loading="eager"
+        />
+      </div>
+    )}
+
+    <header class="mb-12 pb-8 border-b border-border-default scroll-animate">
+      <h1 class="font-heading font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-primary leading-tight">
+        {project.data.title}
+      </h1>
+      
+      <p class="text-lg md:text-xl text-secondary mb-8 leading-relaxed">
+        {project.data.description}
+      </p>
+      
+      <!-- Stack technologies -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        {project.data.stack.map((tech: string) => (
+          <span class="px-3 py-1.5 bg-secondary/50 border border-border-default rounded-full text-sm text-secondary hover:bg-secondary transition-colors">
+            {tech}
+          </span>
+        ))}
+      </div>
+      
+      <!-- Actions -->
+      <div class="flex flex-wrap gap-4 mb-8">
+        {project.data.demoUrl && (
+          <Button 
+            href={project.data.demoUrl}
+            variant="primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg class="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            Voir la démo
+          </Button>
+        )}
+        {project.data.githubUrl && (
+          <Button 
+            href={project.data.githubUrl}
+            variant="secondary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg class="w-4 h-4 inline-block mr-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            Code source
+          </Button>
+        )}
+      </div>
+      
+      <!-- Métadonnées du projet -->
+      {(project.data.role || project.data.period) && (
+        <div class="flex flex-col sm:flex-row gap-6 pt-6 border-t border-border-default">
+          {project.data.role && (
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-accent mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <div>
+                <span class="text-xs text-secondary/60 uppercase tracking-wide block mb-1">Rôle</span>
+                <span class="text-primary font-medium">{project.data.role}</span>
+              </div>
+            </div>
+          )}
+          {project.data.period && (
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-accent mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <span class="text-xs text-secondary/60 uppercase tracking-wide block mb-1">Période</span>
+                <span class="text-primary font-medium">{project.data.period}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </header>
+    
+    <div class="prose prose-invert max-w-none text-secondary leading-relaxed scroll-animate">
+      <Content />
+    </div>
+  </article>
+  
+  <script>
+    import('gsap').then(({ gsap }) => {
+      return import('gsap/ScrollTrigger').then(({ default: ScrollTrigger }) => {
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Animate elements with scroll-animate class
+        const animateElements = document.querySelectorAll('.scroll-animate');
+        
+        animateElements.forEach((element, index) => {
+          gsap.fromTo(element,
+            {
+              opacity: 0,
+              y: 30,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: 'power2.out',
+              delay: index * 0.1,
+              scrollTrigger: {
+                trigger: element,
+                start: 'top 85%',
+                toggleActions: 'play none none none',
+                once: true,
+              }
+            }
+          );
+        });
+        
+        // Animate prose headings and paragraphs
+        const proseElements = document.querySelectorAll('.prose h2, .prose h3, .prose p, .prose ul, .prose ol');
+        
+        proseElements.forEach((element, index) => {
+          gsap.fromTo(element,
+            {
+              opacity: 0,
+              y: 20,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              ease: 'power2.out',
+              delay: index * 0.05,
+              scrollTrigger: {
+                trigger: element,
+                start: 'top 90%',
+                toggleActions: 'play none none none',
+                once: true,
+              }
+            }
+          );
+        });
+      }).catch((error) => {
+        console.error('Failed to load ScrollTrigger:', error);
+      });
+    }).catch((error) => {
+      console.error('Failed to load GSAP:', error);
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .prose {
+    color: var(--color-text-secondary);
+  }
+  
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    color: var(--color-text-primary);
+    font-family: var(--font-heading);
+    font-weight: var(--font-weight-semibold);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .prose h1 {
+    font-size: 2.25rem;
+  }
+  
+  .prose h2 {
+    font-size: 1.875rem;
+  }
+  
+  .prose h3 {
+    font-size: 1.5rem;
+  }
+  
+  .prose p {
+    margin-bottom: 1.25rem;
+    line-height: 1.75;
+  }
+  
+  .prose a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  
+  .prose a:hover {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+  }
+  
+  .prose ul,
+  .prose ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.625rem;
+  }
+  
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .prose code {
+    background-color: var(--color-bg-secondary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+  
+  .prose pre {
+    background-color: var(--color-bg-secondary);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+  }
+  
+  .prose pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+  
+  .prose blockquote {
+    border-left: 4px solid var(--color-accent);
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-bottom: 1.25rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+  }
+</style>

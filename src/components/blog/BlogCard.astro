@@ -1,0 +1,56 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'blog'>;
+}
+
+const { entry } = Astro.props;
+const { title, description, pubDate, tags } = entry.data;
+// Get slug from id (filename without extension) or slug property
+// With glob loader, id contains the file path relative to base
+const getSlug = (entry: CollectionEntry<'blog'>): string => {
+  if (entry.data.slug) return entry.data.slug;
+  // Extract filename from id and remove extension
+  const filename = entry.id.split('/').pop() || entry.id;
+  return filename.replace(/\.(md|mdx)$/, '');
+};
+const slug = getSlug(entry);
+---
+
+<article class="border-b border-border-default pb-8 last:border-0">
+  <a 
+    href={`/blog/${slug}`}
+    class="block hover:opacity-80 transition-opacity"
+  >
+    <h2 class="font-heading font-semibold text-2xl mb-2 hover:text-accent text-primary">
+      {title}
+    </h2>
+    
+    {description && (
+      <p class="text-secondary mb-4 line-clamp-2">
+        {description}
+      </p>
+    )}
+    
+    <div class="flex items-center gap-4 text-sm text-secondary">
+      <time datetime={pubDate.toISOString()}>
+        {pubDate.toLocaleDateString('fr-FR', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        })}
+      </time>
+      
+      {tags && tags.length > 0 && (
+        <div class="flex gap-2">
+          {tags.map((tag: string) => (
+            <span class="px-2 py-1 bg-secondary border border-border-default rounded text-xs">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  </a>
+</article>

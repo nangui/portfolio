@@ -1,0 +1,33 @@
+---
+const skillsByDomain = {
+  frontend: ['React', 'Vue.js', 'Angular', 'TypeScript', 'Astro'],
+  architecture: ['Micro Frontend', 'NX', 'Module Federation', 'Design Systems'],
+  backend: ['Laravel', 'PHP 8+', 'RESTful APIs', 'GraphQL'],
+  tooling: ['Docker', 'CI/CD', 'AWS/GCP', 'Redis', 'Kubernetes'],
+};
+---
+
+<section id="skills" class="py-section bg-secondary">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-12 text-primary">
+      Stack & Expertises
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {Object.entries(skillsByDomain).map(([domain, skills]) => (
+        <div>
+          <h3 class="font-heading font-semibold text-xl mb-4 text-primary capitalize">
+            {domain}
+          </h3>
+          <ul class="space-y-2">
+            {skills.map((skill) => (
+              <li class="text-secondary">
+                {skill}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,51 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Button from '@components/ui/Button.astro';
+
+const allPosts = (await getCollection('blog').catch(() => [])) as CollectionEntry<'blog'>[];
+const sortedPosts = allPosts
+  .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+// Helper function to get slug from entry
+// With glob loader, id contains the file path relative to base
+const getSlug = (entry: CollectionEntry<'blog'>): string => {
+  if (entry.data.slug) return entry.data.slug;
+  // Extract filename from id and remove extension
+  const filename = entry.id.split('/').pop() || entry.id;
+  return filename.replace(/\.(md|mdx)$/, '');
+};
+
+---
+
+<section id="blog-preview" class="py-section bg-primary">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+        Blog
+      </h2>
+      <Button href="/blog" variant="ghost">
+        Voir tout →
+      </Button>
+    </div>
+    
+    {sortedPosts.length > 0 ? (
+      <div class="space-y-4">
+        {sortedPosts.map((post: CollectionEntry<'blog'>) => (
+            <a 
+              href={`/blog/${getSlug(post)}`}
+              class="block p-4 bg-secondary border border-border-default rounded-lg hover:border-border-light transition-colors"
+            >
+              <h3 class="font-heading font-semibold text-xl mb-2 text-primary">
+                {post.data.title}
+              </h3>
+            </a>
+        ))}
+      </div>
+    ) : (
+      <p class="text-secondary text-center py-12">
+        Les articles de blog seront affichés ici une fois ajoutés dans le dossier content/blog.
+      </p>
+    )}
+  </div>
+</section>

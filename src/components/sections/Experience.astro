@@ -1,0 +1,124 @@
+---
+const experiences = [
+  {
+    role: 'Tech Lead / Backend Lead',
+    company: 'Djoubo',
+    period: '2023 - Présent',
+    impacts: [
+      'Architecture backend complète multi-pays (100+)',
+      'Intégration systèmes de paiement (Stripe, PayPal, Mollie, Wave)',
+    ],
+  },
+  {
+    role: 'Lead E-commerce',
+    company: 'Orange Sénégal',
+    period: '2021 - 2023',
+    impacts: [
+      'Transformation digitale orange.sn',
+      'Adoption React/Next.js, Drupal Headless',
+      'Microservices & Micro Frontend (NX, Module Federation)',
+    ],
+  },
+  {
+    role: 'Senior Frontend Engineer',
+    company: 'Socium',
+    period: '2020 - 2021',
+    impacts: [
+      'Refactor complet de sociumjob',
+      'Architecture découplée (Strapi + Nuxt)',
+      'Amélioration performance (>7s → rapide)',
+    ],
+  },
+  {
+    role: 'Frontend Architect',
+    company: 'Gebeya',
+    period: '2019 - 2020',
+    impacts: [
+      'Architecture frontend SaaS',
+      'Micro Frontend (Single-spa, NX)',
+      'Optimisation Core Web Vitals',
+    ],
+  },
+];
+---
+
+<section id="experience" class="py-section bg-secondary">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-12 text-primary">
+      Expérience Professionnelle
+    </h2>
+    
+    <div class="relative">
+      <!-- Timeline line -->
+      <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-accent/30 hidden md:block" style="left: 1.5rem;"></div>
+      
+      <div class="space-y-12">
+        {experiences.map((exp, index) => (
+          <div class="relative experience-item">
+            <!-- Timeline dot -->
+            <div class="absolute left-0 top-2 w-3 h-3 bg-accent rounded-full border-4 border-bg-secondary hidden md:block" style="left: calc(1.5rem - 6px);"></div>
+            
+            <div class="md:pl-12">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+                <div class="mb-2 md:mb-0">
+                  <h3 class="font-heading font-semibold text-xl md:text-2xl text-primary mb-1">
+                    {exp.role}
+                  </h3>
+                  <p class="font-medium text-accent text-lg">
+                    {exp.company}
+                  </p>
+                </div>
+                <span class="text-secondary text-sm font-medium bg-bg-tertiary px-3 py-1 rounded-full inline-block md:inline">
+                  {exp.period}
+                </span>
+              </div>
+              
+              <ul class="space-y-3 mt-4">
+                {exp.impacts.map((impact) => (
+                  <li class="text-secondary flex items-start group">
+                    <span class="mr-3 text-accent font-bold mt-1 group-hover:scale-110 transition-transform">→</span>
+                    <span class="flex-1">{impact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import('gsap').then(({ gsap }) => {
+    return import('gsap/ScrollTrigger').then(({ default: ScrollTrigger }) => {
+      gsap.registerPlugin(ScrollTrigger);
+      
+      const experienceItems = document.querySelectorAll('.experience-item');
+      
+      experienceItems.forEach((item) => {
+        gsap.fromTo(item,
+          {
+            opacity: 0,
+            x: -50,
+          },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: item,
+              start: 'top 85%',
+              toggleActions: 'play none none reverse',
+            }
+          }
+        );
+      });
+    }).catch((error) => {
+      console.error('Failed to load ScrollTrigger:', error);
+    });
+  }).catch((error) => {
+    console.error('Failed to load GSAP:', error);
+  });
+</script>

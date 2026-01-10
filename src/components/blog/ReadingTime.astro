@@ -1,0 +1,42 @@
+---
+interface Props {
+  content: string;
+}
+
+const { content } = Astro.props;
+
+// Calculate reading time based on content
+// Average reading speed: 200-250 words per minute (using 225 as average)
+const calculateReadingTime = (text: string): number => {
+  // Remove markdown syntax and HTML tags
+  const cleanText = text
+    .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+    .replace(/`[^`]+`/g, '') // Remove inline code
+    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // Convert links to text
+    .replace(/[#*\-_]/g, '') // Remove markdown formatting
+    .replace(/\n+/g, ' ') // Replace newlines with spaces
+    .trim();
+  
+  // Count words (split by whitespace)
+  const wordCount = cleanText.split(/\s+/).filter(word => word.length > 0).length;
+  
+  // Calculate reading time (words / 225 words per minute)
+  const readingTime = Math.ceil(wordCount / 225);
+  
+  return Math.max(1, readingTime); // Minimum 1 minute
+};
+
+const readingTime = calculateReadingTime(content);
+---
+
+<div class="reading-time flex items-center gap-2 text-sm text-secondary">
+  <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <span>
+    {readingTime === 1 
+      ? '1 minute de lecture' 
+      : `${readingTime} minutes de lecture`
+    }
+  </span>
+</div>

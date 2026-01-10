@@ -1,16 +1,27 @@
 ---
-
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Hero from '@components/sections/Hero.astro';
+import About from '@components/sections/About.astro';
+import Skills from '@components/sections/Skills.astro';
+import Projects from '@components/sections/Projects.astro';
+import Experience from '@components/sections/Experience.astro';
+import BlogPreview from '@components/sections/BlogPreview.astro';
+import Contact from '@components/sections/Contact.astro';
+import ScrollAnimations from '@components/ui/ScrollAnimations.astro';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout 
+  title="Adonai Nangui - Senior Frontend Engineer & Tech Lead"
+  description="Portfolio professionnel d'Adonai Nangui. Expertise en développement frontend, architecture et systèmes scalables."
+>
+  <div class="max-w-[1200px] mx-auto">
+    <Hero />
+    <About />
+    <Skills />
+    <Projects />
+    <Experience />
+    <BlogPreview />
+    <Contact />
+  </div>
+  <ScrollAnimations />
+</BaseLayout>
