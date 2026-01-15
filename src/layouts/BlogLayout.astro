@@ -4,11 +4,12 @@ import BaseLayout from './BaseLayout.astro';
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string;
 }
 
-const { title, description = "Articles techniques sur le développement frontend, l'architecture et la productivité développeur" } = Astro.props;
+const { title, description = "Articles techniques sur le développement frontend, l'architecture et la productivité développeur", ogImage } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} ogImage={ogImage}>
   <slot />
 </BaseLayout>

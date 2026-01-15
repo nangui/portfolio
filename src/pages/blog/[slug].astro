@@ -5,7 +5,6 @@ import TableOfContents from '@components/blog/TableOfContents.astro';
 import ReadingTime from '@components/blog/ReadingTime.astro';
 import SocialShare from '@components/blog/SocialShare.astro';
 import BlogNavigation from '@components/blog/BlogNavigation.astro';
-import TextDistortion from '@components/ui/TextDistortion.astro';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -75,15 +74,22 @@ const getSlugForUrl = (entry: CollectionEntry<'blog'>) => {
 };
 const postSlug = getSlugForUrl(post);
 const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
+
+// Get image URL for Open Graph
+const siteUrl = Astro.site || 'https://adonainangui.dev';
+const ogImage = post.data.image 
+  ? `${siteUrl}${post.data.image.startsWith('/') ? post.data.image : `/${post.data.image}`}`
+  : undefined;
 ---
 
 <BlogLayout 
   title={`${post.data.title} - Blog Adonai Nangui`}
   description={post.data.description}
+  ogImage={ogImage}
 >
   <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
     <!-- Breadcrumb amélioré -->
-    <nav class="mb-8 scroll-animate" aria-label="Breadcrumb">
+    <nav class="mb-8" aria-label="Breadcrumb">
       <ol class="flex items-center gap-2 text-sm text-secondary">
         <li>
           <a href="/" class="hover:text-accent transition-colors">Accueil</a>
@@ -99,12 +105,10 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
       </ol>
     </nav>
 
-    <header class="mb-12 pb-8 border-b border-border-default scroll-animate">
-      <TextDistortion animateOnLoad={true}>
-        <h1 class="font-heading font-semibold text-3xl md:text-4xl lg:text-5xl mb-6 text-primary leading-tight">
+    <header class="mb-12 pb-8 border-b border-border-default">
+      <h1 class="font-heading font-semibold text-3xl md:text-4xl lg:text-5xl mb-6 text-primary leading-tight">
         {post.data.title}
       </h1>
-      </TextDistortion>
       
       <div class="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-secondary">
         <div class="flex items-center gap-4 flex-wrap">
@@ -145,7 +149,7 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
       
       <!-- Main Content -->
       <div class="flex-1 min-w-0 max-w-4xl">
-        <div class="prose prose-invert prose-lg max-w-none text-secondary leading-relaxed scroll-animate">
+        <div class="prose prose-invert prose-lg max-w-none text-secondary leading-relaxed">
       <Content />
         </div>
         
@@ -161,68 +165,6 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
       </div>
     </div>
   </article>
-  
-  <script>
-    import('gsap').then(({ gsap }) => {
-      return import('gsap/ScrollTrigger').then(({ default: ScrollTrigger }) => {
-        gsap.registerPlugin(ScrollTrigger);
-        
-        // Animate elements with scroll-animate class
-        const animateElements = document.querySelectorAll('.scroll-animate');
-        
-        animateElements.forEach((element, index) => {
-          gsap.fromTo(element,
-            {
-              opacity: 0,
-              y: 30,
-            },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              ease: 'power2.out',
-              delay: index * 0.1,
-              scrollTrigger: {
-                trigger: element,
-                start: 'top 85%',
-                toggleActions: 'play none none none',
-                once: true,
-              }
-            }
-          );
-        });
-        
-        // Animate prose headings and paragraphs
-        const proseElements = document.querySelectorAll('.prose h2, .prose h3, .prose p, .prose ul, .prose ol');
-        
-        proseElements.forEach((element, index) => {
-          gsap.fromTo(element,
-            {
-              opacity: 0,
-              y: 20,
-            },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.6,
-              ease: 'power2.out',
-              delay: index * 0.05,
-              scrollTrigger: {
-                trigger: element,
-                start: 'top 90%',
-                toggleActions: 'play none none none',
-                once: true,
-              }
-            }
-          );
-        });
-      }).catch((error) => {
-        console.error('Failed to load ScrollTrigger:', error);
-      });
-    }).catch((error) => {
-      console.error('Failed to load GSAP:', error);
-    });
-  </script>
 </BlogLayout>
 
 <style>
