@@ -1,38 +1,59 @@
 ---
 const socialLinks = [
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/adonai-nangui', icon: 'linkedin' },
-  { label: 'GitHub', href: 'https://github.com/nangui', icon: 'github' },
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/adonai-nangui' },
+  { label: 'GitHub', href: 'https://github.com/nangui' },
 ];
 
 const currentYear = new Date().getFullYear();
 ---
 
-<footer class="border-t border-border-default bg-secondary">
-  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<footer class="border-t border-border-default/50 bg-primary">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-      <div class="text-secondary text-sm">
+      <!-- Copyright -->
+      <div class="text-secondary/80 text-sm order-2 md:order-1">
         © {currentYear} Adonai Nangui. Tous droits réservés.
       </div>
       
-      <div class="flex items-center gap-6">
+      <!-- Links -->
+      <nav class="flex items-center gap-8 order-1 md:order-2" aria-label="Footer navigation">
         {socialLinks.map((link) => (
           <a 
             href={link.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-secondary hover:text-accent transition-colors font-medium"
+            target={link.href.startsWith('http') ? '_blank' : undefined}
+            rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            class="text-secondary/80 hover:text-accent transition-colors duration-200 text-sm font-medium"
             aria-label={link.label}
           >
             {link.label}
           </a>
         ))}
-        <a 
-          href="/resume"
-          class="text-secondary hover:text-accent transition-colors font-medium"
-        >
-          CV
-        </a>
-      </div>
+      </nav>
     </div>
   </div>
 </footer>
+
+<style>
+  footer {
+    backdrop-filter: blur(10px);
+  }
+
+  footer a {
+    position: relative;
+  }
+
+  footer a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: currentColor;
+    transition: width 0.3s ease;
+  }
+
+  footer a:hover::after {
+    width: 100%;
+  }
+</style>

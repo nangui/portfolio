@@ -8,19 +8,21 @@ const navItems = [
 ];
 ---
 
-<nav class="sticky top-0 z-50 bg-primary/80 backdrop-blur-sm border-b border-border-default">
+<nav class="sticky top-0 z-50 bg-primary/80 backdrop-blur-sm border-b border-border-default" role="navigation" aria-label="Navigation principale">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
-      <a href="/" class="font-heading font-semibold text-xl text-primary hover:text-accent transition-colors">
+      <a href="/" class="font-heading font-semibold text-xl text-primary hover:text-accent transition-colors" aria-label="Adonai Nangui - Retour à l'accueil">
         Adonai Nangui
       </a>
       
-      <ul class="hidden md:flex items-center gap-8">
+      <ul class="hidden md:flex items-center gap-8" role="menubar">
         {navItems.map((item) => (
-          <li>
+          <li role="none">
             <a 
               href={item.href}
               class="text-secondary hover:text-accent transition-colors font-medium"
+              role="menuitem"
+              aria-label={item.label}
             >
               {item.label}
             </a>
@@ -30,8 +32,10 @@ const navItems = [
       
       <!-- Mobile menu button -->
       <button 
-        class="md:hidden text-secondary hover:text-accent transition-colors"
-        aria-label="Menu"
+        class="md:hidden text-secondary hover:text-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
+        aria-label="Ouvrir le menu de navigation"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
         id="mobile-menu-button"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -41,15 +45,17 @@ const navItems = [
     </div>
   </div>
   
-  <!-- Mobile menu (à implémenter avec JavaScript si nécessaire) -->
-  <div id="mobile-menu" class="hidden md:hidden border-t border-border-default bg-primary">
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-border-default bg-primary" role="menu" aria-labelledby="mobile-menu-button">
     <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <ul class="flex flex-col gap-4">
+      <ul class="flex flex-col gap-4" role="menubar">
         {navItems.map((item) => (
-          <li>
+          <li role="none">
             <a 
               href={item.href}
-              class="text-secondary hover:text-accent transition-colors font-medium block"
+              class="text-secondary hover:text-accent transition-colors font-medium block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
+              role="menuitem"
+              aria-label={item.label}
             >
               {item.label}
             </a>
@@ -67,7 +73,12 @@ const navItems = [
   
   if (menuButton && mobileMenu) {
     menuButton.addEventListener('click', () => {
+      const isHidden = mobileMenu.classList.contains('hidden');
       mobileMenu.classList.toggle('hidden');
+      
+      // Update aria-expanded
+      menuButton.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+      menuButton.setAttribute('aria-label', isHidden ? 'Fermer le menu de navigation' : 'Ouvrir le menu de navigation');
       
       // Toggle icon (hamburger / close)
       const svg = menuButton.querySelector('svg');

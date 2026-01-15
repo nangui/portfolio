@@ -33,8 +33,22 @@
         );
       });
       
+      // Pause/resume animations based on page visibility
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          gsap.globalTimeline.pause();
+          ScrollTrigger.getAll().forEach(trigger => trigger.disable());
+        } else {
+          gsap.globalTimeline.resume();
+          ScrollTrigger.getAll().forEach(trigger => trigger.enable());
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+
       // Cleanup on page unload
       window.addEventListener('beforeunload', () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
         ScrollTrigger.getAll().forEach(trigger => trigger.kill());
       });
     }).catch((error) => {

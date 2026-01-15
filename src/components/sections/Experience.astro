@@ -1,124 +1,279 @@
 ---
 const experiences = [
   {
-    role: 'Tech Lead / Backend Lead',
+    role: 'Senior Full Stack Engineer',
+    company: 'MassKode',
+    period: 'Oct 2025 - Présent',
+    impacts: [
+      'Développement d\'une plateforme healthcare innovante pour l\'accompagnement maternel aux États-Unis',
+      'Architecture moderne et scalable en monorepo (NX) pour garantir performance et maintenabilité',
+      'Développement full-stack de fonctionnalités critiques avec ownership complète',
+      'Développement mobile natif (iOS/Android) pour étendre l\'expérience utilisateur',
+      'Collaboration avec des équipes produit et techniques internationales en mode remote',
+    ],
+  },
+  {
+    role: 'Tech Lead',
     company: 'Djoubo',
-    period: '2023 - Présent',
+    period: 'Jan 2025 - Déc 2025',
     impacts: [
-      'Architecture backend complète multi-pays (100+)',
-      'Intégration systèmes de paiement (Stripe, PayPal, Mollie, Wave)',
+      'Orchestration de projets en alliant expertise technique et développement pratique',
+      'Architecture backend multi-pays avec Laravel : API RESTful, intégration Odoo ERP, infrastructure Digital Ocean',
+      'Développement full-stack : applications React Native et interfaces React réactives',
+      'Intégration de systèmes de paiement (PayPal, Stripe, Mollie, Wave) et services géolocalisés (Google Maps)',
+      'Direction d\'équipe : best practices, revues de code, formation et optimisation des processus avec IA',
     ],
   },
   {
-    role: 'Lead E-commerce',
-    company: 'Orange Sénégal',
-    period: '2021 - 2023',
+    role: 'Senior Frontend Developer',
+    company: 'Gebeya Inc',
+    period: 'Mar 2023 - Avr 2025',
     impacts: [
-      'Transformation digitale orange.sn',
-      'Adoption React/Next.js, Drupal Headless',
-      'Microservices & Micro Frontend (NX, Module Federation)',
+      'Travail étroit avec designers, UX et autres développeurs pour comprendre nouvelles fonctionnalités et dépendances',
+      'Conception, développement et test d\'applications web en mode Agile',
+      'Garantie que les livrables répondent aux attentes du marché Gebeya SaaS',
+      'Contribution directe aux efforts de développement avec focus sur la qualité',
     ],
   },
   {
-    role: 'Senior Frontend Engineer',
+    role: 'Senior Software Engineering',
     company: 'Socium',
-    period: '2020 - 2021',
+    period: 'Nov 2022 - Sep 2024',
     impacts: [
-      'Refactor complet de sociumjob',
-      'Architecture découplée (Strapi + Nuxt)',
-      'Amélioration performance (>7s → rapide)',
+      'Développement de modules critiques du SIRH : Socium Doc, Payroll, Perf avec NestJS et Angular',
+      'Architecture découplée pour portail de recrutement et blog (Nuxt.js + Strapi)',
+      'APIs robustes et scalables avec intégration de services (Koa.js)',
+      'Architecture full-stack de bout en bout avec focus sur performance et scalabilité',
     ],
   },
   {
-    role: 'Frontend Architect',
-    company: 'Gebeya',
-    period: '2019 - 2020',
+    role: 'Full Stack Engineer',
+    company: 'Sonatel',
+    period: 'Juil 2019 - Nov 2022',
     impacts: [
-      'Architecture frontend SaaS',
-      'Micro Frontend (Single-spa, NX)',
-      'Optimisation Core Web Vitals',
+      'Initiateur de React.js au Pôle Digital Orange Sénégal : POC Drupal API découplé avec Next.js pour e-commerce',
+      'Architecture microservices : Selfcare HR (Laravel/Symfony/Angular) avec Vrata, Activiti, LDAP',
+      'Développement full-stack de projets critiques : Moodboard (Laravel), Andando (React/Drupal), Sen Pil Pro (Angular)',
+      'Introduction de l\'architecture Micro frontend avec POC utilisant NX, Module Federation et Web Components',
+    ],
+  },
+  {
+    role: 'Full Stack Engineer',
+    company: 'Gebeya Inc',
+    period: 'Fév 2019 - Fév 2023',
+    impacts: [
+      'Développement full-stack avec stack varié : PHP, Docker, OpenShift, React.js, Next.js',
+      'Travail avec Kubernetes, Laravel, Nuxt.js, Strapi.js, Drupal, Angular, Symfony',
+      'Développement React Native et Vue.js',
+      'Méthodologie Scrum et architecture REST',
     ],
   },
 ];
 ---
 
-<section id="experience" class="py-section bg-secondary">
-  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+<section id="experience" class="py-24 bg-secondary overflow-hidden">
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
     <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-12 text-primary">
       Expérience Professionnelle
     </h2>
     
+    <!-- Horizontal scrollable timeline -->
     <div class="relative">
-      <!-- Timeline line -->
-      <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-accent/30 hidden md:block" style="left: 1.5rem;"></div>
-      
-      <div class="space-y-12">
+      <!-- Timeline container -->
+      <div class="overflow-x-auto pb-8 scrollbar-custom" data-experience-scroll>
+        <div class="flex gap-8 min-w-max pr-8">
         {experiences.map((exp, index) => (
-          <div class="relative experience-item">
-            <!-- Timeline dot -->
-            <div class="absolute left-0 top-2 w-3 h-3 bg-accent rounded-full border-4 border-bg-secondary hidden md:block" style="left: calc(1.5rem - 6px);"></div>
+            <article 
+              class="experience-card group relative shrink-0 w-[380px] bg-bg-secondary border border-border-default rounded-lg p-8 hover:border-accent transition-all duration-300"
+              data-experience-index={index}
+              style="position: relative; z-index: 1;"
+              aria-labelledby={`experience-role-${index}`}
+            >
+              <!-- Card number indicator - z-index corrigé -->
+              <div class="absolute -top-4 -left-4 w-12 h-12 bg-accent rounded-full flex items-center justify-center font-heading font-bold text-lg text-bg-primary shadow-lg" style="z-index: 20; position: relative;">
+                {index + 1}
+              </div>
             
-            <div class="md:pl-12">
-              <div class="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
-                <div class="mb-2 md:mb-0">
-                  <h3 class="font-heading font-semibold text-xl md:text-2xl text-primary mb-1">
+              <!-- Period badge -->
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-full mb-6">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-accent text-sm font-medium">{exp.period}</span>
+              </div>
+
+              <!-- Role and company -->
+              <div class="mb-6">
+                <h3 id={`experience-role-${index}`} class="font-heading font-semibold text-xl text-primary mb-2 group-hover:text-accent transition-colors">
                     {exp.role}
                   </h3>
-                  <p class="font-medium text-accent text-lg">
+                <p class="font-medium text-lg text-secondary" aria-label={`Entreprise: ${exp.company}`}>
                     {exp.company}
                   </p>
-                </div>
-                <span class="text-secondary text-sm font-medium bg-bg-tertiary px-3 py-1 rounded-full inline-block md:inline">
-                  {exp.period}
-                </span>
               </div>
               
-              <ul class="space-y-3 mt-4">
+              <!-- Impacts list -->
+              <ul class="space-y-3" role="list" aria-label="Réalisations et impacts">
                 {exp.impacts.map((impact) => (
-                  <li class="text-secondary flex items-start group">
-                    <span class="mr-3 text-accent font-bold mt-1 group-hover:scale-110 transition-transform">→</span>
-                    <span class="flex-1">{impact}</span>
+                  <li class="flex items-start gap-3 text-secondary" role="listitem">
+                    <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-sm leading-relaxed">{impact}</span>
                   </li>
                 ))}
               </ul>
+
+              <!-- Decorative corner -->
+              <div class="absolute bottom-0 right-0 w-24 h-24 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" aria-hidden="true">
+                <svg viewBox="0 0 100 100" fill="currentColor" class="text-accent" aria-hidden="true">
+                  <circle cx="100" cy="100" r="100" />
+                </svg>
+              </div>
+            </article>
+          ))}
             </div>
           </div>
-        ))}
+
+      <!-- Progress indicator -->
+      <div class="mt-4 h-1 bg-bg-tertiary rounded-full overflow-hidden">
+        <div class="h-full bg-accent transition-all duration-300" id="experience-progress" style="width: 0%"></div>
       </div>
     </div>
   </div>
 </section>
 
 <script>
-  import('gsap').then(({ gsap }) => {
-    return import('gsap/ScrollTrigger').then(({ default: ScrollTrigger }) => {
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
       gsap.registerPlugin(ScrollTrigger);
       
-      const experienceItems = document.querySelectorAll('.experience-item');
-      
-      experienceItems.forEach((item) => {
-        gsap.fromTo(item,
+  // Pause/resume animations based on page visibility
+  let visibilityHandler: (() => void) | null = null;
+
+  const setupVisibilityHandler = () => {
+    if (visibilityHandler) return; // Already set up
+
+    visibilityHandler = () => {
+      if (document.hidden) {
+        gsap.globalTimeline.pause();
+        ScrollTrigger.getAll().forEach(trigger => trigger.disable());
+      } else {
+        gsap.globalTimeline.resume();
+        ScrollTrigger.getAll().forEach(trigger => trigger.enable());
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', visibilityHandler);
+    }
+  };
+
+  setupVisibilityHandler();
+
+  const initExperience = () => {
+    const scrollContainer = document.querySelector('[data-experience-scroll]') as HTMLElement;
+    const cards = document.querySelectorAll('.experience-card');
+    const progressBar = document.getElementById('experience-progress');
+
+    if (!scrollContainer || !progressBar) return;
+
+    // Animate cards on scroll into view
+    cards.forEach((card, index) => {
+      gsap.fromTo(
+        card,
           {
             opacity: 0,
-            x: -50,
+          y: 50,
+          scale: 0.95,
           },
           {
             opacity: 1,
-            x: 0,
-            duration: 0.8,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
             ease: 'power2.out',
             scrollTrigger: {
-              trigger: item,
+            trigger: card,
               start: 'top 85%',
               toggleActions: 'play none none reverse',
-            }
+          },
+          delay: index * 0.1,
           }
         );
       });
-    }).catch((error) => {
-      console.error('Failed to load ScrollTrigger:', error);
+
+    // Update progress bar based on horizontal scroll
+    const updateProgress = () => {
+      const scrollLeft = scrollContainer.scrollLeft;
+      const scrollWidth = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+      const progress = (scrollLeft / scrollWidth) * 100;
+      progressBar.style.width = `${Math.min(progress, 100)}%`;
+    };
+
+    scrollContainer.addEventListener('scroll', updateProgress);
+    updateProgress();
+
+    // Parallax effect on cards
+    scrollContainer.addEventListener('scroll', () => {
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const offset = rect.left - containerRect.left;
+        const parallaxAmount = (offset / containerRect.width) * 20;
+        
+        gsap.to(card, {
+          y: parallaxAmount,
+          duration: 0.3,
+          ease: 'power1.out',
+        });
+      });
     });
-  }).catch((error) => {
-    console.error('Failed to load GSAP:', error);
-  });
+
+    // Cleanup
+    return () => {
+      scrollContainer.removeEventListener('scroll', updateProgress);
+    };
+  };
+
+  // Initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initExperience);
+  } else {
+    initExperience();
+  }
+
+  // Reinitialize on page transitions
+  document.addEventListener('astro:page-load', initExperience);
 </script>
+
+<style>
+  /* Hide scrollbar but keep scrolling functionality */
+  .scrollbar-custom {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .scrollbar-custom::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  /* Smooth scrolling */
+  [data-experience-scroll] {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Card hover effects */
+  .experience-card {
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  @media (max-width: 768px) {
+    .experience-card {
+      width: 320px;
+    }
+  }
+</style>

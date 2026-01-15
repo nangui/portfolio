@@ -75,148 +75,148 @@
     document.body.style.overflow = '';
   } else {
     // Load GSAP dynamically only if loader needs to be shown
-    import('gsap').then(({ gsap }) => {
-      // Wait for DOM to be ready
-      const initLoader = () => {
-        const loader = document.querySelector('.loader') as HTMLElement | null;
-        const step1 = document.querySelector('.step-1') as HTMLElement | null;
-        const step2 = document.querySelector('.step-2') as HTMLElement | null;
-        const step3 = document.querySelector('.step-3') as HTMLElement | null;
-        const counter = document.querySelector('.counter') as HTMLElement | null;
-        const underline = document.querySelector('.underline') as HTMLElement | null;
-        
-        if (!loader || !step1 || !step2 || !step3 || !counter || !underline) {
-          // Fallback: hide loader if elements are missing
-          if (loader) loader.style.display = 'none';
-          return;
-        }
-        
-        // Prevent scrolling during loader animation
-        document.documentElement.style.height = '100vh';
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.height = '100vh';
-        document.body.style.overflow = 'hidden';
-        
-        // Main timeline to orchestrate all sequential animations
-        const masterTL = gsap.timeline({
-          defaults: { ease: 'power2.inOut' },
-          onComplete: () => {
-            // Clean up will-change after animation for performance
-            [step1, step2, step3, counter, underline, loader].forEach(el => {
-              if (el) el.style.willChange = 'auto';
-            });
+  import('gsap').then(({ gsap }) => {
+    // Wait for DOM to be ready
+    const initLoader = () => {
+      const loader = document.querySelector('.loader') as HTMLElement | null;
+      const step1 = document.querySelector('.step-1') as HTMLElement | null;
+      const step2 = document.querySelector('.step-2') as HTMLElement | null;
+      const step3 = document.querySelector('.step-3') as HTMLElement | null;
+      const counter = document.querySelector('.counter') as HTMLElement | null;
+      const underline = document.querySelector('.underline') as HTMLElement | null;
+      
+      if (!loader || !step1 || !step2 || !step3 || !counter || !underline) {
+        // Fallback: hide loader if elements are missing
+        if (loader) loader.style.display = 'none';
+        return;
+      }
+      
+      // Prevent scrolling during loader animation
+      document.documentElement.style.height = '100vh';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.height = '100vh';
+      document.body.style.overflow = 'hidden';
+      
+      // Main timeline to orchestrate all sequential animations
+      const masterTL = gsap.timeline({
+        defaults: { ease: 'power2.inOut' },
+        onComplete: () => {
+          // Clean up will-change after animation for performance
+          [step1, step2, step3, counter, underline, loader].forEach(el => {
+            if (el) el.style.willChange = 'auto';
+          });
             
             // Save to localStorage that loader has been completed
             if (typeof localStorage !== 'undefined') {
               localStorage.setItem(LOADER_STORAGE_KEY, 'true');
             }
-            
-            // Restore scrolling after animation completes
-            document.documentElement.style.height = '';
-            document.documentElement.style.overflow = '';
-            document.body.style.height = '';
-            document.body.style.overflow = '';
-          }
-        });
-        
-        // STEP 1: First element fades in then out
-        masterTL
-          .fromTo(step1, 
-            { opacity: 0, y: 20 },
-            { 
-              opacity: 1, 
-              y: 0, 
-              duration: 1.0, // Increased from 0.6s to 1.0s
-              ease: 'power2.out' 
-            }
-          )
-          .to(step1, {
-            opacity: 0,
-            y: -20,
-            duration: 0.6, // Increased from 0.4s to 0.6s
-            ease: 'power2.in'
-          });
-        
-        // STEP 2: Full name + title fades in then out
-        masterTL
-          .fromTo(step2,
-            { opacity: 0, y: 20 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 1.0, // Increased from 0.6s to 1.0s
-              ease: 'power2.out'
-            },
-            '-=0.3' // Starts 0.3s before the end of previous step (increased from 0.2s)
-          )
-          .to(step2, {
-            opacity: 0,
-            y: -20,
-            duration: 0.6, // Increased from 0.4s to 0.6s
-            ease: 'power2.in'
-          });
-        
-        // STEP 3: Loading counter fades in and animates
-        masterTL
-          .fromTo(step3,
-            { opacity: 0, y: 20 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8, // Increased from 0.5s to 0.8s
-              ease: 'power2.out'
-            },
-            '-=0.3' // Increased from 0.2s to 0.3s
-          );
-        
-        // Animate counter from 0% → 100% with GSAP for better synchronization
-        const counterDuration = 2.0;
-        
-        // Animate counter with GSAP for perfect synchronization
-        masterTL.to({}, {
-          duration: counterDuration,
-          onUpdate: function() {
-            const progress = Math.min(this.progress() * 100, 100);
-            if (counter) {
-              counter.textContent = `${Math.floor(progress)}%`;
-            }
-            if (underline) {
-              underline.style.width = `${progress}%`;
-            }
-          },
-          ease: 'power1.inOut'
-        });
-        
-        // Final fade out of loader after counter completes
-        masterTL.to(loader, {
-          opacity: 0,
-          duration: 0.5,
-          ease: 'power2.out',
-          delay: 0.3,
-          onComplete: () => {
-            // Remove loader from DOM for performance
-            loader.style.display = 'none';
-          }
-        });
-      };
+          
+          // Restore scrolling after animation completes
+          document.documentElement.style.height = '';
+          document.documentElement.style.overflow = '';
+          document.body.style.height = '';
+          document.body.style.overflow = '';
+        }
+      });
       
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initLoader);
-      } else {
-        initLoader();
-      }
-    }).catch((error) => {
-      console.error('Failed to load GSAP:', error);
-      // Fallback: hide loader if GSAP fails to load
-      const loader = document.querySelector('.loader') as HTMLElement | null;
-      if (loader) {
-        loader.style.display = 'none';
-      }
-      // Restore scrolling if GSAP fails
-      document.documentElement.style.height = '';
-      document.documentElement.style.overflow = '';
-      document.body.style.height = '';
-      document.body.style.overflow = '';
-    });
+      // STEP 1: First element fades in then out
+      masterTL
+        .fromTo(step1, 
+          { opacity: 0, y: 20 },
+          { 
+            opacity: 1, 
+            y: 0, 
+            duration: 1.0, // Increased from 0.6s to 1.0s
+            ease: 'power2.out' 
+          }
+        )
+        .to(step1, {
+          opacity: 0,
+          y: -20,
+          duration: 0.6, // Increased from 0.4s to 0.6s
+          ease: 'power2.in'
+        });
+      
+      // STEP 2: Full name + title fades in then out
+      masterTL
+        .fromTo(step2,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1.0, // Increased from 0.6s to 1.0s
+            ease: 'power2.out'
+          },
+          '-=0.3' // Starts 0.3s before the end of previous step (increased from 0.2s)
+        )
+        .to(step2, {
+          opacity: 0,
+          y: -20,
+          duration: 0.6, // Increased from 0.4s to 0.6s
+          ease: 'power2.in'
+        });
+      
+      // STEP 3: Loading counter fades in and animates
+      masterTL
+        .fromTo(step3,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8, // Increased from 0.5s to 0.8s
+            ease: 'power2.out'
+          },
+          '-=0.3' // Increased from 0.2s to 0.3s
+        );
+      
+      // Animate counter from 0% → 100% with GSAP for better synchronization
+      const counterDuration = 2.0;
+      
+      // Animate counter with GSAP for perfect synchronization
+      masterTL.to({}, {
+        duration: counterDuration,
+        onUpdate: function() {
+          const progress = Math.min(this.progress() * 100, 100);
+          if (counter) {
+            counter.textContent = `${Math.floor(progress)}%`;
+          }
+          if (underline) {
+            underline.style.width = `${progress}%`;
+          }
+        },
+        ease: 'power1.inOut'
+      });
+      
+      // Final fade out of loader after counter completes
+      masterTL.to(loader, {
+        opacity: 0,
+        duration: 0.5,
+        ease: 'power2.out',
+        delay: 0.3,
+        onComplete: () => {
+          // Remove loader from DOM for performance
+          loader.style.display = 'none';
+        }
+      });
+    };
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initLoader);
+    } else {
+      initLoader();
+    }
+  }).catch((error) => {
+    console.error('Failed to load GSAP:', error);
+    // Fallback: hide loader if GSAP fails to load
+    const loader = document.querySelector('.loader') as HTMLElement | null;
+    if (loader) {
+      loader.style.display = 'none';
+    }
+    // Restore scrolling if GSAP fails
+    document.documentElement.style.height = '';
+    document.documentElement.style.overflow = '';
+    document.body.style.height = '';
+    document.body.style.overflow = '';
+  });
   }
 </script>

@@ -1,29 +1,181 @@
 ---
 const contactLinks = [
-  { label: 'Email', href: 'mailto:contact@adonainangui.dev', icon: 'email' },
-  { label: 'LinkedIn', href: 'https://linkedin.com/in/adonai-nangui', icon: 'linkedin' },
-  { label: 'GitHub', href: 'https://github.com/nangui', icon: 'github' },
-  { label: 'CV', href: '/resume', icon: 'cv' },
+  { 
+    label: 'Email', 
+    href: 'mailto:contact@adonainangui.dev', 
+    icon: 'email',
+    description: 'Envoyez-moi un message'
+  },
+  { 
+    label: 'LinkedIn', 
+    href: 'https://linkedin.com/in/adonai-nangui', 
+    icon: 'linkedin',
+    description: 'Connectons-nous'
+  },
+  { 
+    label: 'GitHub', 
+    href: 'https://github.com/nangui', 
+    icon: 'github',
+    description: 'Explorez mes projets'
+  }
 ];
+
+const icons: Record<string, string> = {
+  email: `<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+  </svg>`,
+  linkedin: `<svg class="w-8 h-8" viewBox="0 0 20 20"><path fill="#3B82F6" d="M5 3c0 1.062-.71 1.976-2.001 1.976C1.784 4.976 1 4.114 1 3.052C1 1.962 1.76 1 3 1s1.976.91 2 2M1 19V6h4v13zm6-8.556c0-1.545-.051-2.836-.102-3.951h3.594l.178 1.723h.076c.506-.811 1.746-2 3.822-2C17.1 6.216 19 7.911 19 11.558V19h-4v-6.861c0-1.594-.607-2.81-2-2.81c-1.062 0-1.594.86-1.873 1.569c-.102.254-.127.608-.127.963V19H7z"/></svg>`,
+  github: `<svg class="w-8 h-8" viewBox="0 0 20 20"><path fill="#3B82F6" d="M13.18 11.309c-.718 0-1.3.807-1.3 1.799c0 .994.582 1.801 1.3 1.801s1.3-.807 1.3-1.801c-.001-.992-.582-1.799-1.3-1.799m4.526-4.683c.149-.365.155-2.439-.635-4.426c0 0-1.811.199-4.551 2.08c-.575-.16-1.548-.238-2.519-.238c-.973 0-1.945.078-2.52.238C4.74 2.399 2.929 2.2 2.929 2.2c-.789 1.987-.781 4.061-.634 4.426C1.367 7.634.8 8.845.8 10.497c0 7.186 5.963 7.301 7.467 7.301l1.734.002l1.732-.002c1.506 0 7.467-.115 7.467-7.301c0-1.652-.566-2.863-1.494-3.871m-7.678 10.289h-.056c-3.771 0-6.709-.449-6.709-4.115c0-.879.31-1.693 1.047-2.369C5.537 9.304 7.615 9.9 9.972 9.9h.056c2.357 0 4.436-.596 5.664.531c.735.676 1.045 1.49 1.045 2.369c0 3.666-2.937 4.115-6.709 4.115m-3.207-5.606c-.718 0-1.3.807-1.3 1.799c0 .994.582 1.801 1.3 1.801s1.301-.807 1.301-1.801c0-.992-.582-1.799-1.301-1.799"/></svg>`,
+  cv: `<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+  </svg>`,
+};
 ---
 
-<section id="contact" class="py-section bg-secondary mb-16">
+<section id="contact" class="py-24 bg-primary">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-8 text-primary">
-      Contact
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <h2 class="font-heading font-semibold text-3xl md:text-4xl text-primary mb-4">
+        Travaillons ensemble
     </h2>
+      <p class="text-lg text-secondary max-w-2xl mx-auto">
+        Je suis toujours ouvert aux nouvelles opportunités et collaborations. N'hésitez pas à me contacter.
+      </p>
+    </div>
     
-    <div class="flex flex-col sm:flex-row gap-6">
+    <!-- Contact cards grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
       {contactLinks.map((link) => (
         <a 
           href={link.href}
           target={link.href.startsWith('http') ? '_blank' : undefined}
           rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-          class="text-secondary hover:text-accent transition-colors font-medium"
+          class="contact-card group relative bg-secondary border border-border-default rounded-lg p-6 hover:border-accent transition-all duration-300 hover:shadow-lg hover:shadow-accent/10"
+          aria-label={`${link.label} - ${link.description}`}
         >
+          <!-- Icon -->
+          <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-bg-tertiary border border-border-default group-hover:bg-accent/10 group-hover:border-accent transition-all duration-300" aria-hidden="true">
+            <div class="text-secondary group-hover:text-accent transition-colors" set:html={icons[link.icon]} />
+          </div>
+          
+          <!-- Label -->
+          <h3 class="font-heading font-semibold text-lg text-primary text-center mb-2 group-hover:text-accent transition-colors">
           {link.label}
+          </h3>
+          
+          <!-- Description -->
+          <p class="text-sm text-secondary text-center">
+            {link.description}
+          </p>
+
+          <!-- Hover indicator -->
+          <div class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true">
+            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </div>
+
+          <!-- Decorative corner -->
+          <div class="absolute top-0 left-0 w-12 h-12 opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" aria-hidden="true">
+            <svg viewBox="0 0 100 100" fill="currentColor" class="text-accent" aria-hidden="true">
+              <circle cx="0" cy="0" r="100" />
+            </svg>
+          </div>
         </a>
       ))}
     </div>
+
+    <!-- Additional info -->
+    <div class="mt-16 text-center">
+      <p class="text-secondary text-sm">
+        Basé à Dakar, Sénégal · Disponible pour des missions à distance
+      </p>
+    </div>
   </div>
 </section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Pause/resume animations based on page visibility
+  let visibilityHandler: (() => void) | null = null;
+
+  const setupVisibilityHandler = () => {
+    if (visibilityHandler) return; // Already set up
+
+    visibilityHandler = () => {
+      if (document.hidden) {
+        gsap.globalTimeline.pause();
+        ScrollTrigger.getAll().forEach(trigger => trigger.disable());
+      } else {
+        gsap.globalTimeline.resume();
+        ScrollTrigger.getAll().forEach(trigger => trigger.enable());
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', visibilityHandler);
+    }
+  };
+
+  setupVisibilityHandler();
+
+  const initContact = () => {
+    const cards = document.querySelectorAll('.contact-card');
+
+    cards.forEach((card, index) => {
+      gsap.fromTo(
+        card,
+        {
+          opacity: 0,
+          y: 30,
+          scale: 0.95,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+          delay: index * 0.1,
+        }
+      );
+    });
+  };
+
+  // Initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initContact);
+  } else {
+    initContact();
+  }
+
+  // Reinitialize on page transitions
+  document.addEventListener('astro:page-load', initContact);
+</script>
+
+<style>
+  .contact-card {
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  .contact-card:hover {
+    transform: translateY(-4px);
+  }
+
+  @media (max-width: 640px) {
+    .contact-card {
+      padding: 1.5rem;
+    }
+  }
+</style>
