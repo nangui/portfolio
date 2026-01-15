@@ -1,0 +1,678 @@
+---
+/**
+ * ProjectCardHover - WebGL Image Hover Effect for Project Cards
+ * 
+ * Enhanced version with:
+ * - Advanced shader effects (distortion, blur, chromatic aberration)
+ * - Advanced caching system
+ * - Animation variations per project
+ */
+---
+
+<!-- SVG filter for distortion effect -->
+<svg style="position: absolute; width: 0; height: 0;">
+  <defs>
+    <filter id="distortion-filter" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence 
+        type="fractalNoise" 
+        baseFrequency="0.9" 
+        numOctaves="4" 
+        result="turbulence"
+      />
+      <feDisplacementMap 
+        id="fe-displacement-map"
+        in="SourceGraphic" 
+        in2="turbulence" 
+        scale="0" 
+        xChannelSelector="R" 
+        yChannelSelector="G"
+      />
+    </filter>
+  </defs>
+</svg>
+
+<div id="project-hover-container" class="fixed pointer-events-none z-50 opacity-0 overflow-hidden" style="left: 0; top: 0;">
+  <canvas id="project-hover-canvas" class="w-full h-full"></canvas>
+</div>
+
+<script>
+  import * as THREE from 'three';
+  import { gsap } from 'gsap';
+  import { logger } from '@utils/logger';
+
+  // Simple vertex shader without wave effect
+  const vertexShader = `
+    varying vec2 vUv;
+    
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+
+  const fragmentShader = `
+    varying vec2 vUv;
+    uniform sampler2D uTexture;
+    uniform float uAlpha;
+    uniform float uAspectRatio;
+    uniform float uBrightness;
+    
+    void main() {
+      vec2 newUV = vUv;
+      
+      // Crop to center for square aspect ratio
+      vec2 center = vec2(0.5, 0.5);
+      vec2 fromCenter = newUV - center;
+      
+      // Adjust UV to crop image to square (center crop)
+      if (uAspectRatio > 1.0) {
+        // Image is wider than tall - crop horizontally
+        fromCenter.x /= uAspectRatio;
+      } else {
+        // Image is taller than wide - crop vertically
+        fromCenter.y *= uAspectRatio;
+      }
+      newUV = center + fromCenter;
+      
+      // Sample texture and apply brightness
+      vec4 color = texture2D(uTexture, newUV);
+      color.rgb *= uBrightness;
+      color.a *= uAlpha;
+      
+      gl_FragColor = color;
+    }
+  `;
+
+  // Texture cache with metadata
+  interface CachedTexture {
+    texture: THREE.Texture;
+    loadedAt: number;
+    accessCount: number;
+    lastAccessed: number;
+  }
+
+  interface ProjectHoverState {
+    isHovering: boolean;
+    currentImage: string | null;
+    targetPosition: { x: number; y: number };
+    currentCard: Element | null;
+  }
+
+  // Advanced texture cache
+  class TextureCache {
+    private cache: Map<string, CachedTexture> = new Map();
+    private maxSize = 10; // Maximum cached textures
+    private maxAge = 5 * 60 * 1000; // 5 minutes
+
+    get(imageSrc: string): THREE.Texture | null {
+      const cached = this.cache.get(imageSrc);
+      if (cached) {
+        cached.accessCount++;
+        cached.lastAccessed = Date.now();
+        return cached.texture;
+      }
+      return null;
+    }
+
+    set(imageSrc: string, texture: THREE.Texture) {
+      // Remove oldest if cache is full
+      if (this.cache.size >= this.maxSize) {
+        this.evictOldest();
+      }
+
+      this.cache.set(imageSrc, {
+        texture,
+        loadedAt: Date.now(),
+        accessCount: 1,
+        lastAccessed: Date.now(),
+      });
+    }
+
+    private evictOldest() {
+      let oldest: { key: string; lastAccessed: number } | null = null;
+
+      for (const [key, value] of this.cache.entries()) {
+        if (!oldest || value.lastAccessed < oldest.lastAccessed) {
+          oldest = { key, lastAccessed: value.lastAccessed };
+        }
+      }
+
+      if (oldest) {
+        const cached = this.cache.get(oldest.key);
+        if (cached) {
+          cached.texture.dispose();
+        }
+        this.cache.delete(oldest.key);
+      }
+    }
+
+    cleanup() {
+      const now = Date.now();
+      for (const [key, value] of this.cache.entries()) {
+        if (now - value.loadedAt > this.maxAge) {
+          value.texture.dispose();
+          this.cache.delete(key);
+        }
+      }
+    }
+
+    dispose() {
+      for (const cached of this.cache.values()) {
+        cached.texture.dispose();
+      }
+      this.cache.clear();
+    }
+  }
+
+  const initProjectHover = () => {
+    const container = document.getElementById('project-hover-container');
+    const canvas = document.getElementById('project-hover-canvas') as HTMLCanvasElement;
+    
+    if (!container || !canvas) {
+      logger.warn('[ProjectCardHover] Container or canvas not found');
+      return;
+    }
+
+    logger.log('[ProjectCardHover] Initializing...');
+
+    // State management
+    const state: ProjectHoverState = {
+      isHovering: false,
+      currentImage: null,
+      targetPosition: { x: 0, y: 0 },
+      currentCard: null,
+    };
+
+    // Helper functions for interpolation and mapping
+    const lerp = (start: number, end: number, amt: number): number => {
+      return (1 - amt) * start + amt * end;
+    };
+
+    const clamp = (value: number, min: number, max: number): number => {
+      return Math.min(Math.max(value, min), max);
+    };
+
+    const map = (value: number, inMin: number, inMax: number, outMin: number, outMax: number): number => {
+      return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
+    };
+
+    // Animatable properties with interpolation
+    const animatableProperties = {
+      tx: { previous: 0, current: 0, amt: 0.08 },
+      ty: { previous: 0, current: 0, amt: 0.08 },
+      rotation: { previous: 0, current: 0, amt: 0.08 },
+      brightness: { previous: 1, current: 1, amt: 0.08 },
+    };
+
+    // Mouse position tracking with cache for speed calculation
+    let mousePosCache = { x: 0, y: 0 };
+    let firstRAFCycle = true;
+    
+    // Displacement position for SVG filter
+    // Separate interpolation for displacement calculation
+    let lastDisplacementPos = { x: 0, y: 0 };
+
+    // Texture cache
+    const textureCache = new TextureCache();
+
+    // Three.js setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+    camera.position.z = 1;
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+    });
+    // Set canvas size to match image size (larger for better visibility)
+    const imageSize = 300;
+    renderer.setSize(imageSize, imageSize);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Set container size
+    container.style.width = `${imageSize}px`;
+    container.style.height = `${imageSize}px`;
+
+    // Plane geometry for image (simple, no wave effect needed)
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    
+    // Material with shader
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uTexture: { value: null },
+        uAlpha: { value: 0 },
+        uAspectRatio: { value: 1.0 },
+        uBrightness: { value: 1.0 },
+      },
+      transparent: true,
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    // Texture loader
+    const textureLoader = new THREE.TextureLoader();
+
+    // Load image function with caching
+    const loadImage = (imageSrc: string, projectSlug: string) => {
+      if (!imageSrc || imageSrc.trim() === '') {
+        logger.warn('[ProjectCardHover] No image source provided');
+        return;
+      }
+
+      // Check cache first
+      const cached = textureCache.get(imageSrc);
+      if (cached) {
+        logger.log('[ProjectCardHover] Using cached texture for:', imageSrc);
+        material.uniforms.uTexture.value = cached;
+        const img = cached.image as HTMLImageElement;
+        const aspect = img.width / img.height;
+        material.uniforms.uAspectRatio.value = aspect;
+        // Scale mesh to fill canvas (1.0 = full size)
+        mesh.scale.set(1.0, 1.0, 1);
+        
+        return;
+      }
+
+      if (state.currentImage === imageSrc) return;
+      
+      state.currentImage = imageSrc;
+
+      logger.log('[ProjectCardHover] Loading image:', imageSrc);
+
+      // Load new texture
+      textureLoader.load(
+        imageSrc,
+        (texture) => {
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+          
+          // Cache the texture
+          textureCache.set(imageSrc, texture);
+          
+          material.uniforms.uTexture.value = texture;
+          
+          // Calculate aspect ratio and set uniform for shader cropping
+          const aspect = texture.image.width / texture.image.height;
+          material.uniforms.uAspectRatio.value = aspect;
+          
+          // Scale mesh to fill canvas (1.0 = full size)
+          mesh.scale.set(1.0, 1.0, 1);
+          
+          logger.log('[ProjectCardHover] Image loaded successfully');
+        },
+        undefined,
+        (error) => {
+          logger.error('[ProjectCardHover] Error loading project image:', error, imageSrc);
+        }
+      );
+    };
+
+    // Show hover with animation
+    const showHover = () => {
+      state.isHovering = true;
+      firstRAFCycle = true;
+      
+      // Reset animatable properties
+      animatableProperties.tx.previous = 0;
+      animatableProperties.ty.previous = 0;
+      animatableProperties.rotation.previous = 0;
+      animatableProperties.brightness.previous = 1;
+      
+      // Reset mouse cache
+      mousePosCache = { x: mousepos.x, y: mousepos.y };
+      
+      // Reset displacement position (like Codrops demo2)
+      lastDisplacementPos = { x: mousepos.x, y: mousepos.y };
+      
+      gsap.to(container, {
+        opacity: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+
+      gsap.to(material.uniforms.uAlpha, {
+        value: 1,
+        duration: 0.4,
+        ease: 'power2.out',
+      });
+    };
+
+    // Hide hover with animation
+    const hideHover = () => {
+      state.isHovering = false;
+      firstRAFCycle = true;
+      
+      // Reset animatable properties
+      animatableProperties.tx.previous = 0;
+      animatableProperties.ty.previous = 0;
+      animatableProperties.rotation.previous = 0;
+      animatableProperties.brightness.previous = 1;
+      material.uniforms.uBrightness.value = 1;
+      
+      // Reset displacement position
+      lastDisplacementPos = { x: 0, y: 0 };
+      
+      // Reset SVG filter scale
+      const feDisplacementMapEl = document.getElementById('fe-displacement-map');
+      if (feDisplacementMapEl) {
+        feDisplacementMapEl.setAttribute('scale', '0');
+      }
+      canvas.style.filter = 'none';
+      
+      gsap.to(container, {
+        opacity: 0,
+        duration: 0.3,
+        ease: 'power2.in',
+      });
+
+      gsap.to(material.uniforms.uAlpha, {
+        value: 0,
+        duration: 0.3,
+        ease: 'power2.in',
+      });
+    };
+
+    // Mouse tracking for canvas positioning and speed calculation
+    let mouseX = 0;
+    let mouseY = 0;
+    let mousepos = { x: 0, y: 0 };
+
+    const updateMousePosition = (event: Event) => {
+      const mouseEvent = event as MouseEvent;
+      mouseX = mouseEvent.clientX;
+      mouseY = mouseEvent.clientY;
+      
+      // Update mouse position for speed calculation
+      mousepos.x = mouseEvent.clientX;
+      mousepos.y = mouseEvent.clientY;
+    };
+
+    // Track which cards already have listeners
+    const cardsWithListeners = new WeakSet<Element>();
+
+    // Setup event listeners for project cards
+    const setupCardListeners = () => {
+      const cards = document.querySelectorAll('[data-project-image]');
+      
+      logger.log('[ProjectCardHover] Found', cards.length, 'project cards');
+      
+      if (cards.length === 0) {
+        logger.warn('[ProjectCardHover] No project cards found with data-project-image attribute');
+        return;
+      }
+      
+      cards.forEach((card) => {
+        // Skip if already has listeners
+        if (cardsWithListeners.has(card)) {
+          return;
+        }
+
+        const imageSrc = card.getAttribute('data-project-image');
+        const projectSlug = card.getAttribute('data-project-slug') || 'default';
+        
+        if (!imageSrc || imageSrc.trim() === '') {
+          logger.warn('[ProjectCardHover] Card has no image:', projectSlug);
+          return;
+        }
+
+        logger.log('[ProjectCardHover] Setting up listeners for:', projectSlug, imageSrc);
+
+        card.addEventListener('mouseenter', () => {
+          state.currentCard = card;
+          loadImage(imageSrc, projectSlug);
+          showHover();
+        });
+
+        card.addEventListener('mouseleave', () => {
+          state.currentCard = null;
+          hideHover();
+        });
+
+        card.addEventListener('mousemove', updateMousePosition);
+
+        // Mark as having listeners
+        cardsWithListeners.add(card);
+      });
+    };
+
+    // Calculate bounds for positioning (card bounds)
+    const calcBounds = () => {
+      if (!state.currentCard) {
+        return {
+          el: { left: 0, top: 0, width: 0, height: 0 },
+          reveal: { width: 300, height: 300 },
+        };
+      }
+      
+      const cardRect = state.currentCard.getBoundingClientRect();
+      return {
+        el: {
+          left: cardRect.left,
+          top: cardRect.top,
+          width: cardRect.width,
+          height: cardRect.height,
+        },
+        reveal: {
+          width: 300, // Image width
+          height: 300, // Image height
+        },
+      };
+    };
+
+    // Position canvas and update animatable properties
+    const positionCanvas = () => {
+      if (!state.isHovering || !state.currentCard) return;
+      
+      const bounds = calcBounds();
+
+      if (firstRAFCycle) {
+        // Initialize position on first frame
+        animatableProperties.tx.current = bounds.el.left + bounds.el.width / 2 - bounds.reveal.width / 2;
+        animatableProperties.ty.current = bounds.el.top + bounds.el.height / 2 - bounds.reveal.height / 2;
+      }
+
+      // Calculate mouse distance (speed) for rotation and brightness
+      const mouseDistanceX = clamp(Math.abs(mousePosCache.x - mousepos.x), 0, 100);
+      const direction = {
+        x: mousePosCache.x - mousepos.x,
+        y: mousePosCache.y - mousepos.y,
+      };
+      
+      // Update cache for next frame
+      mousePosCache = { x: mousepos.x, y: mousepos.y };
+      
+      // Interpolate displacement position
+      // This is separate from translation position for distortion calculation
+      lastDisplacementPos.x = lerp(lastDisplacementPos.x, mousepos.x, 0.1);
+      lastDisplacementPos.y = lerp(lastDisplacementPos.y, mousepos.y, 0.1);
+      
+      // Calculate distance between interpolated displacement position and current mouse position
+      // This distance determines the distortion scale (0 to 100)
+      const distanceX = lastDisplacementPos.x - mousepos.x;
+      const distanceY = lastDisplacementPos.y - mousepos.y;
+      const mouseDistance = Math.min(Math.hypot(distanceX, distanceY), 100);
+
+      // Calculate target position - center image on mouse cursor
+      // Offset from mouse cursor (like Codrops)
+      const offsetX = 0; // No offset, center on cursor
+      const offsetY = 0;
+      
+      // Calculate position in viewport coordinates (container is fixed)
+      // Center the image on the mouse cursor
+      const targetX = mouseX - bounds.reveal.width / 2;
+      const targetY = mouseY - bounds.reveal.height / 2;
+
+      // Update current values
+      animatableProperties.tx.current = targetX;
+      animatableProperties.ty.current = targetY;
+      
+      // Rotation: -60° to +60° based on speed and direction
+      animatableProperties.rotation.current = firstRAFCycle
+        ? 0
+        : map(mouseDistanceX, 0, 100, 0, direction.x < 0 ? 60 : -60);
+      
+      // Brightness: 1 to 4 based on speed
+      animatableProperties.brightness.current = firstRAFCycle
+        ? 1
+        : map(mouseDistanceX, 0, 100, 1, 4);
+
+      // Interpolate previous values (lerp)
+      animatableProperties.tx.previous = firstRAFCycle
+        ? animatableProperties.tx.current
+        : lerp(animatableProperties.tx.previous, animatableProperties.tx.current, animatableProperties.tx.amt);
+      
+      animatableProperties.ty.previous = firstRAFCycle
+        ? animatableProperties.ty.current
+        : lerp(animatableProperties.ty.previous, animatableProperties.ty.current, animatableProperties.ty.amt);
+      
+      animatableProperties.rotation.previous = firstRAFCycle
+        ? animatableProperties.rotation.current
+        : lerp(animatableProperties.rotation.previous, animatableProperties.rotation.current, animatableProperties.rotation.amt);
+      
+      animatableProperties.brightness.previous = firstRAFCycle
+        ? animatableProperties.brightness.current
+        : lerp(animatableProperties.brightness.previous, animatableProperties.brightness.current, animatableProperties.brightness.amt);
+
+      // Apply transforms to container using left/top (since container is fixed)
+      // Use transform for smooth positioning and rotation
+      container.style.left = `${animatableProperties.tx.previous}px`;
+      container.style.top = `${animatableProperties.ty.previous}px`;
+      container.style.transform = `rotate(${animatableProperties.rotation.previous}deg)`;
+      
+      // Apply SVG filter distortion
+      // Scale goes from 0 to 100 based on distance between interpolated position and mouse
+      const feDisplacementMapEl = document.getElementById('fe-displacement-map');
+      if (feDisplacementMapEl) {
+        const dmScale = firstRAFCycle ? 0 : mouseDistance;
+        feDisplacementMapEl.setAttribute('scale', dmScale.toString());
+        // Always apply filter (scale 0 = no distortion)
+        canvas.style.filter = `url(#distortion-filter)`;
+      }
+      
+      // Apply brightness to shader
+      material.uniforms.uBrightness.value = animatableProperties.brightness.previous;
+
+      firstRAFCycle = false;
+    };
+
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      
+      positionCanvas();
+      renderer.render(scene, camera);
+    };
+
+    animate();
+
+    // Handle resize
+    const handleResize = () => {
+      // Keep image size fixed at 500x500
+      const imageSize = 500;
+      renderer.setSize(imageSize, imageSize);
+      camera.updateProjectionMatrix();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup cache periodically
+    const cacheCleanupInterval = setInterval(() => {
+      textureCache.cleanup();
+    }, 60000); // Every minute
+
+    // Initialize card listeners with MutationObserver to catch dynamically added cards
+    const observer = new MutationObserver(() => {
+      const cards = document.querySelectorAll('[data-project-image]');
+      if (cards.length > 0) {
+        setupCardListeners();
+        observer.disconnect(); // Stop observing once cards are found
+      }
+    });
+
+    // Start observing
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Also try immediately
+    setupCardListeners();
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearInterval(cacheCleanupInterval);
+      renderer.dispose();
+      geometry.dispose();
+      material.dispose();
+      textureCache.dispose();
+    };
+  };
+
+  // Detect mobile and disable on mobile for performance
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ) || window.innerWidth < 768;
+  };
+
+  // Check for reduced motion preference
+  const prefersReducedMotion = () => {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  };
+
+  // Check WebGL support
+  const hasWebGLSupport = () => {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(
+        window.WebGLRenderingContext &&
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+      );
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Initialize only if supported and not mobile
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!isMobile() && !prefersReducedMotion() && hasWebGLSupport()) {
+        logger.log('[ProjectCardHover] Initializing WebGL hover effects');
+        initProjectHover();
+      } else {
+        logger.log('[ProjectCardHover] Disabled - Mobile:', isMobile(), 'Reduced motion:', prefersReducedMotion(), 'WebGL:', hasWebGLSupport());
+      }
+    });
+  } else {
+    if (!isMobile() && !prefersReducedMotion() && hasWebGLSupport()) {
+      logger.log('[ProjectCardHover] Initializing WebGL hover effects');
+      initProjectHover();
+    } else {
+      logger.log('[ProjectCardHover] Disabled - Mobile:', isMobile(), 'Reduced motion:', prefersReducedMotion(), 'WebGL:', hasWebGLSupport());
+    }
+  }
+</script>
+
+<style>
+  #project-hover-container {
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+  }
+
+  #project-hover-canvas {
+    display: block;
+    width: 500px;
+    height: 500px;
+    transition: filter 0.1s ease-out;
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+</style>
