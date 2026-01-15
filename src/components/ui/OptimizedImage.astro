@@ -1,0 +1,51 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: string | ImageMetadata;
+  alt: string;
+  class?: string;
+  width?: number;
+  height?: number;
+  loading?: 'lazy' | 'eager';
+  quality?: number;
+}
+
+const { 
+  src, 
+  alt, 
+  class: className = '',
+  width,
+  height,
+  loading = 'lazy',
+  quality = 80
+} = Astro.props;
+
+// Type guard to check if src is an ImageMetadata (imported asset)
+const isImageMetadata = (src: string | ImageMetadata): src is ImageMetadata => {
+  return typeof src === 'object' && src !== null && 'src' in src && 'width' in src && 'format' in src;
+};
+---
+
+{isImageMetadata(src) ? (
+  <Image 
+    src={src}
+    alt={alt}
+    class={className}
+    loading={loading}
+    quality={quality}
+    {...(width && { width })}
+    {...(height && { height })}
+  />
+) : (
+  <img 
+    src={src} 
+    alt={alt}
+    class={className}
+    loading={loading}
+    decoding="async"
+    {...(width && { width })}
+    {...(height && { height })}
+  />
+)}

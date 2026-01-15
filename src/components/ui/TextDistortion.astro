@@ -1,0 +1,248 @@
+---
+interface Props {
+  class?: string;
+  animateOnLoad?: boolean;
+}
+
+const { class: className, animateOnLoad = true } = Astro.props;
+---
+
+<div class:list={["text-distortion-wrapper", className]} data-text-distortion data-animate-on-load={animateOnLoad}>
+  <slot />
+</div>
+
+<script>
+  import { gsap } from 'gsap';
+
+  // Pause/resume GSAP animations based on page visibility
+  let visibilityHandler: (() => void) | null = null;
+
+  const setupVisibilityHandler = () => {
+    if (visibilityHandler) return; // Already set up
+
+    visibilityHandler = () => {
+      if (document.hidden) {
+        gsap.globalTimeline.pause();
+      } else {
+        gsap.globalTimeline.resume();
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', visibilityHandler);
+    }
+  };
+
+  setupVisibilityHandler();
+
+  // Custom SplitText implementation
+  class SimpleSplitText {
+    element: HTMLElement;
+    chars: HTMLElement[] = [];
+    originalHTML: string;
+    shouldAnimate: boolean;
+
+    constructor(element: HTMLElement, shouldAnimate: boolean = false) {
+      this.element = element;
+      this.originalHTML = element.innerHTML;
+      this.shouldAnimate = shouldAnimate;
+      this.split();
+    }
+
+    split() {
+      const text = this.element.textContent || '';
+      this.element.innerHTML = '';
+
+      // Create wrapper for characters
+      const charsWrapper = document.createElement('span');
+      charsWrapper.style.display = 'inline-block';
+      charsWrapper.setAttribute('aria-label', text);
+
+      // Split into characters
+      text.split('').forEach((char, index) => {
+        const charSpan = document.createElement('span');
+        charSpan.textContent = char === ' ' ? '\u00A0' : char;
+        charSpan.style.display = 'inline-block';
+        charSpan.style.willChange = 'transform, opacity';
+        charSpan.style.transformOrigin = 'center center';
+        charSpan.setAttribute('data-char-index', index.toString());
+        
+        // IMPORTANT: Set initial opacity to 0 if animation is enabled (will be animated in)
+        // This prevents flash of unstyled content
+        charSpan.style.opacity = this.shouldAnimate ? '0' : '1';
+        
+        // Preserve whitespace
+        if (char === ' ') {
+          charSpan.style.width = '0.3em';
+        }
+
+        this.chars.push(charSpan);
+        charsWrapper.appendChild(charSpan);
+      });
+
+      this.element.appendChild(charsWrapper);
+    }
+
+    revert() {
+      this.element.innerHTML = this.originalHTML;
+      this.chars = [];
+    }
+  }
+
+  const initTextDistortion = () => {
+    const wrappers = document.querySelectorAll('[data-text-distortion]');
+
+    wrappers.forEach((wrapper) => {
+      // Wait for slot content to be rendered
+      const target = wrapper.children[0] as HTMLElement;
+      if (!target || !target.textContent) {
+        // Retry after a short delay if content not ready
+        setTimeout(() => initTextDistortion(), 100);
+        return;
+      }
+
+      const animateOnLoad = wrapper.getAttribute('data-animate-on-load') === 'true';
+
+      // Split text into characters (pass animateOnLoad to control initial opacity)
+      const split = new SimpleSplitText(target, animateOnLoad);
+
+      // Initial animation on load
+      if (animateOnLoad && split.chars.length > 0) {
+        // Characters are already hidden by CSS, just set transform state
+        gsap.set(split.chars, {
+          y: 50,
+          rotationX: -90,
+        });
+
+        // Animate in immediately (no delay to prevent flash)
+        gsap.to(split.chars, {
+          duration: 0.8,
+          opacity: 1,
+          y: 0,
+          rotationX: 0,
+          stagger: {
+            amount: 0.3,
+            from: 'start',
+          },
+          ease: 'back.out(1.2)',
+          delay: 0.1, // Reduced delay
+        });
+      } else if (!animateOnLoad) {
+        // Ensure visibility even without animation
+        gsap.set(split.chars, { opacity: 1 });
+      }
+
+      // Hover effect
+      let hoverTimeline: gsap.core.Timeline | null = null;
+
+      const handleMouseEnter = () => {
+        if (hoverTimeline) hoverTimeline.kill();
+
+        hoverTimeline = gsap.timeline();
+        
+        split.chars.forEach((char, index) => {
+          hoverTimeline!.to(
+            char,
+            {
+              duration: 0.3,
+              y: -10,
+              rotationX: 15,
+              scale: 1.1,
+              color: '#00ff88',
+              ease: 'power2.out',
+            },
+            index * 0.02
+          );
+        });
+      };
+
+      const handleMouseLeave = () => {
+        if (hoverTimeline) hoverTimeline.kill();
+
+        hoverTimeline = gsap.timeline();
+
+        split.chars.forEach((char, index) => {
+          hoverTimeline!.to(
+            char,
+            {
+              duration: 0.4,
+              y: 0,
+              rotationX: 0,
+              scale: 1,
+              color: '',
+              ease: 'elastic.out(1, 0.3)',
+            },
+            index * 0.02
+          );
+        });
+      };
+
+      wrapper.addEventListener('mouseenter', handleMouseEnter);
+      wrapper.addEventListener('mouseleave', handleMouseLeave);
+
+      // Cleanup on navigation
+      const cleanup = () => {
+        wrapper.removeEventListener('mouseenter', handleMouseEnter);
+        wrapper.removeEventListener('mouseleave', handleMouseLeave);
+        if (hoverTimeline) hoverTimeline.kill();
+        split.revert();
+      };
+
+      // Store cleanup function for later
+      (wrapper as any).__cleanup = cleanup;
+    });
+  };
+
+  // Initialize immediately to prevent flash
+  // Use requestAnimationFrame to ensure DOM is ready but execute ASAP
+  const tryInit = () => {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      // Execute immediately on next frame
+      requestAnimationFrame(() => {
+        initTextDistortion();
+      });
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(() => {
+          initTextDistortion();
+        });
+      });
+    }
+  };
+
+  tryInit();
+
+  // Reinitialize on Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+  });
+</script>
+
+<style>
+  .text-distortion-wrapper {
+    display: inline-block;
+    perspective: 1000px;
+  }
+
+  .text-distortion-wrapper > * {
+    display: inline-block;
+    transform-style: preserve-3d;
+  }
+
+  /* Hide characters initially if animation is enabled, show if disabled */
+  .text-distortion-wrapper[data-animate-on-load="true"] > * > span > span {
+    opacity: 0;
+  }
+
+  /* Fallback: ensure text is visible if JS fails and animation is disabled */
+  .text-distortion-wrapper[data-animate-on-load="false"] > * > span > span,
+  .text-distortion-wrapper:not([data-animate-on-load]) > * > span > span {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .text-distortion-wrapper * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
