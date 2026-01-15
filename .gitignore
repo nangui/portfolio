@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 # personal documentation
 docs/
+.vercel
+.env*.local
