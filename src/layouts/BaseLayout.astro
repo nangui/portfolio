@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Nav from '@components/ui/Nav.astro';
 import Footer from '@components/ui/Footer.astro';
 import Loader from '@components/ui/Loader.astro';
+import CustomCursor3D from '@components/ui/CustomCursor3D.astro';
 
 interface Props {
   title: string;
@@ -20,7 +21,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonaina
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <meta name="keywords" content="Adonai Nangui, Frontend Engineer, Tech Lead, React, Vue.js, Angular, TypeScript, Laravel, Micro Frontend, NX, Portfolio" />
+    <meta name="author" content="Adonai Nangui" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#00ff88" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     
     <!-- Open Graph -->
@@ -28,12 +34,41 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonaina
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="Adonai Nangui - Portfolio" />
+    <meta property="og:locale" content="fr_FR" />
     {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:width" content="1200" />}
+    {ogImage && <meta property="og:image:height" content="630" />}
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Adonai Nangui",
+      "jobTitle": "Senior Frontend Engineer / Tech Lead",
+      "url": "https://adonainangui.dev",
+      "sameAs": [
+        "https://linkedin.com/in/adonai-nangui",
+        "https://github.com/nangui"
+      ],
+      "knowsAbout": [
+        "Frontend Development",
+        "React",
+        "Vue.js",
+        "Angular",
+        "TypeScript",
+        "Micro Frontend Architecture",
+        "NX",
+        "Laravel",
+        "PHP"
+      ]
+    })} />
     
     <link rel="canonical" href={canonicalURL} />
     <title>{title}</title>
@@ -45,8 +80,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonaina
   </head>
   <body>
     <Loader />
+    <CustomCursor3D />
+    <!-- Skip to main content link for keyboard navigation -->
+    <a 
+      href="#main-content" 
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded focus:shadow-lg"
+      aria-label="Aller au contenu principal"
+    >
+      Aller au contenu principal
+    </a>
     <Nav />
-    <main>
+    <main id="main-content" role="main">
       <slot />
     </main>
     <Footer />

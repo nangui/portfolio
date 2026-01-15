@@ -2,6 +2,8 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import Button from '@components/ui/Button.astro';
+import TextDistortion from '@components/ui/TextDistortion.astro';
+import OptimizedImage from '@components/ui/OptimizedImage.astro';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -55,19 +57,22 @@ const { Content } = await render(project);
     <!-- Hero Image -->
     {project.data.image && (
       <div class="mb-12 scroll-animate">
-        <img 
+        <OptimizedImage 
           src={project.data.image} 
           alt={project.data.title}
           class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
           loading="eager"
+          quality={90}
         />
       </div>
     )}
 
     <header class="mb-12 pb-8 border-b border-border-default scroll-animate">
-      <h1 class="font-heading font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-primary leading-tight">
+      <TextDistortion animateOnLoad={true}>
+        <h1 class="font-heading font-semibold text-3xl md:text-4xl lg:text-5xl mb-4 text-primary leading-tight">
         {project.data.title}
       </h1>
+      </TextDistortion>
       
       <p class="text-lg md:text-xl text-secondary mb-8 leading-relaxed">
         {project.data.description}

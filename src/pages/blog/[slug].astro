@@ -5,6 +5,7 @@ import TableOfContents from '@components/blog/TableOfContents.astro';
 import ReadingTime from '@components/blog/ReadingTime.astro';
 import SocialShare from '@components/blog/SocialShare.astro';
 import BlogNavigation from '@components/blog/BlogNavigation.astro';
+import TextDistortion from '@components/ui/TextDistortion.astro';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -99,9 +100,11 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
     </nav>
 
     <header class="mb-12 pb-8 border-b border-border-default scroll-animate">
-      <h1 class="font-heading font-semibold text-3xl md:text-4xl lg:text-5xl mb-6 text-primary leading-tight">
+      <TextDistortion animateOnLoad={true}>
+        <h1 class="font-heading font-semibold text-3xl md:text-4xl lg:text-5xl mb-6 text-primary leading-tight">
         {post.data.title}
       </h1>
+      </TextDistortion>
       
       <div class="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-secondary">
         <div class="flex items-center gap-4 flex-wrap">
@@ -143,7 +146,7 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
       <!-- Main Content -->
       <div class="flex-1 min-w-0 max-w-4xl">
         <div class="prose prose-invert prose-lg max-w-none text-secondary leading-relaxed scroll-animate">
-          <Content />
+      <Content />
         </div>
         
         <!-- Social Share -->
@@ -233,32 +236,48 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
   .prose h4,
   .prose h5,
   .prose h6 {
-    color: var(--color-text-primary);
-    font-family: var(--font-heading);
-    font-weight: var(--font-weight-semibold);
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+    color: var(--color-text-primary) !important;
+    font-family: var(--font-heading) !important;
+    font-weight: var(--font-weight-semibold) !important;
+    margin-top: 2.5rem !important;
+    margin-bottom: 1.25rem !important;
   }
   
   .prose h1 {
-    font-size: 2.5rem;
-    margin-top: 2.5rem;
+    font-size: 2.5rem !important;
+    margin-top: 2.5rem !important;
   }
   
   .prose h2 {
-    font-size: 2rem;
-    margin-top: 2.5rem;
+    font-size: 2rem !important;
+    margin-top: 3rem !important;
+    margin-bottom: 1.5rem !important;
   }
   
   .prose h3 {
-    font-size: 1.5rem;
-    margin-top: 2rem;
+    font-size: 1.5rem !important;
+    margin-top: 2.5rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+  
+  .prose h4 {
+    font-size: 1.25rem !important;
+    margin-top: 2rem !important;
+    margin-bottom: 1rem !important;
   }
   
   .prose p {
-    margin-bottom: 1.5rem;
-    line-height: 1.8;
-    font-size: 1.125rem;
+    margin-top: 0 !important;
+    margin-bottom: 1.75rem !important;
+    line-height: 1.8 !important;
+    font-size: 1.125rem !important;
+  }
+  
+  /* Pas d'espacement supplémentaire pour le premier paragraphe après un titre */
+  .prose h2 + p,
+  .prose h3 + p,
+  .prose h4 + p {
+    margin-top: 0 !important;
   }
   
   .prose-lg p {
@@ -277,12 +296,20 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
   
   .prose ul,
   .prose ol {
-    margin-bottom: 1.25rem;
-    padding-left: 1.625rem;
+    margin-top: 1rem !important;
+    margin-bottom: 1.5rem !important;
+    padding-left: 1.625rem !important;
   }
   
   .prose li {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem !important;
+    line-height: 1.7 !important;
+  }
+  
+  /* Espacement avant les listes */
+  .prose p + ul,
+  .prose p + ol {
+    margin-top: 1.5rem !important;
   }
   
   .prose code {
@@ -293,24 +320,65 @@ const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
   }
   
   .prose pre {
-    background-color: var(--color-bg-secondary);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    margin-bottom: 1.25rem;
+    background-color: var(--color-bg-secondary) !important;
+    padding: 1.25rem !important;
+    border-radius: 0.5rem !important;
+    overflow-x: auto !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
   }
   
   .prose pre code {
-    background-color: transparent;
-    padding: 0;
+    background-color: transparent !important;
+    padding: 0 !important;
   }
   
   .prose blockquote {
-    border-left: 4px solid var(--color-accent);
-    padding-left: 1rem;
-    margin-left: 0;
-    margin-bottom: 1.25rem;
-    font-style: italic;
-    color: var(--color-text-secondary);
+    border-left: 4px solid var(--color-accent) !important;
+    padding-left: 1.25rem !important;
+    margin-left: 0 !important;
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    font-style: italic !important;
+    color: var(--color-text-secondary) !important;
+  }
+  
+  /* Images */
+  .prose img {
+    margin-top: 2rem !important;
+    margin-bottom: 2rem !important;
+    border-radius: 0.5rem !important;
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+  }
+  
+  /* Espacement autour des images */
+  .prose p + img,
+  .prose img + p {
+    margin-top: 2rem !important;
+  }
+  
+  .prose h2 + img,
+  .prose h3 + img {
+    margin-top: 1.5rem !important;
+  }
+  
+  /* Séparateurs (hr) */
+  .prose hr {
+    margin-top: 3rem !important;
+    margin-bottom: 3rem !important;
+    border: none !important;
+    border-top: 1px solid var(--color-border-default) !important;
+  }
+  
+  /* Strong et emphasis */
+  .prose strong {
+    color: var(--color-text-primary) !important;
+    font-weight: var(--font-weight-semibold) !important;
+  }
+  
+  .prose em {
+    font-style: italic !important;
   }
 </style>
