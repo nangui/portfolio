@@ -1,9 +1,13 @@
 ---
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+
 interface Props {
   content: string;
+  locale?: Locale;
 }
 
-const { content } = Astro.props;
+const { content, locale = defaultLocale } = Astro.props;
 
 // Calculate reading time based on content
 // Average reading speed: 200-250 words per minute (using 225 as average)
@@ -34,9 +38,6 @@ const readingTime = calculateReadingTime(content);
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
   <span>
-    {readingTime === 1 
-      ? '1 minute de lecture' 
-      : `${readingTime} minutes de lecture`
-    }
+    {readingTime} {getTranslation('blog', 'readingTime', locale)}
   </span>
 </div>

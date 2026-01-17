@@ -1,25 +1,25 @@
 ---
-import SectionTranslator from '@components/i18n/SectionTranslator.astro';
-import { getSectionLocale } from '@utils/i18n/useSectionI18n';
-import { getTranslation } from '@utils/i18n/translations';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
 
-const sectionId = 'about';
-const currentLocale = getSectionLocale(sectionId, 'fr');
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
 ---
 
 <section id="about" class="py-section bg-primary relative">
-  <SectionTranslator sectionId={sectionId} position="top-right" />
-  
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-6 text-primary" data-i18n-key="heading">
-      {getTranslation(sectionId, 'heading', currentLocale)}
+    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-6 text-primary">
+      {getTranslation('about', 'heading', locale)}
     </h2>
     <div class="max-w-3xl space-y-4">
-      <p class="text-lg text-secondary leading-relaxed" data-i18n-key="paragraph1">
-        {getTranslation(sectionId, 'paragraph1', currentLocale)}
+      <p class="text-lg text-secondary leading-relaxed">
+        {getTranslation('about', 'paragraph1', locale)}
       </p>
-      <p class="text-lg text-secondary leading-relaxed" data-i18n-key="paragraph2">
-        {getTranslation(sectionId, 'paragraph2', currentLocale)}
+      <p class="text-lg text-secondary leading-relaxed">
+        {getTranslation('about', 'paragraph2', locale)}
       </p>
     </div>
   </div>

@@ -1,15 +1,22 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { defaultLocale, type Locale } from '@i18n/config';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  locale?: Locale;
 }
 
-const { title, description = "Articles techniques sur le développement frontend, l'architecture et la productivité développeur", ogImage } = Astro.props;
+const { 
+  title, 
+  description = "Articles techniques sur le développement frontend, l'architecture et la productivité développeur", 
+  ogImage,
+  locale = defaultLocale
+} = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} ogImage={ogImage}>
+<BaseLayout title={title} description={description} ogImage={ogImage} locale={locale}>
   <slot />
 </BaseLayout>

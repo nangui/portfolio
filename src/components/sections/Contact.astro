@@ -1,22 +1,28 @@
 ---
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
+
 const contactLinks = [
   { 
-    label: 'Email', 
+    key: 'email', 
     href: 'mailto:adonainangui03@gmail.com', 
-    icon: 'email',
-    description: 'Envoyez-moi un message'
+    icon: 'email'
   },
   { 
-    label: 'LinkedIn', 
+    key: 'linkedin', 
     href: 'https://linkedin.com/in/adonai-nangui', 
-    icon: 'linkedin',
-    description: 'Connectons-nous'
+    icon: 'linkedin'
   },
   { 
-    label: 'GitHub', 
+    key: 'github', 
     href: 'https://github.com/nangui', 
-    icon: 'github',
-    description: 'Explorez mes projets'
+    icon: 'github'
   }
 ];
 
@@ -37,37 +43,40 @@ const icons: Record<string, string> = {
     <!-- Header -->
     <div class="text-center mb-16">
       <h2 class="font-heading font-semibold text-3xl md:text-4xl text-primary mb-4">
-        Travaillons ensemble
+        {getTranslation('contact', 'heading', locale)}
     </h2>
       <p class="text-lg text-secondary max-w-2xl mx-auto">
-        Je suis toujours ouvert aux nouvelles opportunités et collaborations. N'hésitez pas à me contacter.
+        {getTranslation('contact', 'description', locale)}
       </p>
     </div>
     
     <!-- Contact cards grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-      {contactLinks.map((link) => (
+      {contactLinks.map((link) => {
+        const label = getTranslation('contact', `${link.key}Label`, locale);
+        const description = getTranslation('contact', `${link.key}Description`, locale);
+        return (
         <a 
           href={link.href}
           target={link.href.startsWith('http') ? '_blank' : undefined}
           rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-          class="contact-card group relative bg-secondary border border-border-default rounded-lg p-6 hover:border-accent transition-all duration-300 hover:shadow-lg hover:shadow-accent/10"
-          aria-label={`${link.label} - ${link.description}`}
-        >
-          <!-- Icon -->
-          <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-bg-tertiary border border-border-default group-hover:bg-accent/10 group-hover:border-accent transition-all duration-300" aria-hidden="true">
-            <div class="text-secondary group-hover:text-accent transition-colors" set:html={icons[link.icon]} />
-          </div>
-          
-          <!-- Label -->
-          <h3 class="font-heading font-semibold text-lg text-primary text-center mb-2 group-hover:text-accent transition-colors">
-          {link.label}
-          </h3>
-          
-          <!-- Description -->
-          <p class="text-sm text-secondary text-center">
-            {link.description}
-          </p>
+            class="contact-card group relative bg-secondary border border-border-default rounded-lg p-6 hover:border-accent transition-all duration-300 hover:shadow-lg hover:shadow-accent/10"
+            aria-label={`${label} - ${description}`}
+          >
+            <!-- Icon -->
+            <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-bg-tertiary border border-border-default group-hover:bg-accent/10 group-hover:border-accent transition-all duration-300" aria-hidden="true">
+              <div class="text-secondary group-hover:text-accent transition-colors" set:html={icons[link.icon]} />
+            </div>
+            
+            <!-- Label -->
+            <h3 class="font-heading font-semibold text-lg text-primary text-center mb-2 group-hover:text-accent transition-colors">
+            {label}
+            </h3>
+            
+            <!-- Description -->
+            <p class="text-sm text-secondary text-center">
+              {description}
+            </p>
 
           <!-- Hover indicator -->
           <div class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true">
@@ -83,13 +92,14 @@ const icons: Record<string, string> = {
             </svg>
           </div>
         </a>
-      ))}
+        );
+      })}
     </div>
 
     <!-- Additional info -->
     <div class="mt-16 text-center">
       <p class="text-secondary text-sm">
-        Basé à Dakar, Sénégal · Disponible pour des missions à distance
+        {getTranslation('contact', 'location', locale)}
       </p>
     </div>
   </div>

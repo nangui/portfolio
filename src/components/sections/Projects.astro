@@ -2,6 +2,15 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Button from '@components/ui/Button.astro';
 import ProjectCardHover from '@components/ui/ProjectCardHover.astro';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+import { formatPath } from '@i18n/utils';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
 
 const allProjects = await getCollection('projects').catch(() => []) as CollectionEntry<'projects'>[];
 const featuredProjects = allProjects
@@ -22,7 +31,7 @@ const getSlug = (entry: CollectionEntry<'projects'>): string => {
 <section id="projects" class="py-section bg-primary">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-12 text-primary">
-      Projets Sélectionnés
+      {getTranslation('projects', 'heading', locale)}
     </h2>
     
     {featuredProjects.length > 0 ? (
@@ -48,19 +57,19 @@ const getSlug = (entry: CollectionEntry<'projects'>): string => {
                 ))}
               </div>
               <Button 
-                href={`/projects/${getSlug(project)}`} 
+                href={formatPath(`/projects/${getSlug(project)}`, locale)} 
                 variant="ghost" 
                 size="sm"
-                ariaLabel={`En savoir plus sur ${project.data.title}`}
+                ariaLabel={`${getTranslation('projects', 'learnMore', locale)} ${project.data.title}`}
               >
-                En savoir plus →
+                {getTranslation('projects', 'learnMore', locale)}
               </Button>
             </article>
           ))}
       </div>
     ) : (
       <p class="text-secondary text-center py-12">
-        Les projets seront affichés ici une fois ajoutés dans le dossier content/projects.
+        {getTranslation('projects', 'noProjects', locale)}
       </p>
     )}
   </div>

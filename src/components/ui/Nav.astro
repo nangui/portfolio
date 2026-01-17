@@ -1,47 +1,75 @@
 ---
+import LanguageSwitcher from '@components/i18n/LanguageSwitcher.astro';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+import { formatPath } from '@i18n/utils';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
+
 const navItems = [
-  { label: 'Accueil', href: '/' },
-  { label: 'Projets', href: '#projects' },
-  { label: 'Expérience', href: '#experience' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Contact', href: '#contact' },
+  { key: 'home', href: '/' },
+  { key: 'projects', href: '#projects' },
+  { key: 'experience', href: '#experience' },
+  { key: 'blog', href: '/blog' },
+  { key: 'contact', href: '#contact' },
 ];
+
+const openMenuLabel = getTranslation('nav', 'openMenu', locale);
+const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
 ---
 
 <nav class="sticky top-0 z-50 bg-primary/80 backdrop-blur-sm border-b border-border-default" role="navigation" aria-label="Navigation principale">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
-      <a href="/" class="font-heading font-semibold text-xl text-primary hover:text-accent transition-colors" aria-label="Adonai Nangui - Retour à l'accueil">
+      <a href={formatPath('/', locale)} class="font-heading font-semibold text-xl text-primary hover:text-accent transition-colors" aria-label="Adonai Nangui - Retour à l'accueil">
         Adonai Nangui
       </a>
       
-      <ul class="hidden md:flex items-center gap-8" role="menubar">
-        {navItems.map((item) => (
-          <li role="none">
+      <div class="hidden md:flex items-center gap-6">
+        <ul class="flex items-center gap-8" role="menubar">
+          {navItems.map((item) => {
+            const href = item.href.startsWith('#') 
+              ? item.href 
+              : formatPath(item.href, locale);
+            const label = getTranslation('nav', item.key, locale);
+            return (
+              <li role="none">
             <a 
-              href={item.href}
+                  href={href}
               class="text-secondary hover:text-accent transition-colors font-medium"
-              role="menuitem"
-              aria-label={item.label}
+                  role="menuitem"
+                  aria-label={label}
             >
-              {item.label}
+                  {label}
             </a>
           </li>
-        ))}
+            );
+          })}
       </ul>
+        <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
+      </div>
       
+      <div class="md:hidden flex items-center gap-4">
+        <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
       <!-- Mobile menu button -->
       <button 
-        class="md:hidden text-secondary hover:text-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
-        aria-label="Ouvrir le menu de navigation"
-        aria-expanded="false"
-        aria-controls="mobile-menu"
+          class="text-secondary hover:text-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
+          aria-label={openMenuLabel}
+          aria-expanded="false"
+          aria-controls="mobile-menu"
         id="mobile-menu-button"
+          data-open-label={openMenuLabel}
+          data-close-label={closeMenuLabel}
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
+      </div>
     </div>
   </div>
   
@@ -49,46 +77,122 @@ const navItems = [
   <div id="mobile-menu" class="hidden md:hidden border-t border-border-default bg-primary" role="menu" aria-labelledby="mobile-menu-button">
     <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <ul class="flex flex-col gap-4" role="menubar">
-        {navItems.map((item) => (
-          <li role="none">
+        {navItems.map((item) => {
+          const href = item.href.startsWith('#') 
+            ? item.href 
+            : formatPath(item.href, locale);
+          const label = getTranslation('nav', item.key, locale);
+          return (
+            <li role="none">
             <a 
-              href={item.href}
-              class="text-secondary hover:text-accent transition-colors font-medium block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
-              role="menuitem"
-              aria-label={item.label}
-            >
-              {item.label}
+                href={href}
+                class="text-secondary hover:text-accent transition-colors font-medium block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
+                role="menuitem"
+                aria-label={label}
+              >
+                {label}
             </a>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   </div>
 </nav>
 
 <script>
-  // Toggle mobile menu
+  // Mobile menu management
   const menuButton = document.getElementById('mobile-menu-button');
   const mobileMenu = document.getElementById('mobile-menu');
   
   if (menuButton && mobileMenu) {
-    menuButton.addEventListener('click', () => {
-      const isHidden = mobileMenu.classList.contains('hidden');
-      mobileMenu.classList.toggle('hidden');
+    // Helper function to check if menu is open
+    const isMenuOpen = () => !mobileMenu.classList.contains('hidden');
+    
+    // Get labels from data attributes
+    const openLabel = menuButton.getAttribute('data-open-label') || 'Ouvrir le menu de navigation';
+    const closeLabel = menuButton.getAttribute('data-close-label') || 'Fermer le menu de navigation';
+    
+    // Helper function to close menu
+    const closeMenu = () => {
+      mobileMenu.classList.add('hidden');
+      menuButton.setAttribute('aria-expanded', 'false');
+      menuButton.setAttribute('aria-label', openLabel);
       
-      // Update aria-expanded
-      menuButton.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-      menuButton.setAttribute('aria-label', isHidden ? 'Fermer le menu de navigation' : 'Ouvrir le menu de navigation');
-      
-      // Toggle icon (hamburger / close)
+      // Update icon to hamburger
       const svg = menuButton.querySelector('svg');
       if (svg) {
-        if (mobileMenu.classList.contains('hidden')) {
           svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />';
-        } else {
-          svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
-        }
       }
+      
+      // Unlock body scroll
+      document.body.style.overflow = '';
+    };
+    
+    // Helper function to open menu
+    const openMenu = () => {
+      mobileMenu.classList.remove('hidden');
+      menuButton.setAttribute('aria-expanded', 'true');
+      menuButton.setAttribute('aria-label', closeLabel);
+      
+      // Update icon to close
+      const svg = menuButton.querySelector('svg');
+      if (svg) {
+        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+      }
+      
+      // Lock body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+    };
+    
+    // Toggle mobile menu on button click
+    menuButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isMenuOpen()) {
+        closeMenu();
+        } else {
+        openMenu();
+      }
+    });
+    
+    // Close menu when clicking outside (click away)
+    document.addEventListener('click', (e) => {
+      if (isMenuOpen() && 
+          !mobileMenu.contains(e.target as Node) && 
+          !menuButton.contains(e.target as Node)) {
+        closeMenu();
+      }
+    });
+    
+    // Close menu on scroll
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    window.addEventListener('scroll', () => {
+      if (isMenuOpen()) {
+        // Debounce scroll events
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout);
+        }
+        scrollTimeout = setTimeout(() => {
+          closeMenu();
+        }, 100);
+      }
+    }, { passive: true });
+    
+    // Close menu with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isMenuOpen()) {
+        closeMenu();
+        // Return focus to menu button for accessibility
+        menuButton.focus();
+      }
+    });
+    
+    // Close menu when clicking on a menu link (navigation)
+    const menuLinks = mobileMenu.querySelectorAll('a');
+    menuLinks.forEach((link) => {
+      link.addEventListener('click', () => {
+        closeMenu();
+      });
     });
   }
 </script>

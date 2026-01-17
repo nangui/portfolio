@@ -2,17 +2,18 @@
 import Button from '@components/ui/Button.astro';
 import HeroImage from '@components/ui/HeroImage.astro';
 import TextDistortion from '@components/ui/TextDistortion.astro';
-import SectionTranslator from '@components/i18n/SectionTranslator.astro';
-import { getSectionLocale } from '@utils/i18n/useSectionI18n';
-import { getTranslation } from '@utils/i18n/translations';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+import { formatPath } from '@i18n/utils';
 
-const sectionId = 'hero';
-const currentLocale = getSectionLocale(sectionId, 'fr');
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
 ---
 
 <section id="hero" class="min-h-[80vh] flex items-center justify-center bg-primary py-12 md:py-16 relative">
-  <SectionTranslator sectionId={sectionId} position="top-right" />
-  
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
       <!-- Image avec effet 3D -->
@@ -23,29 +24,100 @@ const currentLocale = getSectionLocale(sectionId, 'fr');
       <!-- Contenu texte -->
       <div class="flex-1 text-center lg:text-left order-1 lg:order-2">
         <TextDistortion>
-          <h1 class="font-heading font-semibold text-5xl md:text-6xl lg:text-7xl mb-6 text-primary" data-i18n-key="name">
-            {getTranslation(sectionId, 'name', currentLocale)}
-          </h1>
+    <h1 class="font-heading font-semibold text-5xl md:text-6xl lg:text-7xl mb-6 text-primary">
+            {getTranslation('hero', 'name', locale)}
+    </h1>
         </TextDistortion>
         <TextDistortion>
-          <p class="font-heading font-medium text-2xl md:text-3xl mb-4 text-secondary" data-i18n-key="title">
-            {getTranslation(sectionId, 'title', currentLocale)}
+          <p class="font-heading font-medium text-2xl md:text-3xl mb-4 text-secondary hero-title" data-title={getTranslation('hero', 'title', locale)}>
+            {getTranslation('hero', 'title', locale)}
           </p>
         </TextDistortion>
         <TextDistortion>
-          <p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto lg:mx-0 mb-8" data-i18n-key="tagline">
-            {getTranslation(sectionId, 'tagline', currentLocale)}
-          </p>
+          <p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto lg:mx-0 mb-8">
+            {getTranslation('hero', 'tagline', locale)}
+    </p>
         </TextDistortion>
         <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-          <Button href="#projects" variant="primary" size="lg">
-            <span data-i18n-key="ctaProjects">{getTranslation(sectionId, 'ctaProjects', currentLocale)}</span>
-          </Button>
-          <Button href="#contact" variant="secondary" size="lg">
-            <span data-i18n-key="ctaContact">{getTranslation(sectionId, 'ctaContact', currentLocale)}</span>
-          </Button>
+      <Button href="#projects" variant="primary" size="lg">
+            {getTranslation('hero', 'ctaProjects', locale)}
+      </Button>
+      <Button href="#contact" variant="secondary" size="lg">
+            {getTranslation('hero', 'ctaContact', locale)}
+      </Button>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+  // Force line break before "Tech Lead" on mobile
+  if (typeof document !== 'undefined') {
+    const addMobileLineBreak = () => {
+      const heroTitle = document.querySelector('.hero-title');
+      if (!heroTitle) return;
+
+      // Wait for TextDistortion to finish processing
+      const checkAndProcess = () => {
+        const wrapper = heroTitle.closest('[data-text-distortion]');
+        if (!wrapper) return;
+
+        // Check if TextDistortion has created character spans
+        const charSpans = wrapper.querySelectorAll('span[data-char]');
+        if (charSpans.length === 0) {
+          // TextDistortion hasn't processed yet, try again
+          setTimeout(checkAndProcess, 100);
+          return;
+        }
+
+        // Find where " / Tech Lead" starts by looking for the "/" character
+        let foundSlash = false;
+        let foundBreak = false;
+
+        charSpans.forEach((span) => {
+          if (foundBreak) return;
+          
+          const spanText = span.textContent || '';
+          
+          // Look for the "/" character
+          if (!foundSlash && spanText.includes('/')) {
+            foundSlash = true;
+            // Insert <br> before the "/" on mobile
+            if (window.innerWidth < 768) {
+              const existingBr = span.parentElement?.querySelector('br.hero-mobile-break');
+              if (!existingBr) {
+                const br = document.createElement('br');
+                br.className = 'hero-mobile-break md:hidden';
+                span.parentElement?.insertBefore(br, span);
+                foundBreak = true;
+              }
+            }
+          }
+        });
+      };
+
+      // Start checking after a short delay to let TextDistortion initialize
+      setTimeout(checkAndProcess, 200);
+    };
+
+    // Run on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', addMobileLineBreak);
+    } else {
+      addMobileLineBreak();
+    }
+
+    // Also run on Astro page navigation
+    document.addEventListener('astro:page-load', addMobileLineBreak);
+  }
+</script>
+
+<style>
+  /* Ensure line break is visible on mobile */
+  @media (max-width: 767px) {
+    .hero-mobile-break {
+      display: block;
+    }
+  }
+</style>

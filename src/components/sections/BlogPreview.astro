@@ -1,6 +1,15 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Button from '@components/ui/Button.astro';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+import { formatPath } from '@i18n/utils';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
 
 const allPosts = (await getCollection('blog').catch(() => [])) as CollectionEntry<'blog'>[];
 const sortedPosts = allPosts
@@ -22,10 +31,10 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between mb-8">
       <h2 class="font-heading font-semibold text-3xl md:text-4xl text-primary">
-        Blog
+        {getTranslation('blog', 'title', locale)}
       </h2>
-      <Button href="/blog" variant="ghost">
-        Voir tout →
+      <Button href={formatPath('/blog', locale)} variant="ghost">
+        {getTranslation('blog', 'viewAll', locale)}
       </Button>
     </div>
     
@@ -33,7 +42,7 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
       <div class="space-y-4">
         {sortedPosts.map((post: CollectionEntry<'blog'>) => (
             <a 
-              href={`/blog/${getSlug(post)}`}
+              href={formatPath(`/blog/${getSlug(post)}`, locale)}
               class="block p-4 bg-secondary border border-border-default rounded-lg hover:border-border-light transition-colors"
             >
               <h3 class="font-heading font-semibold text-xl mb-2 text-primary">
@@ -44,7 +53,7 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
       </div>
     ) : (
       <p class="text-secondary text-center py-12">
-        Les articles de blog seront affichés ici une fois ajoutés dans le dossier content/blog.
+        {getTranslation('blog', 'noPosts', locale)}
       </p>
     )}
   </div>

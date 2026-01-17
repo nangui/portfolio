@@ -1,12 +1,16 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { formatPath } from '@i18n/utils';
 
 interface Props {
   entry: CollectionEntry<'blog'>;
+  locale?: Locale;
 }
 
-const { entry } = Astro.props;
+const { entry, locale = defaultLocale } = Astro.props;
 const { title, description, pubDate, tags } = entry.data;
+
 // Get slug from id (filename without extension) or slug property
 // With glob loader, id contains the file path relative to base
 const getSlug = (entry: CollectionEntry<'blog'>): string => {
@@ -16,11 +20,14 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
   return filename.replace(/\.(md|mdx)$/, '');
 };
 const slug = getSlug(entry);
+
+// Format date based on locale
+const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
 ---
 
 <article class="border-b border-border-default pb-8 last:border-0">
   <a 
-    href={`/blog/${slug}`}
+    href={formatPath(`/blog/${slug}`, locale)}
     class="block hover:opacity-80 transition-opacity"
   >
     <h2 class="font-heading font-semibold text-2xl mb-2 hover:text-accent text-primary">
@@ -33,9 +40,9 @@ const slug = getSlug(entry);
       </p>
     )}
     
-    <div class="flex items-center gap-4 text-sm text-secondary">
-      <time datetime={pubDate.toISOString()}>
-        {pubDate.toLocaleDateString('fr-FR', { 
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 text-sm text-secondary">
+      <time datetime={pubDate.toISOString()} class="shrink-0">
+        {pubDate.toLocaleDateString(dateLocale, { 
           year: 'numeric', 
           month: 'long', 
           day: 'numeric' 
@@ -43,9 +50,9 @@ const slug = getSlug(entry);
       </time>
       
       {tags && tags.length > 0 && (
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
           {tags.map((tag: string) => (
-            <span class="px-2 py-1 bg-secondary border border-border-default rounded text-xs">
+            <span class="px-2 py-1 bg-secondary/50 border border-border-default rounded-full text-xs whitespace-nowrap">
               {tag}
             </span>
           ))}

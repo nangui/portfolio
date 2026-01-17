@@ -1,4 +1,13 @@
 ---
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
+
 const skillsByDomain: Record<string, { label: string; icon: string }[]> = {
   frontend: [
     {
@@ -178,7 +187,7 @@ const skillsByDomain: Record<string, { label: string; icon: string }[]> = {
     <h2
       class="font-heading font-semibold text-3xl md:text-4xl mb-12 text-primary"
     >
-      Stack & Expertises
+      {getTranslation('skills', 'heading', locale)}
     </h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

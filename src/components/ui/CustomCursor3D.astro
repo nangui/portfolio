@@ -98,8 +98,13 @@
       targetPosition.copy(camera.position).add(dir.multiplyScalar(distance));
 
       // Check if hovering over interactive element
-      const target = event.target as HTMLElement;
-      isHovering = target.closest('a, button, [role="button"], input, textarea, select') !== null;
+      const target = event.target;
+      // closest() only works on Element, not on Text nodes or other types
+      if (target instanceof Element) {
+        isHovering = target.closest('a, button, [role="button"], input, textarea, select') !== null;
+      } else {
+        isHovering = false;
+      }
     };
 
     window.addEventListener('mousemove', updateMousePosition);

@@ -1,12 +1,15 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { formatPath } from '@i18n/utils';
 
 interface Props {
   previous?: CollectionEntry<'blog'> | null;
   next?: CollectionEntry<'blog'> | null;
+  locale?: Locale;
 }
 
-const { previous, next } = Astro.props;
+const { previous, next, locale = defaultLocale } = Astro.props;
 
 // Helper function to get slug from entry
 const getSlug = (entry: CollectionEntry<'blog'>): string => {
@@ -14,6 +17,9 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
   const filename = entry.id.split('/').pop() || entry.id;
   return filename.replace(/\.(md|mdx)$/, '');
 };
+
+const prevLabel = locale === 'fr' ? 'Article précédent' : 'Previous Article';
+const nextLabel = locale === 'fr' ? 'Article suivant' : 'Next Article';
 ---
 
 {(previous || next) && (
@@ -22,14 +28,14 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
       <!-- Article précédent -->
       {previous ? (
         <a 
-          href={`/blog/${getSlug(previous)}`}
+          href={formatPath(`/blog/${getSlug(previous)}`, locale)}
           class="group flex flex-col gap-2 p-4 bg-secondary/30 border border-border-default rounded-lg hover:bg-secondary hover:border-accent transition-all"
         >
           <div class="flex items-center gap-2 text-xs text-secondary/60 uppercase tracking-wide">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            <span>Article précédent</span>
+            <span>{prevLabel}</span>
           </div>
           <h3 class="font-heading font-semibold text-lg text-primary group-hover:text-accent transition-colors line-clamp-2">
             {previous.data.title}
@@ -47,11 +53,11 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
       <!-- Article suivant -->
       {next ? (
         <a 
-          href={`/blog/${getSlug(next)}`}
+          href={formatPath(`/blog/${getSlug(next)}`, locale)}
           class="group flex flex-col gap-2 p-4 bg-secondary/30 border border-border-default rounded-lg hover:bg-secondary hover:border-accent transition-all text-right md:text-left"
         >
           <div class="flex items-center gap-2 text-xs text-secondary/60 uppercase tracking-wide justify-end md:justify-start">
-            <span>Article suivant</span>
+            <span>{nextLabel}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>

@@ -4,19 +4,33 @@ import Nav from '@components/ui/Nav.astro';
 import Footer from '@components/ui/Footer.astro';
 import Loader from '@components/ui/Loader.astro';
 import CustomCursor3D from '@components/ui/CustomCursor3D.astro';
+import { defaultLocale, type Locale } from '@i18n/config';
+import { getTranslation } from '@i18n/translations';
+import { getAlternateUrls } from '@i18n/utils';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
+  locale?: Locale;
 }
 
-const { title, description = "Portfolio d'Adonai Nangui - Senior Frontend Engineer & Tech Lead", ogImage } = Astro.props;
+const { 
+  title, 
+  description = "Portfolio d'Adonai Nangui - Senior Frontend Engineer & Tech Lead", 
+  ogImage,
+  locale = defaultLocale
+} = Astro.props;
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonainangui.dev');
+const alternateUrls = getAlternateUrls(Astro.url.pathname, Astro.site);
+const htmlLang = locale === 'fr' ? 'fr' : 'en';
+const ogLocale = locale === 'fr' ? 'fr_FR' : 'en_US';
+const skipToContent = getTranslation('common', 'skipToContent', locale);
 ---
 
 <!doctype html>
-<html lang="fr" class="no-js">
+<html lang={htmlLang} class="no-js">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -35,7 +49,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonaina
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:site_name" content="Adonai Nangui - Portfolio" />
-    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale" content={ogLocale} />
+    {alternateUrls.map(({ lang, url }) => (
+      <link rel="alternate" hreflang={lang} href={url} />
+    ))}
     {ogImage ? (
       <>
         <meta property="og:image" content={ogImage} />
@@ -105,14 +122,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonaina
     <a 
       href="#main-content" 
       class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded focus:shadow-lg"
-      aria-label="Aller au contenu principal"
+      aria-label={skipToContent}
     >
-      Aller au contenu principal
+      {skipToContent}
     </a>
-    <Nav />
+    <Nav locale={locale} />
     <main id="main-content" role="main">
       <slot />
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </body>
 </html>

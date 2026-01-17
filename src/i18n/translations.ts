@@ -1,9 +1,9 @@
 /**
- * Translations for all sections
- * Each section has its own translations object
+ * Global translations for the entire site
+ * All translations organized by section
  */
 
-export type Locale = 'fr' | 'en';
+import type { Locale } from './config';
 
 export interface SectionTranslations {
   [key: string]: string | string[];
@@ -16,6 +16,45 @@ export interface Translations {
 }
 
 export const translations: Translations = {
+  // Navigation
+  nav: {
+    fr: {
+      home: 'Accueil',
+      projects: 'Projets',
+      experience: 'Expérience',
+      blog: 'Blog',
+      contact: 'Contact',
+      openMenu: 'Ouvrir le menu de navigation',
+      closeMenu: 'Fermer le menu de navigation',
+    },
+    en: {
+      home: 'Home',
+      projects: 'Projects',
+      experience: 'Experience',
+      blog: 'Blog',
+      contact: 'Contact',
+      openMenu: 'Open navigation menu',
+      closeMenu: 'Close navigation menu',
+    },
+  },
+
+  // Footer
+  footer: {
+    fr: {
+      copyright: 'Tous droits réservés',
+      linkedin: 'LinkedIn',
+      github: 'GitHub',
+      cv: 'CV',
+    },
+    en: {
+      copyright: 'All rights reserved',
+      linkedin: 'LinkedIn',
+      github: 'GitHub',
+      cv: 'CV',
+    },
+  },
+
+  // Hero section
   hero: {
     fr: {
       name: 'Adonai Nangui',
@@ -32,6 +71,8 @@ export const translations: Translations = {
       ctaContact: 'Contact me',
     },
   },
+
+  // About section
   about: {
     fr: {
       heading: 'À propos',
@@ -44,27 +85,40 @@ export const translations: Translations = {
       paragraph2: 'I have led development teams, driven structuring architectural choices, and actively participated in business decisions, with a pragmatic approach focused on business impact. I pay particular attention to code quality, performance, long-term maintainability, and alignment between technical challenges and product goals.',
     },
   },
+
+  // Skills section
   skills: {
     fr: {
-      heading: 'Compétences',
-      // Les compétences techniques seront traduites dans le composant
+      heading: 'Stack & Expertises',
     },
     en: {
-      heading: 'Skills',
+      heading: 'Stack & Expertise',
     },
   },
+
+  // Projects section
   projects: {
     fr: {
       heading: 'Projets Sélectionnés',
       learnMore: 'En savoir plus →',
       noProjects: 'Les projets seront affichés ici une fois ajoutés dans le dossier content/projects.',
+      viewDemo: 'Voir la démo',
+      viewSource: 'Code source',
+      role: 'Rôle',
+      period: 'Période',
     },
     en: {
       heading: 'Featured Projects',
       learnMore: 'Learn more →',
       noProjects: 'Projects will be displayed here once added to the content/projects folder.',
+      viewDemo: 'View demo',
+      viewSource: 'Source code',
+      role: 'Role',
+      period: 'Period',
     },
   },
+
+  // Experience section
   experience: {
     fr: {
       heading: 'Expérience Professionnelle',
@@ -75,6 +129,36 @@ export const translations: Translations = {
       scrollHint: 'Scroll',
     },
   },
+
+  // Blog section
+  blog: {
+    fr: {
+      title: 'Blog Technique',
+      description: 'Retours d\'expérience et connaissances sur le développement frontend, l\'architecture et la productivité développeur.',
+      noPosts: 'Aucun article pour le moment.',
+      viewAll: 'Voir tout →',
+      home: 'Accueil',
+      readingTime: 'min de lecture',
+      tags: 'Tags',
+      share: 'Partager',
+      previous: 'Article précédent',
+      next: 'Article suivant',
+    },
+    en: {
+      title: 'Technical Blog',
+      description: 'Experience sharing and knowledge about frontend development, architecture and developer productivity.',
+      noPosts: 'No articles yet.',
+      viewAll: 'View all →',
+      home: 'Home',
+      readingTime: 'min read',
+      tags: 'Tags',
+      share: 'Share',
+      previous: 'Previous article',
+      next: 'Next article',
+    },
+  },
+
+  // Contact section
   contact: {
     fr: {
       heading: 'Travaillons ensemble',
@@ -101,6 +185,20 @@ export const translations: Translations = {
       githubDescription: 'Explore my projects',
       cvLabel: 'CV',
       cvDescription: 'Download my CV',
+    },
+  },
+
+  // Common/Shared translations
+  common: {
+    fr: {
+      skipToContent: 'Aller au contenu principal',
+      loading: 'Chargement...',
+      error: 'Une erreur est survenue',
+    },
+    en: {
+      skipToContent: 'Skip to main content',
+      loading: 'Loading...',
+      error: 'An error occurred',
     },
   },
 };
@@ -136,4 +234,26 @@ export function getTranslation(
   
   console.warn(`Translation key "${key}" not found in section "${sectionId}" for locale "${locale}"`);
   return key;
+}
+
+/**
+ * Get all translations for a section
+ */
+export function getSectionTranslations(
+  sectionId: string,
+  locale: Locale = 'fr'
+): SectionTranslations {
+  const section = translations[sectionId];
+  if (!section) {
+    console.warn(`Section "${sectionId}" not found in translations`);
+    return {};
+  }
+  
+  const translation = section[locale];
+  if (!translation) {
+    console.warn(`Locale "${locale}" not found for section "${sectionId}"`);
+    return {};
+  }
+  
+  return translation;
 }
