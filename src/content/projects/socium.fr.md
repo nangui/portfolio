@@ -47,7 +47,7 @@ Portail moderne de recrutement avec architecture découplée, optimisé pour le 
 ### Backend
 - **NestJS** : Framework Node.js pour le développement d'APIs robustes et scalables
 - **Koa.js** : Framework léger pour des services spécifiques et cas d'usage particuliers
-- **PostgreSQL** : Base de données relationnelle pour la gestion des données
+- **MongoDB** : Base de données relationnelle pour la gestion des données
 
 ### Frontend
 - **Angular** : Framework pour le développement d'interfaces utilisateur performantes

@@ -47,7 +47,7 @@ Modern recruitment portal with decoupled architecture, optimized for SEO and off
 ### Backend
 - **NestJS**: Node.js framework for robust and scalable API development
 - **Koa.js**: Lightweight framework for specific services and particular use cases
-- **PostgreSQL**: Relational database for data management
+- **MongoDB**: Relational database for data management
 
 ### Frontend
 - **Angular**: Framework for high-performance user interface development
