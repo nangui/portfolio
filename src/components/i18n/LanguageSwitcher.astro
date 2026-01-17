@@ -15,11 +15,12 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
 
 <div class="language-switcher relative" data-language-switcher>
   <button
-    class="lang-toggle-button group flex items-center gap-2 px-3 py-2 bg-secondary/80 backdrop-blur-sm border border-border-default rounded-lg hover:border-accent hover:bg-secondary transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    class="lang-toggle-button group flex items-center gap-2 px-3 py-2 bg-secondary/80 backdrop-blur-sm border border-border-default rounded-lg hover:border-accent hover:bg-secondary transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent relative z-50 touch-manipulation"
     aria-label="Changer la langue"
     aria-expanded="false"
     aria-haspopup="true"
     data-lang-toggle
+    type="button"
   >
     <svg class="w-4 h-4 text-secondary group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
@@ -33,7 +34,7 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
   </button>
   
   <div 
-    class="lang-menu hidden absolute top-full mt-2 right-0 bg-secondary border border-border-default rounded-lg shadow-lg overflow-hidden min-w-[140px] z-50"
+    class="lang-menu hidden absolute top-full mt-2 right-0 bg-secondary border border-border-default rounded-lg shadow-lg overflow-hidden min-w-[140px] z-[60]"
     data-lang-menu
     role="menu"
   >
@@ -58,65 +59,348 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
 </div>
 
 <script>
+  // Language switcher management with cleanup to prevent duplicate listeners
+  let langSwitcherHandlers: { cleanup: () => void } | null = null;
+
   const initLanguageSwitcher = () => {
-    const switcher = document.querySelector('[data-language-switcher]');
-    if (!switcher) return;
+    // Cleanup existing handlers if any
+    if (langSwitcherHandlers) {
+      langSwitcherHandlers.cleanup();
+      langSwitcherHandlers = null;
+    }
 
-    const toggleButton = switcher.querySelector('[data-lang-toggle]') as HTMLElement;
-    const langMenu = switcher.querySelector('[data-lang-menu]') as HTMLElement;
-
-    if (!toggleButton || !langMenu) return;
-
-    // Toggle menu
-    toggleButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isHidden = langMenu.classList.contains('hidden');
-      langMenu.classList.toggle('hidden');
-      toggleButton.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-    });
-
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (langMenu && toggleButton && 
-          !langMenu.contains(e.target as Node) && 
-          !toggleButton.contains(e.target as Node)) {
-        langMenu.classList.add('hidden');
-        toggleButton.setAttribute('aria-expanded', 'false');
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      // Find ALL language switchers (there may be multiple instances: desktop + mobile)
+      const switchers = document.querySelectorAll('[data-language-switcher]');
+      
+      if (switchers.length === 0) {
+        console.warn('LanguageSwitcher: switcher elements not found');
+        return;
       }
-    });
 
-    // Close menu with Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !langMenu.classList.contains('hidden')) {
-        langMenu.classList.add('hidden');
-        toggleButton.setAttribute('aria-expanded', 'false');
-        toggleButton.focus();
-      }
+      console.log(`LanguageSwitcher: Found ${switchers.length} switcher(s), initializing...`);
+
+      // Store all handlers for cleanup
+      const allHandlers: Array<() => void> = [];
+
+      // Initialize each switcher instance
+      switchers.forEach((switcher) => {
+        const toggleButton = switcher.querySelector('[data-lang-toggle]') as HTMLElement;
+        const langMenu = switcher.querySelector('[data-lang-menu]') as HTMLElement;
+
+        if (!toggleButton || !langMenu) {
+          console.warn('LanguageSwitcher: toggleButton or langMenu not found in one instance');
+          return;
+        }
+
+        // Event handlers for this specific instance
+        let lastTouchTime = 0;
+        let touchStarted = false;
+        
+        const toggleMenu = () => {
+          const isHidden = langMenu.classList.contains('hidden');
+          langMenu.classList.toggle('hidden');
+          toggleButton.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+        };
+        
+        const handleClick: EventListener = (e: Event) => {
+          console.log('LanguageSwitcher: click event', e.type);
+          // Ignore click if it came from a touch (within 500ms)
+          const timeSinceTouch = Date.now() - lastTouchTime;
+          if (timeSinceTouch < 500) {
+            console.log('LanguageSwitcher: ignoring click (came from touch)');
+            return;
+          }
+          
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          toggleMenu();
+        };
+        
+        const handleTouchStart: EventListener = (e: Event) => {
+          console.log('LanguageSwitcher: touchstart event');
+          touchStarted = true;
+          lastTouchTime = Date.now();
+          e.stopPropagation();
+        };
+        
+        const handleTouchEnd: EventListener = (e: Event) => {
+          console.log('LanguageSwitcher: touchend event');
+          if (!touchStarted) return;
+          
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          toggleMenu();
+          
+          // Reset touch flag after a delay
+          touchStarted = false;
+          lastTouchTime = Date.now();
+        };
+
+        const handleDocumentClick = (e: Event) => {
+          const target = e.target as Node;
+          // Don't close menu if clicking on a link inside the menu
+          if (target instanceof HTMLAnchorElement && langMenu.contains(target)) {
+            return;
+          }
+          // Only handle clicks for this specific switcher instance
+          if (langMenu && toggleButton && 
+              !langMenu.contains(target) && 
+              !toggleButton.contains(target)) {
+            langMenu.classList.add('hidden');
+            toggleButton.setAttribute('aria-expanded', 'false');
+          }
+        };
+
+        const handleKeydown = (e: KeyboardEvent) => {
+          if (e.key === 'Escape' && !langMenu.classList.contains('hidden')) {
+            langMenu.classList.add('hidden');
+            toggleButton.setAttribute('aria-expanded', 'false');
+            toggleButton.focus();
+          }
+        };
+
+        // Close menu when clicking on a language option
+        // Don't prevent default - let the link navigate naturally
+        const langOptions = langMenu.querySelectorAll('[data-locale]');
+        let lastOptionTouchTime = 0;
+        
+        const handleOptionClick = (e: Event) => {
+          console.log('LanguageSwitcher: option clicked', e.type);
+          const timeSinceTouch = Date.now() - lastOptionTouchTime;
+          
+          // If click came from a touch (within 500ms), ignore it - touchend already handled it
+          if (timeSinceTouch < 500) {
+            console.log('LanguageSwitcher: ignoring click (came from touch)');
+            return;
+          }
+          
+          // Close the menu immediately
+          langMenu.classList.add('hidden');
+          toggleButton.setAttribute('aria-expanded', 'false');
+          // Don't prevent default or stop propagation - let the link navigate
+        };
+        
+        const handleOptionTouchEnd: EventListener = (e: Event) => {
+          console.log('LanguageSwitcher: option touchend');
+          lastOptionTouchTime = Date.now();
+          
+          // Find the link element (could be the target or a parent)
+          let link = e.target as HTMLAnchorElement;
+          if (!link || link.tagName !== 'A') {
+            link = (e.target as HTMLElement).closest('a[href]') as HTMLAnchorElement;
+          }
+          
+          if (!link || !link.href) {
+            console.warn('LanguageSwitcher: no link found in touchend');
+            return;
+          }
+          
+          // Prevent the default click that would follow
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Close menu immediately on touch
+          langMenu.classList.add('hidden');
+          toggleButton.setAttribute('aria-expanded', 'false');
+          
+          // Navigate manually for mobile devices
+          console.log('LanguageSwitcher: navigating to', link.href);
+          // Use a small delay to ensure menu is closed, then navigate
+          setTimeout(() => {
+            window.location.href = link.href;
+          }, 50);
+        };
+        
+        langOptions.forEach((option) => {
+          // Use click event with passive to ensure navigation works
+          option.addEventListener('click', handleOptionClick, { passive: true, capture: false });
+          // Also listen to touchend for immediate feedback on mobile
+          // Use passive: false to allow preventDefault
+          option.addEventListener('touchend', handleOptionTouchEnd, { passive: false });
+          // Store for cleanup
+          if (!(option as any).__touchendListeners) {
+            (option as any).__touchendListeners = [];
+          }
+          (option as any).__touchendListeners.push(handleOptionTouchEnd);
+        });
+
+        // Attach event listeners - support both click and touch events for mobile
+        // Use capture phase to ensure our handlers run first
+        toggleButton.addEventListener('click', handleClick, { capture: true });
+        // For mobile, handle touch events directly
+        toggleButton.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+        toggleButton.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
+        
+        // Store cleanup for this instance
+          allHandlers.push(() => {
+          toggleButton.removeEventListener('click', handleClick);
+          toggleButton.removeEventListener('touchstart', handleTouchStart);
+          toggleButton.removeEventListener('touchend', handleTouchEnd);
+          langOptions.forEach((option) => {
+            option.removeEventListener('click', handleOptionClick);
+            // Remove touchend listeners too
+            const touchendListeners = (option as any).__touchendListeners;
+            if (touchendListeners) {
+              touchendListeners.forEach((listener: any) => {
+                option.removeEventListener('touchend', listener);
+              });
+            }
+          });
+          langMenu.classList.add('hidden');
+          toggleButton.setAttribute('aria-expanded', 'false');
+        });
+      });
+
+      // Shared document-level handlers (only need one set)
+      const handleDocumentClick = (e: Event) => {
+        const target = e.target as Node;
+        // Don't close menu if clicking on a link (let it navigate)
+        if (target instanceof HTMLAnchorElement) {
+          return;
+        }
+        
+        // Close all open menus if clicking outside
+        switchers.forEach((switcher) => {
+          const toggleButton = switcher.querySelector('[data-lang-toggle]') as HTMLElement;
+          const langMenu = switcher.querySelector('[data-lang-menu]') as HTMLElement;
+          
+          if (langMenu && toggleButton && 
+              !langMenu.contains(target) && 
+              !toggleButton.contains(target)) {
+            langMenu.classList.add('hidden');
+            toggleButton.setAttribute('aria-expanded', 'false');
+          }
+        });
+      };
+
+      const handleKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          switchers.forEach((switcher) => {
+            const toggleButton = switcher.querySelector('[data-lang-toggle]') as HTMLElement;
+            const langMenu = switcher.querySelector('[data-lang-menu]') as HTMLElement;
+            
+            if (langMenu && !langMenu.classList.contains('hidden')) {
+              langMenu.classList.add('hidden');
+              toggleButton.setAttribute('aria-expanded', 'false');
+              toggleButton.focus();
+            }
+          });
+        }
+      };
+
+      // Use a small delay for document click to allow link navigation first on iOS
+      let documentClickTimeout: ReturnType<typeof setTimeout> | null = null;
+      const handleDocumentClickDelayed = (e: Event) => {
+        const target = e.target as Node;
+        // If clicking on a link inside any menu, don't close menu - let it navigate
+        if (target instanceof HTMLAnchorElement) {
+          const linkInMenu = Array.from(switchers).some(switcher => {
+            const langMenu = switcher.querySelector('[data-lang-menu]') as HTMLElement;
+            return langMenu && langMenu.contains(target);
+          });
+          if (linkInMenu) {
+            console.log('LanguageSwitcher: link clicked, allowing navigation');
+            return;
+          }
+        }
+        
+        // Clear any pending timeout
+        if (documentClickTimeout) {
+          clearTimeout(documentClickTimeout);
+        }
+        // Small delay to allow link navigation on iOS
+        documentClickTimeout = setTimeout(() => {
+          // Call handleDocumentClick for each switcher instance
+          switchers.forEach((switcher) => {
+            const toggleButton = switcher.querySelector('[data-lang-toggle]') as HTMLElement;
+            const langMenu = switcher.querySelector('[data-lang-menu]') as HTMLElement;
+            const target = e.target as Node;
+            
+            if (langMenu && toggleButton && 
+                !langMenu.contains(target) && 
+                !toggleButton.contains(target)) {
+              langMenu.classList.add('hidden');
+              toggleButton.setAttribute('aria-expanded', 'false');
+            }
+          });
+        }, 200);
+      };
+      
+      document.addEventListener('click', handleDocumentClickDelayed, { capture: false });
+      document.addEventListener('touchend', handleDocumentClickDelayed, { passive: true, capture: false });
+      document.addEventListener('keydown', handleKeydown);
+
+      // Store cleanup function
+      langSwitcherHandlers = {
+        cleanup: () => {
+          // Cleanup all instance handlers
+          allHandlers.forEach((cleanup) => cleanup());
+          // Cleanup document handlers
+          if (documentClickTimeout) {
+            clearTimeout(documentClickTimeout);
+          }
+          document.removeEventListener('click', handleDocumentClickDelayed);
+          document.removeEventListener('touchend', handleDocumentClickDelayed);
+          document.removeEventListener('keydown', handleKeydown);
+        }
+      };
     });
   };
 
   // Initialize on page load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initLanguageSwitcher);
-  } else {
-    initLanguageSwitcher();
-  }
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initLanguageSwitcher);
+    } else {
+      initLanguageSwitcher();
+    }
 
-  // Reinitialize on page transitions (Astro)
-  document.addEventListener('astro:page-load', initLanguageSwitcher);
+    // Reinitialize on page transitions (Astro)
+    document.addEventListener('astro:page-load', initLanguageSwitcher);
+  }
 </script>
 
 <style>
   .language-switcher {
-    pointer-events: none;
+    position: relative;
   }
 
-  .language-switcher > * {
-    pointer-events: auto;
+  .lang-toggle-button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
   }
 
   .lang-menu {
     animation: fadeIn 0.2s ease-out;
+    touch-action: manipulation;
+  }
+
+  .lang-option {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    user-select: none;
+    touch-action: manipulation;
+    /* Ensure links are clickable on iOS */
+    pointer-events: auto;
+    -webkit-user-select: none;
+  }
+
+  /* Ensure menu is visible on mobile */
+  @media (max-width: 767px) {
+    .lang-menu {
+      right: 0;
+      left: auto;
+      min-width: 160px;
+    }
+    
+    .lang-toggle-button {
+      min-height: 44px; /* iOS recommended touch target size */
+    }
   }
 
   @keyframes fadeIn {

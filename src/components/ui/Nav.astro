@@ -1,5 +1,6 @@
 ---
 import LanguageSwitcher from '@components/i18n/LanguageSwitcher.astro';
+import ThemeToggle from '@components/ui/ThemeToggle.astro';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
 import { formatPath } from '@i18n/utils';
@@ -22,7 +23,7 @@ const openMenuLabel = getTranslation('nav', 'openMenu', locale);
 const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
 ---
 
-<nav class="sticky top-0 z-50 bg-primary/80 backdrop-blur-sm border-b border-border-default" role="navigation" aria-label="Navigation principale">
+<nav class="sticky top-0 z-40 bg-primary/80 backdrop-blur-sm border-b border-border-default" role="navigation" aria-label="Navigation principale">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
       <a href={formatPath('/', locale)} class="font-heading font-semibold text-xl text-primary hover:text-accent transition-colors" aria-label="Adonai Nangui - Retour à l'accueil">
@@ -50,25 +51,27 @@ const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
             );
           })}
       </ul>
+        <ThemeToggle />
         <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
       </div>
       
       <div class="md:hidden flex items-center gap-4">
+        <ThemeToggle />
         <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
-      <!-- Mobile menu button -->
-      <button 
+        <!-- Mobile menu button -->
+        <button 
           class="text-secondary hover:text-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
           aria-label={openMenuLabel}
           aria-expanded="false"
           aria-controls="mobile-menu"
-        id="mobile-menu-button"
+          id="mobile-menu-button"
           data-open-label={openMenuLabel}
           data-close-label={closeMenuLabel}
-      >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -101,11 +104,21 @@ const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
 </nav>
 
 <script>
-  // Mobile menu management
-  const menuButton = document.getElementById('mobile-menu-button');
-  const mobileMenu = document.getElementById('mobile-menu');
-  
-  if (menuButton && mobileMenu) {
+  // Mobile menu management with cleanup to prevent duplicate listeners
+  let menuHandlers: { cleanup: () => void } | null = null;
+
+  const initMobileMenu = () => {
+    // Cleanup existing handlers if any
+    if (menuHandlers) {
+      menuHandlers.cleanup();
+      menuHandlers = null;
+    }
+
+    const menuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (!menuButton || !mobileMenu) return;
+
     // Helper function to check if menu is open
     const isMenuOpen = () => !mobileMenu.classList.contains('hidden');
     
@@ -145,30 +158,45 @@ const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
       document.body.style.overflow = 'hidden';
     };
     
-    // Toggle mobile menu on button click
-    menuButton.addEventListener('click', (e) => {
+    // Event handlers
+    const handleButtonClick = (e: Event) => {
       e.stopPropagation();
       if (isMenuOpen()) {
         closeMenu();
-        } else {
+      } else {
         openMenu();
       }
-    });
-    
-    // Close menu when clicking outside (click away)
-    document.addEventListener('click', (e) => {
-      if (isMenuOpen() && 
-          !mobileMenu.contains(e.target as Node) && 
-          !menuButton.contains(e.target as Node)) {
-        closeMenu();
-      }
-    });
-    
-    // Close menu on scroll
-    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
-    window.addEventListener('scroll', () => {
+    };
+
+    const handleDocumentClick = (e: Event) => {
+      // Early return if event was stopped
+      if (e.defaultPrevented) return;
+      
       if (isMenuOpen()) {
-        // Debounce scroll events
+        const target = e.target as Node;
+        // Don't close menu if clicking on ThemeToggle, LanguageSwitcher, or their children
+        const themeToggle = document.getElementById('theme-toggle');
+        const languageSwitcher = document.querySelector('[data-language-switcher]');
+        
+        const isClickOnThemeToggle = themeToggle && (
+          themeToggle.contains(target) || themeToggle === target
+        );
+        const isClickOnLanguageSwitcher = languageSwitcher && (
+          languageSwitcher.contains(target) || languageSwitcher === target
+        );
+        
+        if (!mobileMenu.contains(target) && 
+            !menuButton.contains(target) &&
+            !isClickOnThemeToggle &&
+            !isClickOnLanguageSwitcher) {
+          closeMenu();
+        }
+      }
+    };
+
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+    const handleScroll = () => {
+      if (isMenuOpen()) {
         if (scrollTimeout) {
           clearTimeout(scrollTimeout);
         }
@@ -176,23 +204,57 @@ const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
           closeMenu();
         }, 100);
       }
-    }, { passive: true });
-    
-    // Close menu with Escape key
-    document.addEventListener('keydown', (e) => {
+    };
+
+    const handleKeydown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isMenuOpen()) {
         closeMenu();
-        // Return focus to menu button for accessibility
         menuButton.focus();
       }
-    });
+    };
+
+    const handleLinkClick = () => {
+      closeMenu();
+    };
+    
+    // Attach event listeners
+    // Use capture: false to ensure button handlers run first
+    menuButton.addEventListener('click', handleButtonClick, { capture: false });
+    document.addEventListener('click', handleDocumentClick, { capture: false });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('keydown', handleKeydown);
     
     // Close menu when clicking on a menu link (navigation)
     const menuLinks = mobileMenu.querySelectorAll('a');
     menuLinks.forEach((link) => {
-      link.addEventListener('click', () => {
-        closeMenu();
-      });
+      link.addEventListener('click', handleLinkClick);
     });
+
+    // Store cleanup function
+    menuHandlers = {
+      cleanup: () => {
+        menuButton.removeEventListener('click', handleButtonClick);
+        document.removeEventListener('click', handleDocumentClick);
+        window.removeEventListener('scroll', handleScroll);
+        document.removeEventListener('keydown', handleKeydown);
+        menuLinks.forEach((link) => {
+          link.removeEventListener('click', handleLinkClick);
+        });
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout);
+        }
+        closeMenu(); // Ensure menu is closed
+      }
+    };
+  };
+
+  // Initialize on load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+  } else {
+    initMobileMenu();
   }
+
+  // Reinitialize on Astro page transitions
+  document.addEventListener('astro:page-load', initMobileMenu);
 </script>

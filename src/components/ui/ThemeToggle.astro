@@ -1,0 +1,179 @@
+---
+---
+
+<button
+  id="theme-toggle"
+  class="theme-toggle flex items-center justify-center w-10 h-10 rounded-lg text-secondary hover:text-accent hover:bg-secondary/50 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent relative z-50 touch-manipulation"
+  aria-label="Toggle theme"
+  type="button"
+  data-theme-toggle
+>
+  <!-- Sun icon (light mode) -->
+  <svg class="w-5 h-5 theme-icon-light hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+  <!-- Moon icon (dark mode) -->
+  <svg class="w-5 h-5 theme-icon-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+  </svg>
+</button>
+
+<script>
+  // Theme management with cleanup to prevent duplicate listeners
+  let themeHandlers: { cleanup: () => void } | null = null;
+
+  const initThemeToggle = () => {
+    // Cleanup existing handlers if any
+    if (themeHandlers) {
+      themeHandlers.cleanup();
+      themeHandlers = null;
+    }
+
+    if (typeof document === 'undefined') return;
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      // Find ALL theme toggle buttons (there may be multiple instances: desktop + mobile)
+      const themeToggles = document.querySelectorAll('#theme-toggle');
+      const html = document.documentElement;
+      
+      if (themeToggles.length === 0) {
+        console.warn('ThemeToggle: theme-toggle elements not found');
+        return;
+      }
+      
+      console.log(`ThemeToggle: Found ${themeToggles.length} button(s), initializing...`);
+      
+      // Get initial theme from localStorage or system preference
+      const getInitialTheme = () => {
+        const stored = localStorage.getItem('theme');
+        if (stored) {
+          return stored;
+        }
+        // Check system preference
+        if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+          return 'light';
+        }
+        return 'dark';
+      };
+      
+      // Apply theme
+      const applyTheme = (theme: string) => {
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Update icons in ALL theme toggle buttons
+        themeToggles.forEach((toggle) => {
+          const themeIconLight = toggle.querySelector('.theme-icon-light');
+          const themeIconDark = toggle.querySelector('.theme-icon-dark');
+          
+          if (themeIconLight && themeIconDark) {
+            if (theme === 'light') {
+              themeIconLight.classList.remove('hidden');
+              themeIconDark.classList.add('hidden');
+            } else {
+              themeIconLight.classList.add('hidden');
+              themeIconDark.classList.remove('hidden');
+            }
+          }
+        });
+      };
+      
+      // Initialize theme
+      const currentTheme = getInitialTheme();
+      applyTheme(currentTheme);
+      
+      // Event handlers
+      const handleToggle = (e: Event) => {
+        console.log('ThemeToggle: handleToggle called', e.type);
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation(); // Prevent other handlers from executing
+        const currentTheme = html.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+      };
+
+      const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+        // Only apply if user hasn't manually set a preference
+        if (!localStorage.getItem('theme')) {
+          applyTheme(e.matches ? 'light' : 'dark');
+        }
+      };
+      
+      // Attach event listeners to ALL theme toggle buttons
+      // Use capture phase to ensure our handlers run first
+      themeToggles.forEach((toggle) => {
+        toggle.addEventListener('click', handleToggle, { capture: true });
+        toggle.addEventListener('touchend', handleToggle, { passive: false, capture: true });
+      });
+      
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+      
+      // Store cleanup function
+      themeHandlers = {
+        cleanup: () => {
+          themeToggles.forEach((toggle) => {
+            toggle.removeEventListener('click', handleToggle);
+            toggle.removeEventListener('touchend', handleToggle);
+          });
+          mediaQuery.removeEventListener('change', handleSystemThemeChange);
+        }
+      };
+    });
+  };
+
+  // Initialize on page load
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initThemeToggle);
+    } else {
+      initThemeToggle();
+    }
+
+    // Re-apply theme on page navigation (for view transitions)
+    document.addEventListener('astro:page-load', () => {
+      const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      const html = document.documentElement;
+      
+      html.setAttribute('data-theme', savedTheme);
+      
+      // Update all theme toggle icons
+      const themeToggles = document.querySelectorAll('#theme-toggle');
+      themeToggles.forEach((toggle) => {
+        const themeIconLight = toggle.querySelector('.theme-icon-light');
+        const themeIconDark = toggle.querySelector('.theme-icon-dark');
+        
+        if (themeIconLight && themeIconDark) {
+          if (savedTheme === 'light') {
+            themeIconLight.classList.remove('hidden');
+            themeIconDark.classList.add('hidden');
+          } else {
+            themeIconLight.classList.add('hidden');
+            themeIconDark.classList.remove('hidden');
+          }
+        }
+      });
+      
+      initThemeToggle();
+    });
+  }
+</script>
+
+<style>
+  .theme-toggle {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    touch-action: manipulation;
+  }
+
+  /* Ensure adequate touch target size on mobile */
+  @media (max-width: 767px) {
+    .theme-toggle {
+      min-width: 44px; /* iOS recommended touch target size */
+      min-height: 44px;
+    }
+  }
+</style>
