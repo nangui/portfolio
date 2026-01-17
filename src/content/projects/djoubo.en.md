@@ -1,5 +1,5 @@
 ---
-slug: "djoubo"
+slug: "djoubo-en"
 title_fr: "Djoubo - Plateforme de Réservation de Véhicules"
 title_en: "Djoubo - Vehicle Booking Platform"
 description_fr: "Plateforme internationale de réservation de véhicules avec chauffeur. Développement full-stack d'une application web et mobile."

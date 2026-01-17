@@ -13,7 +13,44 @@ interface Props {
 const { locale = defaultLocale } = Astro.props;
 
 const allProjects = await getCollection('projects').catch(() => []) as CollectionEntry<'projects'>[];
-const featuredProjects = allProjects
+
+// Helper function to get slug from entry (needed for deduplication)
+const getSlugForDedup = (entry: CollectionEntry<'projects'>): string => {
+  if (entry.data.slug) {
+    return entry.data.slug.replace(/-(fr|en)$/, '');
+  }
+  const filename = entry.id.split('/').pop() || entry.id;
+  return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
+};
+
+// Deduplicate projects by slug (keep only one version per project)
+// Prefer the version matching the current locale, otherwise use the first one
+const getLocaleFromId = (id: string): string | null => {
+  const filename = id.split('/').pop() || id;
+  if (/\.fr\.(md|mdx)$/.test(filename)) return 'fr';
+  if (/\.en\.(md|mdx)$/.test(filename)) return 'en';
+  return null;
+};
+
+const projectsBySlug = new Map<string, CollectionEntry<'projects'>>();
+allProjects.forEach((project: CollectionEntry<'projects'>) => {
+  const slug = getSlugForDedup(project);
+  if (!projectsBySlug.has(slug)) {
+    projectsBySlug.set(slug, project);
+  } else {
+    // If we already have a project with this slug, prefer the one matching current locale
+    const existing = projectsBySlug.get(slug)!;
+    const existingLocale = getLocaleFromId(existing.id);
+    const currentLocale = getLocaleFromId(project.id);
+    
+    // Replace if current project matches locale better
+    if (currentLocale === locale && existingLocale !== locale) {
+      projectsBySlug.set(slug, project);
+    }
+  }
+});
+
+const featuredProjects = Array.from(projectsBySlug.values())
   .filter((project: CollectionEntry<'projects'>) => project.data.featured !== false)
   .slice(0, 6)
   // Sort by priority if necessary (currently no sorting needed)
@@ -21,10 +58,14 @@ const featuredProjects = allProjects
 // Helper function to get slug from entry
 // With glob loader, id contains the file path relative to base
 const getSlug = (entry: CollectionEntry<'projects'>): string => {
-  if (entry.data.slug) return entry.data.slug;
+  if (entry.data.slug) {
+    // Normalize slug: remove locale suffix if present (e.g., "socium-fr" -> "socium")
+    return entry.data.slug.replace(/-(fr|en)$/, '');
+  }
   // Extract filename from id and remove extension
   const filename = entry.id.split('/').pop() || entry.id;
-  return filename.replace(/\.(md|mdx)$/, '');
+  // Remove locale suffix if present (e.g., djoubo.en.md -> djoubo)
+  return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
 };
 ---
 

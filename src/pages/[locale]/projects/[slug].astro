@@ -12,14 +12,34 @@ export async function getStaticPaths() {
   const projects = await getCollection('projects');
   const locales = ['fr', 'en'];
   
+  // Helper to extract locale from filename or slug
+  const getLocaleFromId = (entry: CollectionEntry<'projects'>): string | null => {
+    // First, check the slug (e.g., "socium-fr" -> "fr")
+    if (entry.data.slug) {
+      const slugMatch = entry.data.slug.match(/-(fr|en)$/);
+      if (slugMatch) {
+        return slugMatch[1] as 'fr' | 'en';
+      }
+    }
+    
+    // Fallback: check the filename
+    const filename = entry.id.split('/').pop() || entry.id;
+    if (/\.fr\.(md|mdx)$/.test(filename)) return 'fr';
+    if (/\.en\.(md|mdx)$/.test(filename)) return 'en';
+    return null;
+  };
+  
   const getSlug = (entry: CollectionEntry<'projects'>) => {
-    if (entry.data.slug) return entry.data.slug;
+    if (entry.data.slug) {
+      // Normalize slug: remove locale suffix if present (e.g., "socium-fr" -> "socium")
+      return entry.data.slug.replace(/-(fr|en)$/, '');
+    }
     const filename = entry.id.split('/').pop() || entry.id;
     // Remove locale suffix if present (e.g., djoubo.en.md -> djoubo)
     return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
   };
   
-  // Group projects by slug
+  // Group projects by slug, but keep track of locale
   const projectsBySlug = new Map<string, CollectionEntry<'projects'>[]>();
   
   projects.forEach((project: CollectionEntry<'projects'>) => {
@@ -34,22 +54,22 @@ export async function getStaticPaths() {
   
   projectsBySlug.forEach((projectVariants, slug) => {
     locales.forEach((locale) => {
-      // Try to find locale-specific file first (e.g., djoubo.en.md)
+      // Try to find locale-specific file by checking the slug or ID
       let selectedProject = projectVariants.find(p => {
-        const filename = p.id.split('/').pop() || p.id;
-        return filename.includes(`.${locale}.`);
+        const fileLocale = getLocaleFromId(p);
+        return fileLocale === locale;
       });
       
-      // Fallback to base file (e.g., djoubo.md) if no locale-specific file exists
+      // Fallback: if no locale-specific file found, try to find a file without locale suffix
       if (!selectedProject) {
         selectedProject = projectVariants.find(p => {
-          const filename = p.id.split('/').pop() || p.id;
-          return !filename.includes('.fr.') && !filename.includes('.en.');
+          const fileLocale = getLocaleFromId(p);
+          return fileLocale === null; // File without locale suffix
         });
       }
       
-      // If still no project found, use the first one
-      if (!selectedProject) {
+      // Last resort: use the first available file
+      if (!selectedProject && projectVariants.length > 0) {
         selectedProject = projectVariants[0];
       }
       
