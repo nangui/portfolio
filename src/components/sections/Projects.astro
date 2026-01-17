@@ -44,10 +44,14 @@ const getSlug = (entry: CollectionEntry<'projects'>): string => {
               data-project-slug={getSlug(project)}
             >
               <h3 id={`project-title-${getSlug(project)}`} class="font-heading font-semibold text-xl mb-2 text-primary">
-                {project.data.title}
+                {locale === 'fr' 
+                  ? (project.data.title_fr || project.data.title || '')
+                  : (project.data.title_en || project.data.title || '')}
               </h3>
               <p class="text-secondary mb-4 line-clamp-3">
-                {project.data.description}
+                {locale === 'fr'
+                  ? (project.data.description_fr || project.data.description || '')
+                  : (project.data.description_en || project.data.description || '')}
               </p>
               <div class="flex flex-wrap gap-2 mb-4" role="list" aria-label="Technologies utilisées">
                 {project.data.stack.slice(0, 3).map((tech: string) => (
@@ -60,7 +64,9 @@ const getSlug = (entry: CollectionEntry<'projects'>): string => {
                 href={formatPath(`/projects/${getSlug(project)}`, locale)} 
                 variant="ghost" 
                 size="sm"
-                ariaLabel={`${getTranslation('projects', 'learnMore', locale)} ${project.data.title}`}
+                ariaLabel={`${getTranslation('projects', 'learnMore', locale)} ${locale === 'fr' 
+                  ? (project.data.title_fr || project.data.title || '')
+                  : (project.data.title_en || project.data.title || '')}`}
               >
                 {getTranslation('projects', 'learnMore', locale)}
               </Button>

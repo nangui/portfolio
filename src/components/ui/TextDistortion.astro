@@ -214,6 +214,16 @@ const { class: className, animateOnLoad = true } = Astro.props;
 
   // Reinitialize on Astro page transitions
   document.addEventListener('astro:page-load', () => {
+    // Cleanup existing instances
+    const wrappers = document.querySelectorAll('[data-text-distortion]');
+    wrappers.forEach((wrapper) => {
+      const cleanup = (wrapper as any).__cleanup;
+      if (cleanup && typeof cleanup === 'function') {
+        cleanup();
+      }
+    });
+    // Reinitialize
+    tryInit();
   });
 </script>
 

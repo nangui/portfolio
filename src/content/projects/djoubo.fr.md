@@ -1,11 +1,15 @@
 ---
 slug: "djoubo"
-title: "Adonai Nangui | Djoubo - Vehicle Booking Platform"
-description: "Plateforme internationale de réservation de véhicules avec chauffeur. Développement full-stack d'une application web et mobile."
+title_fr: "Djoubo - Plateforme de Réservation de Véhicules"
+title_en: "Djoubo - Vehicle Booking Platform"
+description_fr: "Plateforme internationale de réservation de véhicules avec chauffeur. Développement full-stack d'une application web et mobile."
+description_en: "International vehicle booking platform with driver. Full-stack development of web and mobile application."
 stack: ["Laravel", "React", "React Native", "Astro", "Next.js", "Google Maps API", "Gemini AI", "Stripe", "PayPal", "Mollie", "Wave", "Laravel Reverb", "Filament"]
 featured: true
-role: "Tech Lead / Full-Stack Developer"
-period: "Janvier 2024 - Décembre 2024"
+role_fr: "Tech Lead / Développeur Full-Stack"
+role_en: "Tech Lead / Full-Stack Developer"
+period_fr: "Janvier 2024 - Décembre 2024"
+period_en: "January 2024 - December 2024"
 demoUrl: "https://djoubo.eu"
 image: "/images/projects/djoubo-landing.png"
 ---

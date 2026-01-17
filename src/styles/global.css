@@ -12,12 +12,12 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   
-  /* Colors - Backgrounds */
+  /* Colors - Backgrounds (Dark mode - default) */
   --color-bg-primary: #0F1117;
   --color-bg-secondary: #1A1D24;
   --color-bg-tertiary: #252932;
   
-  /* Colors - Text */
+  /* Colors - Text (Dark mode - default) */
   --color-text-primary: #F5F5F5;
   --color-text-secondary: #A1A8B3;
   --color-text-tertiary: #6B7280;
@@ -27,13 +27,27 @@
   --color-accent-hover: #2563EB;
   --color-accent-light: #60A5FA;
   
-  /* Colors - Borders */
+  /* Colors - Borders (Dark mode - default) */
   --color-border-default: #1F2937;
   --color-border-light: #374151;
   
   /* Spacing */
   --spacing-section: 6rem;
   --spacing-section-mobile: 4rem;
+}
+
+/* Light mode colors */
+:root[data-theme="light"] {
+  --color-bg-primary: #FFFFFF;
+  --color-bg-secondary: #F9FAFB;
+  --color-bg-tertiary: #F3F4F6;
+  
+  --color-text-primary: #111827;
+  --color-text-secondary: #4B5563;
+  --color-text-tertiary: #6B7280;
+  
+  --color-border-default: #E5E7EB;
+  --color-border-light: #D1D5DB;
 }
 
 @layer base {
@@ -156,6 +170,32 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-light);
+}
+
+/* Shiki syntax highlighting - Theme adaptation */
+:root[data-theme="light"] pre.shiki {
+  background-color: #f6f8fa !important;
+}
+
+:root[data-theme="dark"] pre.shiki {
+  background-color: #0d1117 !important;
+}
+
+/* Code block styles */
+pre.shiki {
+  border-radius: 0.5rem;
+  padding: 1.5rem !important;
+  overflow-x: auto;
+  margin-top: 2rem !important;
+  margin-bottom: 2rem !important;
+  border: 1px solid var(--color-border-default) !important;
+}
+
+pre.shiki code {
+  background: transparent !important;
+  padding: 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
 }
 
 /* Blog prose styles - Espacement amélioré pour la lisibilité */

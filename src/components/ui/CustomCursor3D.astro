@@ -207,11 +207,27 @@
   };
 
   // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCustomCursor);
-  } else {
+  const init = () => {
+    // Cleanup any existing instance first
+    const existingContainer = document.getElementById('custom-cursor-container');
+    if (existingContainer) {
+      // Try to cleanup if there's a cleanup function stored
+      const cleanup = (existingContainer as any).__cleanup;
+      if (cleanup && typeof cleanup === 'function') {
+        cleanup();
+      }
+    }
     initCustomCursor();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
+
+  // Reinitialize on Astro page transitions
+  document.addEventListener('astro:page-load', init);
 </script>
 
 <style>

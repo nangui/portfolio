@@ -8,76 +8,60 @@ interface Props {
 
 const { locale = defaultLocale } = Astro.props;
 
+// Experience data structure with translation keys
 const experiences = [
   {
-    role: 'Senior Full Stack Engineer',
+    key: 'masskode',
     company: 'MassKode',
-    period: 'Oct 2025 - Présent',
-    impacts: [
-      'Développement d\'une plateforme healthcare innovante pour l\'accompagnement maternel aux États-Unis',
-      'Architecture moderne et scalable en monorepo (NX) pour garantir performance et maintenabilité',
-      'Développement full-stack de fonctionnalités critiques avec ownership complète',
-      'Développement d\'applications mobiles cross-platform avec React Native pour iOS et Android',
-      'Collaboration avec des équipes produit et techniques internationales en mode remote',
-    ],
+    impactCount: 5,
   },
   {
-    role: 'Tech Lead',
+    key: 'djoubo',
     company: 'Djoubo',
-    period: 'Jan 2025 - Déc 2025',
-    impacts: [
-      'Orchestration de projets en alliant expertise technique et développement pratique',
-      'Architecture backend multi-pays avec Laravel : API RESTful, intégration Odoo ERP, infrastructure Digital Ocean',
-      'Développement full-stack : applications React Native et interfaces React réactives',
-      'Intégration de systèmes de paiement (PayPal, Stripe, Mollie, Wave) et services géolocalisés (Google Maps)',
-      'Direction d\'équipe : best practices, revues de code, formation et optimisation des processus avec IA',
-    ],
+    impactCount: 5,
   },
   {
-    role: 'Senior Frontend Developer',
+    key: 'gebeya-senior',
     company: 'Gebeya Inc',
-    period: 'Mar 2023 - Avr 2025',
-    impacts: [
-      'Travail étroit avec designers, UX et autres développeurs pour comprendre nouvelles fonctionnalités et dépendances',
-      'Conception, développement et test d\'applications web en mode Agile',
-      'Garantie que les livrables répondent aux attentes du marché Gebeya SaaS',
-      'Contribution directe aux efforts de développement avec focus sur la qualité',
-    ],
+    impactCount: 4,
   },
   {
-    role: 'Senior Software Engineering',
+    key: 'socium',
     company: 'Socium',
-    period: 'Nov 2022 - Sep 2024',
-    impacts: [
-      'Développement de modules critiques du SIRH : Socium Doc, Payroll, Perf avec NestJS et Angular',
-      'Architecture découplée pour portail de recrutement et blog (Nuxt.js + Strapi)',
-      'APIs robustes et scalables avec intégration de services (Koa.js)',
-      'Architecture full-stack de bout en bout avec focus sur performance et scalabilité',
-    ],
+    impactCount: 4,
   },
   {
-    role: 'Full Stack Engineer',
+    key: 'sonatel',
     company: 'Sonatel',
-    period: 'Juil 2019 - Nov 2022',
-    impacts: [
-      'Initiateur de React.js au Pôle Digital Orange Sénégal : POC Drupal API découplé avec Next.js pour e-commerce',
-      'Architecture microservices : Selfcare HR (Laravel/Symfony/Angular) avec Vrata, Activiti, LDAP',
-      'Développement full-stack de projets critiques : Moodboard (Laravel), Andando (React/Drupal), Sen Pil Pro (Angular)',
-      'Introduction de l\'architecture Micro frontend avec POC utilisant NX, Module Federation et Web Components',
-    ],
+    impactCount: 4,
   },
   {
-    role: 'Full Stack Engineer',
+    key: 'gebeya-fullstack',
     company: 'Gebeya Inc',
-    period: 'Fév 2019 - Fév 2023',
-    impacts: [
-      'Développement full-stack avec stack varié : PHP, Docker, OpenShift, React.js, Next.js',
-      'Travail avec Kubernetes, Laravel, Nuxt.js, Strapi.js, Drupal, Angular, Symfony',
-      'Développement React Native et Vue.js',
-      'Méthodologie Scrum et architecture REST',
-    ],
+    impactCount: 4,
   },
 ];
+
+// Helper function to get experience data
+const getExperienceData = (exp: typeof experiences[0], locale: Locale) => {
+  const role = getTranslation('experience', `${exp.key}.role`, locale);
+  const period = getTranslation('experience', `${exp.key}.period`, locale);
+  const impacts: string[] = [];
+  
+  for (let i = 1; i <= exp.impactCount; i++) {
+    const impact = getTranslation('experience', `${exp.key}.impact${i}`, locale);
+    if (impact && impact !== `${exp.key}.impact${i}`) {
+      impacts.push(impact);
+    }
+  }
+  
+  return {
+    role,
+    company: exp.company,
+    period,
+    impacts,
+  };
+};
 ---
 
 <section id="experience" class="py-24 bg-secondary overflow-hidden">
@@ -91,7 +75,9 @@ const experiences = [
       <!-- Timeline container -->
       <div class="overflow-x-auto pb-8 scrollbar-custom" data-experience-scroll>
         <div class="flex gap-8 min-w-max pr-8">
-        {experiences.map((exp, index) => (
+        {experiences.map((exp, index) => {
+          const expData = getExperienceData(exp, locale);
+          return (
             <article 
               class="experience-card group relative shrink-0 w-[380px] bg-bg-secondary border border-border-default rounded-lg p-8 hover:border-accent transition-all duration-300"
               data-experience-index={index}
@@ -108,22 +94,22 @@ const experiences = [
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
-                <span class="text-accent text-sm font-medium">{exp.period}</span>
+                <span class="text-accent text-sm font-medium">{expData.period}</span>
               </div>
 
               <!-- Role and company -->
               <div class="mb-6">
                 <h3 id={`experience-role-${index}`} class="font-heading font-semibold text-xl text-primary mb-2 group-hover:text-accent transition-colors">
-                    {exp.role}
+                    {expData.role}
                   </h3>
-                <p class="font-medium text-lg text-secondary" aria-label={`Entreprise: ${exp.company}`}>
-                    {exp.company}
+                <p class="font-medium text-lg text-secondary" aria-label={`Entreprise: ${expData.company}`}>
+                    {expData.company}
                   </p>
               </div>
               
               <!-- Impacts list -->
               <ul class="space-y-3" role="list" aria-label="Réalisations et impacts">
-                {exp.impacts.map((impact) => (
+                {expData.impacts.map((impact) => (
                   <li class="flex items-start gap-3 text-secondary" role="listitem">
                     <svg class="w-5 h-5 text-accent shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -140,9 +126,10 @@ const experiences = [
                 </svg>
               </div>
             </article>
-          ))}
-            </div>
-          </div>
+          );
+        })}
+      </div>
+    </div>
 
       <!-- Progress indicator -->
       <div class="mt-4 h-1 bg-bg-tertiary rounded-full overflow-hidden">

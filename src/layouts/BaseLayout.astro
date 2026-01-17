@@ -23,14 +23,14 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonainangui.dev');
-const alternateUrls = getAlternateUrls(Astro.url.pathname, Astro.site);
+const alternateUrls = getAlternateUrls(Astro.url.pathname, Astro.site ? String(Astro.site) : undefined);
 const htmlLang = locale === 'fr' ? 'fr' : 'en';
 const ogLocale = locale === 'fr' ? 'fr_FR' : 'en_US';
 const skipToContent = getTranslation('common', 'skipToContent', locale);
 ---
 
 <!doctype html>
-<html lang={htmlLang} class="no-js">
+<html lang={htmlLang} class="no-js" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -113,7 +113,16 @@ const skipToContent = getTranslation('common', 'skipToContent', locale);
     <!-- Remove no-js class si JavaScript est activé -->
     <script is:inline>
       document.documentElement.classList.remove('no-js');
+      
+      // Initialize theme before page renders to prevent flash
+      (function() {
+        const stored = localStorage.getItem('theme');
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        const theme = stored || (prefersLight ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
     </script>
+    
   </head>
   <body>
     <Loader />
@@ -131,5 +140,23 @@ const skipToContent = getTranslation('common', 'skipToContent', locale);
       <slot />
     </main>
     <Footer locale={locale} />
+    
+    <!-- External links icons -->
+    <script>
+      const initExternalLinks = () => {
+        import('@utils/externalLinks').then(({ addExternalLinkIcons }) => {
+          addExternalLinkIcons();
+        }).catch((err) => {
+          console.error('Failed to load external links utility:', err);
+        });
+      };
+      
+      // Run on initial load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initExternalLinks);
+      } else {
+        initExternalLinks();
+      }
+    </script>
   </body>
 </html>
