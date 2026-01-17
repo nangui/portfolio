@@ -24,6 +24,7 @@ const projects = defineCollection({
     demoUrl: z.string().url().optional(),
     githubUrl: z.string().url().optional(),
     image: z.string().optional(),
+    images: z.array(z.string()).optional(), // Support for multiple images
     role: z.string().optional(),
     role_fr: z.string().optional(),
     role_en: z.string().optional(),

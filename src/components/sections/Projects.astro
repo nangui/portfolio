@@ -67,6 +67,14 @@ const getSlug = (entry: CollectionEntry<'projects'>): string => {
   // Remove locale suffix if present (e.g., djoubo.en.md -> djoubo)
   return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
 };
+
+// Helper function to get image for hover effect
+const getHoverImage = (project: CollectionEntry<'projects'>): string | undefined => {
+  if (project.data.images && project.data.images.length > 0) {
+    return project.data.images[0];
+  }
+  return project.data.image;
+};
 ---
 
 <section id="projects" class="py-section bg-primary">
@@ -81,7 +89,7 @@ const getSlug = (entry: CollectionEntry<'projects'>): string => {
             <article 
               class="project-card bg-secondary border border-border-default rounded-lg p-6 hover:border-border-light transition-colors cursor-pointer"
               aria-labelledby={`project-title-${getSlug(project)}`}
-              data-project-image={project.data.image}
+              data-project-image={getHoverImage(project)}
               data-project-slug={getSlug(project)}
             >
               <h3 id={`project-title-${getSlug(project)}`} class="font-heading font-semibold text-xl mb-2 text-primary">

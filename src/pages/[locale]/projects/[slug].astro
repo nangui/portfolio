@@ -128,18 +128,34 @@ const { Content } = await render(project);
       </ol>
     </nav>
 
-    <!-- Hero Image -->
-    {project.data.image && (
+    <!-- Hero Images -->
+    {(project.data.images && project.data.images.length > 0) ? (
+      <div class="mb-12 space-y-6">
+        {project.data.images.map((img: string, index: number) => (
+          <OptimizedImage 
+            src={img} 
+            alt={`${locale === 'fr'
+              ? (project.data.title_fr || project.data.title || '')
+              : (project.data.title_en || project.data.title || '')} - Image ${index + 1}`}
+            class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
+            loading={index === 0 ? "eager" : "lazy"}
+            quality={90}
+          />
+        ))}
+      </div>
+    ) : project.data.image ? (
       <div class="mb-12">
         <OptimizedImage 
           src={project.data.image} 
-          alt={project.data.title}
+          alt={locale === 'fr'
+            ? (project.data.title_fr || project.data.title || '')
+            : (project.data.title_en || project.data.title || '')}
           class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
           loading="eager"
           quality={90}
         />
       </div>
-    )}
+    ) : null}
 
     <header class="mb-8 md:mb-12 pb-6 md:pb-8 border-b border-border-default">
       <TextDistortion animateOnLoad={true}>
