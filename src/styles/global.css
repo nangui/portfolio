@@ -172,30 +172,106 @@
   background: var(--color-border-light);
 }
 
-/* Shiki syntax highlighting - Theme adaptation */
-:root[data-theme="light"] pre.shiki {
-  background-color: #f6f8fa !important;
-}
-
-:root[data-theme="dark"] pre.shiki {
-  background-color: #0d1117 !important;
-}
-
-/* Code block styles */
-pre.shiki {
+/* Shiki syntax highlighting - Dual theme support */
+/* Astro uses .astro-code class, not .shiki */
+pre.astro-code {
   border-radius: 0.5rem;
   padding: 1.5rem !important;
+  padding-left: 3.5rem !important; /* Space for line numbers */
   overflow-x: auto;
+  overflow-y: visible;
   margin-top: 2rem !important;
   margin-bottom: 2rem !important;
   border: 1px solid var(--color-border-default) !important;
+  position: relative;
 }
 
-pre.shiki code {
+/* Override inline styles from Shiki that might interfere */
+pre.astro-code[style*="overflow-x"] {
+  padding-left: 3.5rem !important;
+}
+
+/* Ensure line numbers are always visible */
+pre.astro-code {
+  padding-left: 3.5rem !important;
+}
+
+pre.astro-code code {
   background: transparent !important;
   padding: 0 !important;
   font-size: 0.875rem !important;
   line-height: 1.6 !important;
+  display: block;
+  counter-reset: line;
+  position: relative;
+  white-space: pre;
+}
+
+/* Line numbers */
+pre.astro-code code .line {
+  counter-increment: line;
+  position: relative;
+  display: block;
+  padding-left: 0.5rem;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 0;
+  line-height: 1.6;
+  height: auto;
+}
+
+pre.astro-code code .line::before {
+  content: counter(line);
+  position: absolute;
+  left: -3.5rem;
+  width: 2.5rem;
+  text-align: right;
+  padding-right: 1rem;
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* Adjust line number color for light/dark mode */
+:root[data-theme="light"] pre.astro-code code .line::before {
+  color: #6e7681;
+  opacity: 0.7;
+}
+
+:root[data-theme="dark"] pre.astro-code code .line::before {
+  color: #8b949e;
+  opacity: 0.6;
+}
+
+/* Apply light theme colors */
+:root[data-theme="light"] pre.astro-code,
+:root[data-theme="light"] pre.astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
+/* Apply dark theme colors */
+:root[data-theme="dark"] pre.astro-code,
+:root[data-theme="dark"] pre.astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* Override background for code block container */
+:root[data-theme="light"] pre.astro-code {
+  background-color: var(--shiki-light-bg) !important;
+  border-color: #d0d7de !important;
+}
+
+:root[data-theme="dark"] pre.astro-code {
+  background-color: var(--shiki-dark-bg) !important;
+  border-color: var(--color-border-default) !important;
 }
 
 /* Blog prose styles - Espacement amélioré pour la lisibilité */
