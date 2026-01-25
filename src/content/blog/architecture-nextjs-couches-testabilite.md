@@ -4,7 +4,7 @@ slug: "architecture-nextjs-couches-testabilite"
 description: "Découvrez comment structurer une application Next.js avec une architecture en couches claire, une organisation de dossiers cohérente et des composants hautement testables. Guide pratique avec exemples pour une application de gestion de centre de formation."
 pubDate: 2025-01-17T00:00:00.000Z
 tags: ["Next.js", "Architecture", "Clean Architecture", "Testing", "TypeScript", "Frontend"]
-image: "/images/blog/architecture-nextjs.png"
+image: "/images/nextjs-architecture.png"
 ---
 
 ## Introduction
