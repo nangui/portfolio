@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Analytics from '@vercel/analytics/astro';
 import Nav from '@components/ui/Nav.astro';
 import Footer from '@components/ui/Footer.astro';
 import Loader from '@components/ui/Loader.astro';
@@ -111,6 +112,9 @@ const skipToContent = getTranslation('common', 'skipToContent', locale);
     
     <link rel="canonical" href={canonicalURL} />
     <title>{title}</title>
+    
+    <!-- Vercel Analytics -->
+    <Analytics />
     
     <!-- Remove no-js class si JavaScript est activé -->
     <script is:inline>

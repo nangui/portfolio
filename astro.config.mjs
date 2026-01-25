@@ -7,9 +7,6 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   site: 'https://adonainangui.dev',
   adapter: vercel({
-    webAnalytics: {
-      enabled: true,
-    },
     imageService: true,
   }),
   markdown: {
