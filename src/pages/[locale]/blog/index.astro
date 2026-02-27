@@ -30,6 +30,13 @@ const description = getTranslation('blog', 'description', locale);
   title={`${title} - Adonai Nangui`}
   description={description}
   locale={locale}
+  keywords={[
+    locale === 'fr' ? 'blog frontend' : 'frontend blog',
+    locale === 'fr' ? 'architecture web' : 'web architecture',
+    locale === 'fr' ? 'accessibilité web' : 'web accessibility',
+    locale === 'fr' ? 'performance web' : 'web performance',
+    'TypeScript',
+  ]}
 >
   <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <header class="mb-12">

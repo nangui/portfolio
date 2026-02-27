@@ -1,6 +1,5 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
-import Button from '@components/ui/Button.astro';
 import ProjectCardHover from '@components/ui/ProjectCardHover.astro';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
@@ -12,19 +11,14 @@ interface Props {
 
 const { locale = defaultLocale } = Astro.props;
 
-const allProjects = await getCollection('projects').catch(() => []) as CollectionEntry<'projects'>[];
+const allProjects = (await getCollection('projects').catch(() => [])) as CollectionEntry<'projects'>[];
 
-// Helper function to get slug from entry (needed for deduplication)
 const getSlugForDedup = (entry: CollectionEntry<'projects'>): string => {
-  if (entry.data.slug) {
-    return entry.data.slug.replace(/-(fr|en)$/, '');
-  }
+  if (entry.data.slug) return entry.data.slug.replace(/-(fr|en)$/, '');
   const filename = entry.id.split('/').pop() || entry.id;
   return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
 };
 
-// Deduplicate projects by slug (keep only one version per project)
-// Prefer the version matching the current locale, otherwise use the first one
 const getLocaleFromId = (id: string): string | null => {
   const filename = id.split('/').pop() || id;
   if (/\.fr\.(md|mdx)$/.test(filename)) return 'fr';
@@ -37,98 +31,114 @@ allProjects.forEach((project: CollectionEntry<'projects'>) => {
   const slug = getSlugForDedup(project);
   if (!projectsBySlug.has(slug)) {
     projectsBySlug.set(slug, project);
-  } else {
-    // If we already have a project with this slug, prefer the one matching current locale
-    const existing = projectsBySlug.get(slug)!;
-    const existingLocale = getLocaleFromId(existing.id);
-    const currentLocale = getLocaleFromId(project.id);
-    
-    // Replace if current project matches locale better
-    if (currentLocale === locale && existingLocale !== locale) {
-      projectsBySlug.set(slug, project);
-    }
+    return;
+  }
+
+  const existing = projectsBySlug.get(slug);
+  if (!existing) return;
+  const existingLocale = getLocaleFromId(existing.id);
+  const currentLocale = getLocaleFromId(project.id);
+  if (currentLocale === locale && existingLocale !== locale) {
+    projectsBySlug.set(slug, project);
   }
 });
 
 const featuredProjects = Array.from(projectsBySlug.values())
   .filter((project: CollectionEntry<'projects'>) => project.data.featured !== false)
-  .slice(0, 6)
-  // Sort by priority if necessary (currently no sorting needed)
+  .slice(0, 6);
 
-// Helper function to get slug from entry
-// With glob loader, id contains the file path relative to base
+interface ProjectCardData {
+  slug: string;
+  title: string;
+  description: string;
+  image?: string;
+  stack: string[];
+}
+
 const getSlug = (entry: CollectionEntry<'projects'>): string => {
-  if (entry.data.slug) {
-    // Normalize slug: remove locale suffix if present (e.g., "socium-fr" -> "socium")
-    return entry.data.slug.replace(/-(fr|en)$/, '');
-  }
-  // Extract filename from id and remove extension
+  if (entry.data.slug) return entry.data.slug.replace(/-(fr|en)$/, '');
   const filename = entry.id.split('/').pop() || entry.id;
-  // Remove locale suffix if present (e.g., djoubo.en.md -> djoubo)
   return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
 };
 
-// Helper function to get image for hover effect
 const getHoverImage = (project: CollectionEntry<'projects'>): string | undefined => {
-  if (project.data.images && project.data.images.length > 0) {
-    return project.data.images[0];
-  }
+  if (project.data.images && project.data.images.length > 0) return project.data.images[0];
   return project.data.image;
 };
+
+const getProjectTitle = (project: CollectionEntry<'projects'>): string => {
+  return locale === 'fr'
+    ? project.data.title_fr || project.data.title || ''
+    : project.data.title_en || project.data.title || '';
+};
+
+const getProjectDescription = (project: CollectionEntry<'projects'>): string => {
+  return locale === 'fr'
+    ? project.data.description_fr || project.data.description || ''
+    : project.data.description_en || project.data.description || '';
+};
+
+const featuredProjectCards: ProjectCardData[] = featuredProjects.map((project) => ({
+  slug: getSlug(project),
+  title: getProjectTitle(project),
+  description: getProjectDescription(project),
+  image: getHoverImage(project),
+  stack: project.data.stack.slice(0, 3),
+}));
 ---
 
-<section id="projects" class="py-section bg-primary">
+<section id="projects" class="py-section bg-primary" aria-labelledby="projects-heading">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-12 text-primary">
-      {getTranslation('projects', 'heading', locale)}
-    </h2>
-    
+    <div class="mb-10 md:mb-12">
+      <h2 id="projects-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+        {getTranslation('projects', 'heading', locale)}
+      </h2>
+    </div>
+
     {featuredProjects.length > 0 ? (
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {featuredProjects.map((project: CollectionEntry<'projects'>) => (
-            <article 
-              class="project-card bg-secondary border border-border-default rounded-lg p-6 hover:border-border-light transition-colors cursor-pointer"
-              aria-labelledby={`project-title-${getSlug(project)}`}
-              data-project-image={getHoverImage(project)}
-              data-project-slug={getSlug(project)}
+      <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6" role="list">
+        {featuredProjectCards.map((project) => (
+          <li>
+            <a
+              href={formatPath(`/projects/${project.slug}`, locale)}
+              class="group block h-full rounded-xl border border-border-default bg-secondary p-5 md:p-6 hover:border-accent hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              aria-label={`${getTranslation('projects', 'learnMore', locale)} ${project.title}`}
+              data-project-image={project.image}
+              data-project-slug={project.slug}
+              data-project-title={project.title}
             >
-              <h3 id={`project-title-${getSlug(project)}`} class="font-heading font-semibold text-xl mb-2 text-primary">
-                {locale === 'fr' 
-                  ? (project.data.title_fr || project.data.title || '')
-                  : (project.data.title_en || project.data.title || '')}
-              </h3>
-              <p class="text-secondary mb-4 line-clamp-3">
-                {locale === 'fr'
-                  ? (project.data.description_fr || project.data.description || '')
-                  : (project.data.description_en || project.data.description || '')}
-              </p>
-              <div class="flex flex-wrap gap-2 mb-4" role="list" aria-label="Technologies utilisées">
-                {project.data.stack.slice(0, 3).map((tech: string) => (
-                  <span class="px-2 py-1 bg-bg-tertiary text-xs text-secondary rounded" role="listitem">
-                    {tech}
+              <article aria-labelledby={`project-title-${project.slug}`}>
+                <div class="mb-3 flex items-start justify-between gap-3">
+                  <h3 id={`project-title-${project.slug}`} class="font-heading text-xl font-semibold text-primary">
+                    {project.title}
+                  </h3>
+                  <span class="text-xs font-medium text-accent whitespace-nowrap">
+                    {getTranslation('projects', 'learnMore', locale)}
                   </span>
-                ))}
-              </div>
-              <Button 
-                href={formatPath(`/projects/${getSlug(project)}`, locale)} 
-                variant="ghost" 
-                size="sm"
-                ariaLabel={`${getTranslation('projects', 'learnMore', locale)} ${locale === 'fr' 
-                  ? (project.data.title_fr || project.data.title || '')
-                  : (project.data.title_en || project.data.title || '')}`}
-              >
-                {getTranslation('projects', 'learnMore', locale)}
-              </Button>
-            </article>
-          ))}
-      </div>
+                </div>
+
+                <p class="text-secondary text-sm leading-relaxed line-clamp-3 mb-4">
+                  {project.description}
+                </p>
+
+                <ul class="flex flex-wrap gap-2" aria-label="Technologies utilisées">
+                  {project.stack.map((tech) => (
+                    <li class="rounded-full border border-border-default bg-bg-tertiary px-2.5 py-1 text-xs text-secondary">
+                      {tech}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </a>
+          </li>
+        ))}
+      </ul>
     ) : (
-      <p class="text-secondary text-center py-12">
+      <p class="text-secondary py-8">
         {getTranslation('projects', 'noProjects', locale)}
       </p>
     )}
   </div>
-  
-  <!-- WebGL Canvas for hover effects -->
+
   <ProjectCardHover />
 </section>

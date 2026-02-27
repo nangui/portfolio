@@ -1,0 +1,97 @@
+---
+const circularText = 'Adonai Nangui - Fullstack Developer - Consultant Senior - ';
+---
+
+<div class="floating-signature-badge" aria-hidden="true">
+  <svg class="floating-signature-svg" viewBox="0 0 140 140" focusable="false">
+    <defs>
+      <path
+        id="floating-signature-path"
+        d="M70,70 m-54,0 a54,54 0 1,1 108,0 a54,54 0 1,1 -108,0"
+      />
+    </defs>
+    <text>
+      <textPath href="#floating-signature-path">
+        {circularText}
+      </textPath>
+    </text>
+  </svg>
+  <span class="floating-signature-center">AN</span>
+</div>
+
+<style>
+  .floating-signature-badge {
+    position: fixed;
+    right: clamp(0.8rem, 1.6vw, 1.3rem);
+    bottom: clamp(0.8rem, 1.6vw, 1.3rem);
+    z-index: 30;
+    width: clamp(76px, 7.4vw, 94px);
+    height: clamp(76px, 7.4vw, 94px);
+    border-radius: 999px;
+    border: 1px solid var(--color-border-default);
+    background: color-mix(in srgb, var(--color-bg-primary) 92%, #000000 8%);
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    opacity: 0.96;
+  }
+
+  .floating-signature-svg {
+    width: 100%;
+    height: 100%;
+    animation: floatingSignatureRotate 12s linear infinite;
+  }
+
+  .floating-signature-badge text {
+    fill: var(--color-text-secondary);
+    font-size: 9.2px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .floating-signature-center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-text-primary);
+  }
+
+  @keyframes floatingSignatureRotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .floating-signature-badge {
+      width: 64px;
+      height: 64px;
+      right: 0.55rem;
+      bottom: 0.55rem;
+      opacity: 0.88;
+    }
+
+    .floating-signature-badge text {
+      font-size: 8px;
+      letter-spacing: 0.04em;
+    }
+
+    .floating-signature-center {
+      font-size: 0.62rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .floating-signature-svg {
+      animation: none;
+      transform: none;
+    }
+  }
+</style>

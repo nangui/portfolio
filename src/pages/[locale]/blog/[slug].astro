@@ -47,13 +47,6 @@ export async function getStaticPaths() {
   return paths;
 }
 
-interface Props {
-  post: CollectionEntry<'blog'>;
-  previous?: CollectionEntry<'blog'> | null;
-  next?: CollectionEntry<'blog'> | null;
-  locale: string;
-}
-
 const { post, previous, next, locale: localeParam } = Astro.props;
 const locale = isValidLocale(localeParam || '') ? localeParam as 'fr' | 'en' : defaultLocale;
 const { Content } = await render(post);
@@ -82,14 +75,16 @@ const getSlugForUrl = (entry: CollectionEntry<'blog'>) => {
   const filename = entry.id.split('/').pop() || entry.id;
   return filename.replace(/\.(md|mdx)$/, '');
 };
+const siteUrl = String(Astro.site || 'https://adonainangui.dev').replace(/\/$/, '');
 const postSlug = getSlugForUrl(post);
-const postUrl = `${Astro.site || 'https://adonainangui.dev'}${formatPath(`/blog/${postSlug}`, locale)}`;
+const postUrl = `${siteUrl}${formatPath(`/blog/${postSlug}`, locale)}`;
 
 // Get image URL for Open Graph
-const siteUrl = Astro.site || 'https://adonainangui.dev';
 const ogImage = post.data.image 
   ? `${siteUrl}${post.data.image.startsWith('/') ? post.data.image : `/${post.data.image}`}`
   : undefined;
+const publishedTime = post.data.pubDate.toISOString();
+const articleKeywords = [...(post.data.tags || []), 'frontend engineering', 'web accessibility', 'performance'];
 ---
 
 <BlogLayout 
@@ -97,7 +92,34 @@ const ogImage = post.data.image
   description={post.data.description}
   ogImage={ogImage}
   locale={locale}
+  keywords={articleKeywords}
+  ogType="article"
+  publishedTime={publishedTime}
 >
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.data.title,
+      description: post.data.description,
+      datePublished: publishedTime,
+      dateModified: publishedTime,
+      mainEntityOfPage: postUrl,
+      inLanguage: locale,
+      image: ogImage || `${siteUrl}/hero-image.jpeg`,
+      author: {
+        '@type': 'Person',
+        name: 'Adonai Nangui',
+      },
+      publisher: {
+        '@type': 'Person',
+        name: 'Adonai Nangui',
+      },
+      keywords: post.data.tags || [],
+    })}
+  />
   <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
     <!-- Breadcrumb - Go back link style AstroPaper -->
     <nav class="mb-8" aria-label="Breadcrumb">

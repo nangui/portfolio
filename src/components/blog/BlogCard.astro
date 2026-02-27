@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { formatPath } from '@i18n/utils';
+import OptimizedImage from '@components/ui/OptimizedImage.astro';
 
 interface Props {
   entry: CollectionEntry<'blog'>;
@@ -28,36 +29,52 @@ const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
 <article class="border-b border-border-default pb-8 last:border-0">
   <a 
     href={formatPath(`/blog/${slug}`, locale)}
-    class="block hover:opacity-80 transition-opacity"
+    class="group block rounded-lg p-2 -mx-2 hover:bg-secondary/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    data-analytics-event="blog_card_click"
+    data-analytics-label={title}
   >
-    <h2 class="font-heading font-semibold text-2xl mb-2 hover:text-accent text-primary">
-      {title}
-    </h2>
-    
-    {description && (
-      <p class="text-secondary mb-4 line-clamp-2">
-        {description}
-      </p>
-    )}
-    
-    <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 text-sm text-secondary">
-      <time datetime={pubDate.toISOString()} class="shrink-0">
-        {pubDate.toLocaleDateString(dateLocale, { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        })}
-      </time>
-      
-      {tags && tags.length > 0 && (
-        <div class="flex flex-wrap gap-2">
-          {tags.map((tag: string) => (
-            <span class="px-2 py-1 bg-secondary/50 border border-border-default rounded-full text-xs whitespace-nowrap">
-              {tag}
-            </span>
-          ))}
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-4 items-start">
+      {entry.data.image && (
+        <OptimizedImage
+          src={entry.data.image}
+          alt={title}
+          class="w-full h-36 md:h-32 rounded-md border border-border-default object-cover bg-secondary"
+          loading="lazy"
+          quality={85}
+        />
       )}
+
+      <div>
+        <h2 class="font-heading font-semibold text-2xl mb-2 group-hover:text-accent text-primary">
+          {title}
+        </h2>
+        
+        {description && (
+          <p class="text-secondary mb-4 line-clamp-2">
+            {description}
+          </p>
+        )}
+        
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 text-sm text-secondary">
+          <time datetime={pubDate.toISOString()} class="shrink-0">
+            {pubDate.toLocaleDateString(dateLocale, { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </time>
+          
+          {tags && tags.length > 0 && (
+            <div class="flex flex-wrap gap-2">
+              {tags.map((tag: string) => (
+                <span class="px-2 py-1 bg-secondary/50 border border-border-default rounded-full text-xs whitespace-nowrap">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   </a>
 </article>

@@ -7,6 +7,12 @@ interface Props {
 }
 
 const { locale = defaultLocale } = Astro.props;
+const aiToolsLabel = locale === 'fr' ? 'Outils IA au quotidien' : 'Daily AI tooling';
+const aiToolsSummary =
+  locale === 'fr'
+    ? 'J’intègre l’IA dans le cycle produit: exploration, prototypage, revue de code et livraison.'
+    : 'I embed AI into the product cycle: exploration, prototyping, code review, and delivery.';
+const aiTools = ['Codex', 'Cursor', 'Claude Code', 'Warp'];
 ---
 
 <section id="about" class="py-section bg-primary relative">
@@ -21,6 +27,29 @@ const { locale = defaultLocale } = Astro.props;
       <p class="text-lg text-secondary leading-relaxed">
         {getTranslation('about', 'paragraph2', locale)}
       </p>
+
+      <aside class="about-ai-tools rounded-xl border border-border-default bg-secondary/55 p-4 sm:p-5" aria-label={aiToolsLabel}>
+        <p class="font-heading text-base sm:text-lg text-primary mb-2">{aiToolsLabel}</p>
+        <p class="text-sm sm:text-base text-secondary mb-3">{aiToolsSummary}</p>
+        <ul class="flex flex-wrap gap-2" role="list">
+          {aiTools.map((tool) => (
+            <li class="about-ai-chip">{tool}</li>
+          ))}
+        </ul>
+      </aside>
     </div>
   </div>
 </section>
+
+<style>
+  .about-ai-chip {
+    border: 1px solid color-mix(in srgb, var(--color-accent-light) 45%, var(--color-border-default) 55%);
+    background: color-mix(in srgb, var(--color-bg-primary) 65%, transparent);
+    color: var(--color-text-primary);
+    border-radius: 999px;
+    padding: 0.32rem 0.72rem;
+    font-size: 0.82rem;
+    line-height: 1;
+    font-weight: 600;
+  }
+</style>

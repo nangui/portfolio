@@ -8,8 +8,7 @@ import Experience from '@components/sections/Experience.astro';
 import BlogPreview from '@components/sections/BlogPreview.astro';
 import Contact from '@components/sections/Contact.astro';
 import ScrollAnimations from '@components/ui/ScrollAnimations.astro';
-import { getLocaleFromPath, isValidLocale, defaultLocale } from '@i18n/config';
-import { getTranslation } from '@i18n/translations';
+import { isValidLocale, defaultLocale } from '@i18n/config';
 
 export async function getStaticPaths() {
   return [
@@ -32,12 +31,51 @@ const title = locale === 'fr'
 const description = locale === 'fr'
   ? "Portfolio professionnel d'Adonai Nangui. Expertise en développement frontend, architecture et systèmes scalables."
   : "Professional portfolio of Adonai Nangui. Expertise in frontend development, architecture and scalable systems.";
+
+const homepageKeywords = locale === 'fr'
+  ? [
+      'développeur frontend senior',
+      'tech lead',
+      'architecte frontend',
+      'micro frontend',
+      'module federation',
+      'react',
+      'vue',
+      'angular',
+      'next.js',
+      'typescript',
+      'laravel',
+      'nest.js',
+      'accessibilité web',
+      'performance web',
+      'expérience professionnelle',
+      'dakar sénégal',
+    ]
+  : [
+      'senior frontend engineer',
+      'tech lead',
+      'frontend architect',
+      'micro frontend',
+      'module federation',
+      'react',
+      'vue',
+      'angular',
+      'next.js',
+      'typescript',
+      'laravel',
+      'nest.js',
+      'web accessibility',
+      'web performance',
+      'professional experience',
+      'dakar senegal',
+    ];
 ---
 
 <BaseLayout 
   title={title}
   description={description}
   locale={locale}
+  keywords={homepageKeywords}
 >
   <div class="max-w-[1200px] mx-auto">
     <Hero locale={locale} />

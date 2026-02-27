@@ -1,0 +1,22 @@
+{
+  "name": "Adonai Nangui Portfolio",
+  "short_name": "Adonai",
+  "description": "Portfolio de Adonai Nangui, Senior Frontend Engineer / Tech Lead",
+  "start_url": "/fr/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0F1117",
+  "theme_color": "#0F1117",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

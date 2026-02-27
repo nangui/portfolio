@@ -85,24 +85,32 @@ export async function getStaticPaths() {
   return paths;
 }
 
-interface Props {
-  project: CollectionEntry<'projects'>;
-  locale: string;
-}
-
 const { project, locale: localeParam } = Astro.props;
 const locale = isValidLocale(localeParam || '') ? localeParam as 'fr' | 'en' : defaultLocale;
 const { Content } = await render(project);
+const projectTitle = locale === 'fr'
+  ? (project.data.title_fr || project.data.title || '')
+  : (project.data.title_en || project.data.title || '');
+const projectDescription = locale === 'fr'
+  ? (project.data.description_fr || project.data.description || '')
+  : (project.data.description_en || project.data.description || '');
+const projectRole = locale === 'fr'
+  ? (project.data.role_fr || project.data.role || '')
+  : (project.data.role_en || project.data.role || '');
+const siteUrl = String(Astro.site || 'https://adonainangui.dev').replace(/\/$/, '');
+const primaryImage = project.data.image || project.data.images?.[0];
+const ogImage = primaryImage
+  ? `${siteUrl}${primaryImage.startsWith('/') ? primaryImage : `/${primaryImage}`}`
+  : undefined;
+const pageKeywords = [...project.data.stack, projectRole, 'frontend project', locale === 'fr' ? 'portfolio développeur' : 'developer portfolio'].filter(Boolean);
 ---
 
 <BaseLayout 
-  title={`${locale === 'fr' 
-    ? (project.data.title_fr || project.data.title || '')
-    : (project.data.title_en || project.data.title || '')} - Adonai Nangui`}
-  description={locale === 'fr'
-    ? (project.data.description_fr || project.data.description || '')
-    : (project.data.description_en || project.data.description || '')}
+  title={`${projectTitle} - Adonai Nangui`}
+  description={projectDescription}
   locale={locale}
+  ogImage={ogImage}
+  keywords={pageKeywords}
 >
   <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
     <!-- Breadcrumb amélioré -->
@@ -121,9 +129,7 @@ const { Content } = await render(project);
         </li>
         <li class="text-secondary/60" aria-hidden="true">/</li>
         <li class="text-primary truncate max-w-[200px] sm:max-w-[300px] md:max-w-none" aria-current="page">
-          {locale === 'fr'
-            ? (project.data.title_fr || project.data.title || '')
-            : (project.data.title_en || project.data.title || '')}
+          {projectTitle}
         </li>
       </ol>
     </nav>
@@ -134,9 +140,7 @@ const { Content } = await render(project);
         {project.data.images.map((img: string, index: number) => (
           <OptimizedImage 
             src={img} 
-            alt={`${locale === 'fr'
-              ? (project.data.title_fr || project.data.title || '')
-              : (project.data.title_en || project.data.title || '')} - Image ${index + 1}`}
+            alt={`${projectTitle} - Image ${index + 1}`}
             class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
             loading={index === 0 ? "eager" : "lazy"}
             quality={90}
@@ -147,9 +151,7 @@ const { Content } = await render(project);
       <div class="mb-12">
         <OptimizedImage 
           src={project.data.image} 
-          alt={locale === 'fr'
-            ? (project.data.title_fr || project.data.title || '')
-            : (project.data.title_en || project.data.title || '')}
+          alt={projectTitle}
           class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
           loading="eager"
           quality={90}
@@ -160,16 +162,12 @@ const { Content } = await render(project);
     <header class="mb-8 md:mb-12 pb-6 md:pb-8 border-b border-border-default">
       <TextDistortion animateOnLoad={true}>
         <h1 class="font-heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 md:mb-6 text-primary leading-tight">
-        {locale === 'fr'
-          ? (project.data.title_fr || project.data.title || '')
-          : (project.data.title_en || project.data.title || '')}
+        {projectTitle}
       </h1>
       </TextDistortion>
       
       <p class="text-base sm:text-lg md:text-xl text-secondary mb-6 md:mb-8 leading-relaxed">
-        {locale === 'fr'
-          ? (project.data.description_fr || project.data.description || '')
-          : (project.data.description_en || project.data.description || '')}
+        {projectDescription}
       </p>
       
       <!-- Stack technologies -->
@@ -224,9 +222,7 @@ const { Content } = await render(project);
                   {getTranslation('projects', 'role', locale)}
                 </span>
                 <span class="text-primary font-medium">
-                  {locale === 'fr'
-                    ? (project.data.role_fr || project.data.role || '')
-                    : (project.data.role_en || project.data.role || '')}
+                  {projectRole}
                 </span>
               </div>
             </div>

@@ -1,226 +1,90 @@
 ---
-// Use public image for Three.js texture loading
 const imageUrl = '/hero-image.jpeg';
 ---
 
-<div class="hero-image-container relative w-full h-full">
-  <canvas 
-    id="hero-image-canvas" 
-    class="w-full h-full" 
-    data-image-src={imageUrl}
-  ></canvas>
-</div>
-
-<script>
-  import * as THREE from 'three';
-
-  // Vertex shader for 3D plane
-  const vertexShader = `
-    varying vec2 vUv;
-    varying vec3 vPosition;
-    
-    void main() {
-      vUv = uv;
-      vPosition = position;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `;
-
-  // Fragment shader with distortion effect
-  const fragmentShader = `
-    uniform sampler2D uTexture;
-    uniform vec2 uMouse;
-    uniform float uTime;
-    uniform float uDistortion;
-    uniform float uIntensity;
-    
-    varying vec2 vUv;
-    varying vec3 vPosition;
-    
-    void main() {
-      vec2 uv = vUv;
-      
-      // Calculate distance from mouse position
-      vec2 mouse = uMouse;
-      float dist = distance(uv, mouse);
-      
-      // Create distortion effect
-      float distortion = uDistortion * uIntensity;
-      vec2 distortionOffset = (mouse - uv) * distortion * (1.0 / (dist + 0.1));
-      
-      // Add wave effect
-      vec2 waveOffset = vec2(
-        sin(vPosition.x * 0.1 + uTime) * 0.01,
-        cos(vPosition.y * 0.1 + uTime) * 0.01
-      );
-      
-      // Apply distortion
-      uv += distortionOffset + waveOffset;
-      
-      // Sample texture with distortion
-      vec4 color = texture2D(uTexture, uv);
-      
-      gl_FragColor = color;
-    }
-  `;
-
-  const initHeroImage = () => {
-    const canvas = document.getElementById('hero-image-canvas') as HTMLCanvasElement;
-    if (!canvas) return;
-    
-    const imageSrc = canvas.getAttribute('data-image-src');
-    if (!imageSrc) return;
-
-    const container = canvas.parentElement;
-    if (!container) return;
-
-    // Get container dimensions
-    const updateSize = () => {
-      const rect = container.getBoundingClientRect();
-      return {
-        width: rect.width,
-        height: rect.height,
-      };
-    };
-
-    let { width, height } = updateSize();
-
-    // Scene setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.z = 1;
-
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-    });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    // Load texture
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load(
-      imageSrc,
-      (loadedTexture: THREE.Texture) => {
-        loadedTexture.minFilter = THREE.LinearFilter;
-        loadedTexture.magFilter = THREE.LinearFilter;
-      },
-      undefined,
-      (error: unknown) => {
-        console.error('Error loading texture:', error);
-      }
-    );
-
-    // Create plane geometry
-    const geometry = new THREE.PlaneGeometry(2, 2, 32, 32);
-    
-    // Create shader material (texture will be loaded asynchronously)
-    const material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms: {
-        uTexture: { value: texture },
-        uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-        uTime: { value: 0 },
-        uDistortion: { value: 0 },
-        uIntensity: { value: 0.3 },
-      },
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    // Mouse tracking
-    const mouse = new THREE.Vector2(0.5, 0.5);
-    let targetDistortion = 0;
-    let currentDistortion = 0;
-
-    const handleMouseMove = (event: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = (event.clientX - rect.left) / rect.width;
-      mouse.y = 1 - (event.clientY - rect.top) / rect.height; // Flip Y
-      
-      material.uniforms.uMouse.value = mouse;
-      targetDistortion = 0.15;
-    };
-
-    const handleMouseLeave = () => {
-      targetDistortion = 0;
-    };
-
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
-
-    // Animation loop
-    let time = 0;
-    const animate = () => {
-      requestAnimationFrame(animate);
-      
-      time += 0.01;
-      material.uniforms.uTime.value = time;
-      
-      // Smooth distortion interpolation
-      currentDistortion += (targetDistortion - currentDistortion) * 0.1;
-      material.uniforms.uDistortion.value = currentDistortion;
-      
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Handle resize
-    const handleResize = () => {
-      const newSize = updateSize();
-      width = newSize.width;
-      height = newSize.height;
-      
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
-      renderer.dispose();
-      geometry.dispose();
-      material.dispose();
-      texture.dispose();
-    };
-  };
-
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHeroImage);
-  } else {
-    initHeroImage();
-  }
-</script>
+<figure class="hero-image-shell" aria-label="Portrait d'Adonai Nangui">
+  <img
+    src={imageUrl}
+    alt="Portrait d'Adonai Nangui"
+    width="540"
+    height="540"
+    loading="eager"
+    decoding="async"
+    fetchpriority="high"
+    class="hero-image"
+  />
+</figure>
 
 <style>
-  .hero-image-container {
+  .hero-image-shell {
+    position: relative;
+    width: clamp(136px, 32vw, 360px);
     aspect-ratio: 1;
-    max-width: 400px;
-    margin: 0 auto;
+    margin: 0;
+    border-radius: 42% 58% 52% 48% / 46% 45% 55% 54%;
+    background: #facc15;
+    padding: 9px;
+    box-shadow: 0 14px 34px rgba(2, 8, 22, 0.35);
+    flex: 0 0 auto;
+    opacity: 0.98;
+    animation: heroImageShellOpacity 6.5s ease-in-out infinite;
   }
-  
-  #hero-image-canvas {
+
+  .hero-image {
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 50%;
-    overflow: hidden;
+    object-fit: cover;
+    border-radius: 46% 54% 48% 52% / 49% 46% 54% 51%;
+    border: 2px solid color-mix(in srgb, var(--color-bg-primary) 75%, transparent);
+    filter: grayscale(1) contrast(1.03);
+    background: var(--color-bg-secondary);
+    opacity: 0.96;
+    animation: heroImageOpacity 6.5s ease-in-out infinite;
   }
-  
-  @media (max-width: 768px) {
-    .hero-image-container {
-      max-width: 300px;
+
+  @keyframes heroImageShellOpacity {
+    0%,
+    100% {
+      opacity: 0.98;
+    }
+    35% {
+      opacity: 0.8;
+    }
+    62% {
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes heroImageOpacity {
+    0%,
+    100% {
+      opacity: 0.96;
+    }
+    35% {
+      opacity: 0.72;
+    }
+    62% {
+      opacity: 0.88;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero-image-shell {
+      width: clamp(124px, 33vw, 220px);
+      padding: 7px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-image-shell {
+      animation: none;
+      opacity: 1;
+    }
+
+    .hero-image {
+      animation: none;
+      opacity: 1;
     }
   }
 </style>

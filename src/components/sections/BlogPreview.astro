@@ -16,41 +16,69 @@ const sortedPosts = allPosts
   .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
 
-// Helper function to get slug from entry
-// With glob loader, id contains the file path relative to base
 const getSlug = (entry: CollectionEntry<'blog'>): string => {
   if (entry.data.slug) return entry.data.slug;
-  // Extract filename from id and remove extension
   const filename = entry.id.split('/').pop() || entry.id;
   return filename.replace(/\.(md|mdx)$/, '');
 };
 
+const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
 ---
 
-<section id="blog-preview" class="py-section bg-primary">
+<section id="blog-preview" class="py-section bg-primary" aria-labelledby="blog-heading">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-8">
-      <h2 class="font-heading font-semibold text-3xl md:text-4xl text-primary">
-        {getTranslation('blog', 'title', locale)}
-      </h2>
-      <Button href={formatPath('/blog', locale)} variant="ghost">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8 md:mb-10">
+      <div>
+        <h2 id="blog-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary mb-2">
+          {getTranslation('blog', 'title', locale)}
+        </h2>
+        <p class="text-secondary max-w-2xl text-sm md:text-base">
+          {getTranslation('blog', 'description', locale)}
+        </p>
+      </div>
+      <Button
+        href={formatPath('/blog', locale)}
+        variant="secondary"
+        size="sm"
+        analyticsEvent="blog_preview_click"
+        analyticsLabel="view_all"
+      >
         {getTranslation('blog', 'viewAll', locale)}
       </Button>
     </div>
-    
+
     {sortedPosts.length > 0 ? (
-      <div class="space-y-4">
+      <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5" role="list">
         {sortedPosts.map((post: CollectionEntry<'blog'>) => (
-            <a 
+          <li>
+            <a
               href={formatPath(`/blog/${getSlug(post)}`, locale)}
-              class="block p-4 bg-secondary border border-border-default rounded-lg hover:border-border-light transition-colors"
+              class="group block h-full rounded-xl border border-border-default bg-secondary/70 p-5 hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              aria-label={post.data.title}
+              data-analytics-event="blog_preview_click"
+              data-analytics-label={post.data.title}
             >
-              <h3 class="font-heading font-semibold text-xl mb-2 text-primary">
+              <p class="text-xs font-medium uppercase tracking-wide text-accent mb-3">
+                {post.data.pubDate.toLocaleDateString(dateLocale, {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </p>
+              <h3 class="font-heading font-semibold text-lg leading-snug text-primary mb-3 group-hover:text-accent">
                 {post.data.title}
               </h3>
+              <p class="text-sm text-secondary line-clamp-3 mb-4">
+                {post.data.description}
+              </p>
+              <span class="inline-flex items-center gap-2 text-sm font-medium text-secondary group-hover:text-primary">
+                {locale === 'fr' ? 'Lire l’article' : 'Read article'}
+                <span aria-hidden="true">→</span>
+              </span>
             </a>
+          </li>
         ))}
-      </div>
+      </ul>
     ) : (
       <p class="text-secondary text-center py-12">
         {getTranslation('blog', 'noPosts', locale)}

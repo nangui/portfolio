@@ -7,106 +7,57 @@ interface Props {
   target?: string;
   rel?: string;
   ariaLabel?: string;
+  analyticsEvent?: string;
+  analyticsLabel?: string;
 }
 
-const { 
-  href, 
-  variant = 'primary', 
+const {
+  href,
+  variant = 'primary',
   size = 'md',
   class: className = '',
   target,
   rel,
   ariaLabel,
+  analyticsEvent,
+  analyticsLabel,
 } = Astro.props;
 
-const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded button-3d';
+const baseClasses =
+  'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 const variantClasses = {
   primary: 'bg-accent text-white hover:bg-accent-hover',
-  secondary: 'bg-secondary text-primary border border-border-default hover:bg-tertiary',
-  ghost: 'text-secondary hover:text-accent hover:bg-secondary',
+  secondary: 'bg-secondary text-primary border border-border-default hover:border-border-light hover:bg-bg-secondary',
+  ghost: 'text-secondary hover:text-primary hover:bg-secondary',
 };
 const sizeClasses = {
   sm: 'px-4 py-2 text-sm',
-  md: 'px-6 py-3 text-base',
-  lg: 'px-8 py-4 text-lg',
+  md: 'px-5 py-2.5 text-sm md:text-base',
+  lg: 'px-7 py-3 text-base md:text-lg',
 };
 
 const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 ---
 
 {href ? (
-  <a 
-    href={href} 
-    class={classes} 
-    target={target} 
-    rel={rel} 
-    data-button-3d
+  <a
+    href={href}
+    class={classes}
+    target={target}
+    rel={rel}
     {...(ariaLabel && { 'aria-label': ariaLabel })}
+    {...(analyticsEvent && { 'data-analytics-event': analyticsEvent })}
+    {...(analyticsLabel && { 'data-analytics-label': analyticsLabel })}
   >
     <slot />
   </a>
 ) : (
-  <button 
-    class={classes} 
-    data-button-3d
+  <button
+    class={classes}
     {...(ariaLabel && { 'aria-label': ariaLabel })}
+    {...(analyticsEvent && { 'data-analytics-event': analyticsEvent })}
+    {...(analyticsLabel && { 'data-analytics-label': analyticsLabel })}
   >
     <slot />
   </button>
 )}
-<script>
-  const initButton3D = () => {
-    const buttons = document.querySelectorAll('[data-button-3d]') as NodeListOf<HTMLElement>;
-    
-    buttons.forEach((button) => {
-      let targetRotationX = 0;
-      let targetRotationY = 0;
-      let currentRotationX = 0;
-      let currentRotationY = 0;
-      let targetScale = 1;
-
-      const handleMouseMove = (event: MouseEvent) => {
-        const rect = button.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        
-        const mouseX = (event.clientX - centerX) / (rect.width / 2);
-        const mouseY = (event.clientY - centerY) / (rect.height / 2);
-        
-        targetRotationY = mouseX * 15;
-        targetRotationX = -mouseY * 15;
-        targetScale = 1.05;
-      };
-
-      const handleMouseLeave = () => {
-        targetRotationX = 0;
-        targetRotationY = 0;
-        targetScale = 1;
-      };
-
-      button.addEventListener('mousemove', handleMouseMove);
-      button.addEventListener('mouseleave', handleMouseLeave);
-
-      const animate = () => {
-        requestAnimationFrame(animate);
-        
-        currentRotationX += (targetRotationX - currentRotationX) * 0.15;
-        currentRotationY += (targetRotationY - currentRotationY) * 0.15;
-        const scale = button.style.transform.match(/scale3d\(([^)]+)\)/)?.[1] || '1, 1, 1';
-        const currentScale = parseFloat(scale.split(',')[0]) || 1;
-        const newScale = currentScale + (targetScale - currentScale) * 0.15;
-        
-        button.style.transform = `perspective(1000px) rotateX(${currentRotationX}deg) rotateY(${currentRotationY}deg) scale3d(${newScale}, ${newScale}, 1)`;
-        button.style.transformStyle = 'preserve-3d';
-      };
-
-      animate();
-    });
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initButton3D);
-  } else {
-    initButton3D();
-  }
-</script>

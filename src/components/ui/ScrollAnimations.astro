@@ -4,15 +4,18 @@
 ---
 
 <script>
-  import('gsap').then(({ gsap }) => {
-    return import('gsap/ScrollTrigger').then(({ default: ScrollTrigger }) => {
+  const initScrollAnimations = async () => {
+    try {
+      const { gsap } = await import('gsap');
+      const { default: ScrollTrigger } = await import('gsap/ScrollTrigger');
       gsap.registerPlugin(ScrollTrigger);
-      
+
       // Animate sections on scroll
       const sections = document.querySelectorAll('section[id]');
-      
+
       sections.forEach((section) => {
-        gsap.fromTo(section,
+        gsap.fromTo(
+          section,
           {
             opacity: 0,
             y: 50,
@@ -24,23 +27,23 @@
             ease: 'power2.out',
             scrollTrigger: {
               trigger: section,
-              start: 'top 85%', // Start animation when top of section hits 85% of viewport
+              start: 'top 85%',
               end: 'top 50%',
               toggleActions: 'play none none reverse',
-              once: false, // Allow reverse animation on scroll up
-            }
+              once: false,
+            },
           }
         );
       });
-      
+
       // Pause/resume animations based on page visibility
       const handleVisibilityChange = () => {
         if (document.hidden) {
           gsap.globalTimeline.pause();
-          ScrollTrigger.getAll().forEach(trigger => trigger.disable());
+          ScrollTrigger.getAll().forEach((trigger) => trigger.disable());
         } else {
           gsap.globalTimeline.resume();
-          ScrollTrigger.getAll().forEach(trigger => trigger.enable());
+          ScrollTrigger.getAll().forEach((trigger) => trigger.enable());
         }
       };
 
@@ -49,12 +52,12 @@
       // Cleanup on page unload
       window.addEventListener('beforeunload', () => {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
-        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+        ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
       });
-    }).catch((error) => {
-      console.error('Failed to load ScrollTrigger:', error);
-    });
-  }).catch((error) => {
-    console.error('Failed to load GSAP:', error);
-  });
+    } catch (error) {
+      console.error('Failed to initialize scroll animations:', error);
+    }
+  };
+
+  void initScrollAnimations();
 </script>

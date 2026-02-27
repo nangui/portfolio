@@ -52,7 +52,7 @@ export function formatPath(path: string, locale: Locale): string {
  */
 export function getAlternateUrls(pathname: string, site: string | undefined): Array<{ lang: string; url: string }> {
   const cleanPath = pathname.replace(/^\/(fr|en)/, '') || '/';
-  const baseUrl = site || 'https://adonainangui.dev';
+  const baseUrl = (site || 'https://adonainangui.dev').replace(/\/$/, '');
   
   return [
     { lang: 'fr', url: `${baseUrl}/fr${cleanPath === '/' ? '' : cleanPath}` },

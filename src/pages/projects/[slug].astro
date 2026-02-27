@@ -30,11 +30,21 @@ interface Props {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
+const projectTitle = project.data.title || project.data.title_fr || project.data.title_en || 'Project';
+const projectDescription = project.data.description || project.data.description_fr || project.data.description_en || '';
+const siteUrl = String(Astro.site || 'https://adonainangui.dev').replace(/\/$/, '');
+const primaryImage = project.data.image || project.data.images?.[0];
+const ogImage = primaryImage
+  ? `${siteUrl}${primaryImage.startsWith('/') ? primaryImage : `/${primaryImage}`}`
+  : undefined;
+const pageKeywords = [...project.data.stack, project.data.role || '', 'frontend project'].filter(Boolean);
 ---
 
 <BaseLayout 
-  title={`${project.data.title} - Adonai Nangui`}
-  description={project.data.description}
+  title={`${projectTitle} - Adonai Nangui`}
+  description={projectDescription}
+  ogImage={ogImage}
+  keywords={pageKeywords}
 >
   <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
     <!-- Breadcrumb amélioré -->
@@ -49,17 +59,17 @@ const { Content } = await render(project);
         </li>
         <li class="text-secondary/60" aria-hidden="true">/</li>
         <li class="text-primary truncate max-w-[200px] sm:max-w-[300px] md:max-w-none" aria-current="page">
-          {project.data.title}
+          {projectTitle}
         </li>
       </ol>
     </nav>
 
     <!-- Hero Image -->
-    {project.data.image && (
+    {primaryImage && (
       <div class="mb-12 scroll-animate">
         <OptimizedImage 
-          src={project.data.image} 
-          alt={project.data.title}
+          src={primaryImage} 
+          alt={projectTitle}
           class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
           loading="eager"
           quality={90}
@@ -70,12 +80,12 @@ const { Content } = await render(project);
     <header class="mb-8 md:mb-12 pb-6 md:pb-8 border-b border-border-default scroll-animate">
       <TextDistortion animateOnLoad={true}>
         <h1 class="font-heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 md:mb-6 text-primary leading-tight">
-        {project.data.title}
+        {projectTitle}
       </h1>
       </TextDistortion>
       
       <p class="text-base sm:text-lg md:text-xl text-secondary mb-6 md:mb-8 leading-relaxed">
-        {project.data.description}
+        {projectDescription}
       </p>
       
       <!-- Stack technologies -->
@@ -152,15 +162,18 @@ const { Content } = await render(project);
   </article>
   
   <script>
-    import('gsap').then(({ gsap }) => {
-      return import('gsap/ScrollTrigger').then(({ default: ScrollTrigger }) => {
+    const initProjectAnimations = async () => {
+      try {
+        const { gsap } = await import('gsap');
+        const { default: ScrollTrigger } = await import('gsap/ScrollTrigger');
         gsap.registerPlugin(ScrollTrigger);
-        
+
         // Animate elements with scroll-animate class
         const animateElements = document.querySelectorAll('.scroll-animate');
-        
+
         animateElements.forEach((element, index) => {
-          gsap.fromTo(element,
+          gsap.fromTo(
+            element,
             {
               opacity: 0,
               y: 30,
@@ -176,16 +189,17 @@ const { Content } = await render(project);
                 start: 'top 85%',
                 toggleActions: 'play none none none',
                 once: true,
-              }
+              },
             }
           );
         });
-        
+
         // Animate prose headings and paragraphs
         const proseElements = document.querySelectorAll('.prose h2, .prose h3, .prose p, .prose ul, .prose ol');
-        
+
         proseElements.forEach((element, index) => {
-          gsap.fromTo(element,
+          gsap.fromTo(
+            element,
             {
               opacity: 0,
               y: 20,
@@ -201,16 +215,16 @@ const { Content } = await render(project);
                 start: 'top 90%',
                 toggleActions: 'play none none none',
                 once: true,
-              }
+              },
             }
           );
         });
-      }).catch((error) => {
-        console.error('Failed to load ScrollTrigger:', error);
-      });
-    }).catch((error) => {
-      console.error('Failed to load GSAP:', error);
-    });
+      } catch (error) {
+        console.error('Failed to initialize project animations:', error);
+      }
+    };
+
+    void initProjectAnimations();
   </script>
 </BaseLayout>
 

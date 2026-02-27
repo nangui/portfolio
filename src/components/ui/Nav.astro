@@ -12,55 +12,89 @@ interface Props {
 const { locale = defaultLocale } = Astro.props;
 
 const navItems = [
-  { key: 'home', href: '/' },
-  { key: 'projects', href: '#projects' },
-  { key: 'experience', href: '#experience' },
-  { key: 'blog', href: '/blog' },
-  { key: 'contact', href: '#contact' },
+  { key: 'home', href: '#hero', section: 'hero' },
+  { key: 'projects', href: '#projects', section: 'projects' },
+  { key: 'experience', href: '#experience', section: 'experience' },
+  { key: 'blog', href: '/blog', section: 'blog-preview', homeHref: '#blog-preview' },
+  { key: 'contact', href: '#contact', section: 'contact' },
 ];
 
 const openMenuLabel = getTranslation('nav', 'openMenu', locale);
 const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
+const navLabel = locale === 'fr' ? 'Navigation principale' : 'Main navigation';
+const currentPathname = Astro.url.pathname;
+const homePath = formatPath('/', locale);
+
+const normalizePath = (path: string): string => {
+  if (path !== '/' && path.endsWith('/')) return path.slice(0, -1);
+  return path;
+};
+
+const isSectionLink = (href: string): boolean => href.startsWith('#');
+
+const buildHref = (href: string, homeHref?: string): string => {
+  if (isHomeRoute && homeHref) return homeHref;
+  if (isHomeRoute && isSectionLink(href)) return href;
+  if (isSectionLink(href)) {
+    return `${homePath}/${href}`;
+  }
+  return formatPath(href, locale);
+};
+
+const isActivePath = (href: string): boolean => {
+  if (isSectionLink(href)) return false;
+  const target = normalizePath(formatPath(href, locale));
+  const current = normalizePath(currentPathname);
+  return current === target || current.startsWith(`${target}/`);
+};
+
+const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
 ---
 
-<nav class="sticky top-0 z-40 bg-primary/80 backdrop-blur-sm border-b border-border-default" role="navigation" aria-label="Navigation principale">
+<nav
+  class="sticky top-0 z-40 border-b border-border-default/70 bg-primary/92 backdrop-blur-md"
+  aria-label={navLabel}
+  data-home-path={normalizePath(homePath)}
+>
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16">
-      <a href={formatPath('/', locale)} class="font-heading font-semibold text-xl text-primary hover:text-accent transition-colors" aria-label="Adonai Nangui - Retour à l'accueil">
+    <div class="h-16 flex items-center justify-between gap-4">
+      <a
+        href={formatPath('/', locale)}
+        class="font-heading text-lg font-semibold tracking-tight text-primary hover:text-accent rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        aria-label="Adonai Nangui"
+      >
         Adonai Nangui
       </a>
-      
-      <div class="hidden md:flex items-center gap-6">
-        <ul class="flex items-center gap-8" role="menubar">
-          {navItems.map((item) => {
-            const href = item.href.startsWith('#') 
-              ? item.href 
-              : formatPath(item.href, locale);
-            const label = getTranslation('nav', item.key, locale);
-            return (
-              <li role="none">
-            <a 
-                  href={href}
-              class="text-secondary hover:text-accent transition-colors font-medium"
-                  role="menuitem"
-                  aria-label={label}
-            >
-                  {label}
-            </a>
-          </li>
-            );
-          })}
+
+      <ul class="hidden md:flex items-center rounded-full border border-border-default bg-secondary/40 px-2 py-1">
+        {navItems.map((item) => {
+          const href = buildHref(item.href, item.homeHref);
+          const label = getTranslation('nav', item.key, locale);
+          const sectionId = item.section;
+          const active = isHomeRoute ? sectionId === 'hero' : isActivePath(item.href);
+          return (
+            <li>
+              <a
+                href={href}
+                data-nav-link="true"
+                data-section={sectionId}
+                data-active={active ? 'true' : 'false'}
+                class="nav-link-desktop rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                aria-current={active ? 'page' : undefined}
+              >
+                {label}
+              </a>
+            </li>
+          );
+        })}
       </ul>
+
+      <div class="flex items-center gap-2">
         <ThemeToggle />
         <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
-      </div>
-      
-      <div class="md:hidden flex items-center gap-4">
-        <ThemeToggle />
-        <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
-        <!-- Mobile menu button -->
-        <button 
-          class="text-secondary hover:text-accent transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
+        <button
+          type="button"
+          class="md:hidden inline-flex items-center justify-center rounded-sm p-2 text-secondary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           aria-label={openMenuLabel}
           aria-expanded="false"
           aria-controls="mobile-menu"
@@ -68,193 +102,227 @@ const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
           data-open-label={openMenuLabel}
           data-close-label={closeMenuLabel}
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"></path>
           </svg>
         </button>
       </div>
     </div>
   </div>
-  
-  <!-- Mobile menu -->
-  <div id="mobile-menu" class="hidden md:hidden border-t border-border-default bg-primary" role="menu" aria-labelledby="mobile-menu-button">
-    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <ul class="flex flex-col gap-4" role="menubar">
-        {navItems.map((item) => {
-          const href = item.href.startsWith('#') 
-            ? item.href 
-            : formatPath(item.href, locale);
-          const label = getTranslation('nav', item.key, locale);
-          return (
-            <li role="none">
-            <a 
-                href={href}
-                class="text-secondary hover:text-accent transition-colors font-medium block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
-                role="menuitem"
-                aria-label={label}
-              >
-                {label}
+
+  <div id="mobile-menu" class="hidden md:hidden border-t border-border-default bg-primary/98">
+    <ul class="px-4 py-4 sm:px-6 space-y-1">
+      {navItems.map((item) => {
+        const href = buildHref(item.href, item.homeHref);
+        const label = getTranslation('nav', item.key, locale);
+        const sectionId = item.section;
+        const active = isHomeRoute ? sectionId === 'hero' : isActivePath(item.href);
+        return (
+          <li>
+            <a
+              href={href}
+              data-nav-link="true"
+              data-section={sectionId}
+              data-active={active ? 'true' : 'false'}
+              class="nav-link-mobile block rounded-md px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              aria-current={active ? 'page' : undefined}
+            >
+              {label}
             </a>
           </li>
-          );
-        })}
-      </ul>
-    </div>
+        );
+      })}
+    </ul>
   </div>
 </nav>
 
-<script>
-  // Mobile menu management with cleanup to prevent duplicate listeners
-  let menuHandlers: { cleanup: () => void } | null = null;
-
-  const initMobileMenu = () => {
-    // Cleanup existing handlers if any
-    if (menuHandlers) {
-      menuHandlers.cleanup();
-      menuHandlers = null;
-    }
-
-    const menuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
-    
-    if (!menuButton || !mobileMenu) return;
-
-    // Helper function to check if menu is open
-    const isMenuOpen = () => !mobileMenu.classList.contains('hidden');
-    
-    // Get labels from data attributes
-    const openLabel = menuButton.getAttribute('data-open-label') || 'Ouvrir le menu de navigation';
-    const closeLabel = menuButton.getAttribute('data-close-label') || 'Fermer le menu de navigation';
-    
-    // Helper function to close menu
-    const closeMenu = () => {
-      mobileMenu.classList.add('hidden');
-      menuButton.setAttribute('aria-expanded', 'false');
-      menuButton.setAttribute('aria-label', openLabel);
-      
-      // Update icon to hamburger
-      const svg = menuButton.querySelector('svg');
-      if (svg) {
-          svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />';
-      }
-      
-      // Unlock body scroll
-      document.body.style.overflow = '';
-    };
-    
-    // Helper function to open menu
-    const openMenu = () => {
-      mobileMenu.classList.remove('hidden');
-      menuButton.setAttribute('aria-expanded', 'true');
-      menuButton.setAttribute('aria-label', closeLabel);
-      
-      // Update icon to close
-      const svg = menuButton.querySelector('svg');
-      if (svg) {
-        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
-      }
-      
-      // Lock body scroll when menu is open
-      document.body.style.overflow = 'hidden';
-    };
-    
-    // Event handlers
-    const handleButtonClick = (e: Event) => {
-      e.stopPropagation();
-      if (isMenuOpen()) {
-        closeMenu();
-      } else {
-        openMenu();
-      }
-    };
-
-    const handleDocumentClick = (e: Event) => {
-      // Early return if event was stopped
-      if (e.defaultPrevented) return;
-      
-      if (isMenuOpen()) {
-        const target = e.target as Node;
-        // Don't close menu if clicking on ThemeToggle, LanguageSwitcher, or their children
-        const themeToggle = document.getElementById('theme-toggle');
-        const languageSwitcher = document.querySelector('[data-language-switcher]');
-        
-        const isClickOnThemeToggle = themeToggle && (
-          themeToggle.contains(target) || themeToggle === target
-        );
-        const isClickOnLanguageSwitcher = languageSwitcher && (
-          languageSwitcher.contains(target) || languageSwitcher === target
-        );
-        
-        if (!mobileMenu.contains(target) && 
-            !menuButton.contains(target) &&
-            !isClickOnThemeToggle &&
-            !isClickOnLanguageSwitcher) {
-          closeMenu();
-        }
-      }
-    };
-
-    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
-    const handleScroll = () => {
-      if (isMenuOpen()) {
-        if (scrollTimeout) {
-          clearTimeout(scrollTimeout);
-        }
-        scrollTimeout = setTimeout(() => {
-          closeMenu();
-        }, 100);
-      }
-    };
-
-    const handleKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMenuOpen()) {
-        closeMenu();
-        menuButton.focus();
-      }
-    };
-
-    const handleLinkClick = () => {
-      closeMenu();
-    };
-    
-    // Attach event listeners
-    // Use capture: false to ensure button handlers run first
-    menuButton.addEventListener('click', handleButtonClick, { capture: false });
-    document.addEventListener('click', handleDocumentClick, { capture: false });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('keydown', handleKeydown);
-    
-    // Close menu when clicking on a menu link (navigation)
-    const menuLinks = mobileMenu.querySelectorAll('a');
-    menuLinks.forEach((link) => {
-      link.addEventListener('click', handleLinkClick);
-    });
-
-    // Store cleanup function
-    menuHandlers = {
-      cleanup: () => {
-        menuButton.removeEventListener('click', handleButtonClick);
-        document.removeEventListener('click', handleDocumentClick);
-        window.removeEventListener('scroll', handleScroll);
-        document.removeEventListener('keydown', handleKeydown);
-        menuLinks.forEach((link) => {
-          link.removeEventListener('click', handleLinkClick);
-        });
-        if (scrollTimeout) {
-          clearTimeout(scrollTimeout);
-        }
-        closeMenu(); // Ensure menu is closed
-      }
-    };
-  };
-
-  // Initialize on load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobileMenu);
-  } else {
-    initMobileMenu();
+<style>
+  .nav-link-desktop[data-active='true'] {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
   }
 
-  // Reinitialize on Astro page transitions
-  document.addEventListener('astro:page-load', initMobileMenu);
+  .nav-link-desktop[data-active='false'] {
+    color: var(--color-text-secondary);
+  }
+
+  .nav-link-desktop[data-active='false']:hover {
+    color: var(--color-text-primary);
+  }
+
+  .nav-link-mobile[data-active='true'] {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .nav-link-mobile[data-active='false'] {
+    color: var(--color-text-secondary);
+  }
+
+  .nav-link-mobile[data-active='false']:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+</style>
+
+<script>
+  let controller: AbortController | null = null;
+
+  const setLinkState = (link: Element, active: boolean) => {
+    link.setAttribute('data-active', active ? 'true' : 'false');
+    if (active) {
+      link.setAttribute('aria-current', 'page');
+    } else {
+      link.removeAttribute('aria-current');
+    }
+  };
+
+  const initSectionSpy = (signal: AbortSignal) => {
+    const navElement = document.querySelector('nav[data-home-path]');
+    if (!navElement) return;
+
+    const homePath = navElement.getAttribute('data-home-path') || '';
+    const normalizePath = (path: string) => (path !== '/' && path.endsWith('/') ? path.slice(0, -1) : path);
+    if (normalizePath(window.location.pathname) !== homePath) return;
+
+    const sectionLinks = Array.from(document.querySelectorAll('a[data-nav-link][data-section]'));
+    if (sectionLinks.length === 0) return;
+
+    const sectionIds = Array.from(
+      new Set(
+        sectionLinks
+          .map((link) => link.getAttribute('data-section'))
+          .filter((value): value is string => Boolean(value))
+      )
+    );
+
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => Boolean(section));
+    if (sections.length === 0) return;
+
+    const pathLinks = document.querySelectorAll('a[data-nav-link]:not([data-section])');
+    pathLinks.forEach((link) => setLinkState(link, false));
+
+    const activateSection = (id: string) => {
+      sectionLinks.forEach((link) => {
+        setLinkState(link, link.getAttribute('data-section') === id);
+      });
+    };
+
+    const activateFromHash = (): boolean => {
+      const id = window.location.hash.replace('#', '');
+      if (!id || !sectionIds.includes(id)) return false;
+      activateSection(id);
+      return true;
+    };
+
+    if (!activateFromHash()) activateSection('hero');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visible.length === 0) return;
+        const currentId = (visible[0].target as HTMLElement).id;
+        if (currentId) activateSection(currentId);
+      },
+      {
+        rootMargin: '-38% 0px -50% 0px',
+        threshold: [0.1, 0.35, 0.6],
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    signal.addEventListener('abort', () => observer.disconnect(), { once: true });
+
+    sectionLinks.forEach((link) => {
+      link.addEventListener(
+        'click',
+        () => {
+          const id = link.getAttribute('data-section');
+          if (id) activateSection(id);
+        },
+        { signal }
+      );
+    });
+
+    window.addEventListener('hashchange', () => {
+      activateFromHash();
+    }, { signal });
+  };
+
+  const initMobileMenu = (signal: AbortSignal) => {
+    const menuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (!menuButton || !mobileMenu) return;
+
+    const icon = menuButton.querySelector('svg');
+    const openLabel = menuButton.getAttribute('data-open-label') || 'Open navigation menu';
+    const closeLabel = menuButton.getAttribute('data-close-label') || 'Close navigation menu';
+
+    const renderIcon = (open: boolean) => {
+      if (!icon) return;
+      icon.innerHTML = open
+        ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6l12 12M18 6l-12 12"></path>'
+        : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"></path>';
+    };
+
+    const setOpen = (open: boolean) => {
+      mobileMenu.classList.toggle('hidden', !open);
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.setAttribute('aria-label', open ? closeLabel : openLabel);
+      document.body.style.overflow = open ? 'hidden' : '';
+      renderIcon(open);
+    };
+
+    const isOpen = () => !mobileMenu.classList.contains('hidden');
+
+    menuButton.addEventListener('click', () => setOpen(!isOpen()), { signal });
+
+    mobileMenu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => setOpen(false), { signal });
+    });
+
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (event.key === 'Escape' && isOpen()) {
+          setOpen(false);
+          menuButton.focus();
+        }
+      },
+      { signal }
+    );
+
+    document.addEventListener(
+      'click',
+      (event) => {
+        if (!isOpen()) return;
+        const target = event.target as Node;
+        if (!mobileMenu.contains(target) && !menuButton.contains(target)) {
+          setOpen(false);
+        }
+      },
+      { signal }
+    );
+  };
+
+  const initNav = () => {
+    controller?.abort();
+    controller = new AbortController();
+    const signal = controller.signal;
+    initMobileMenu(signal);
+    initSectionSpy(signal);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNav, { once: true });
+  } else {
+    initNav();
+  }
+
+  document.addEventListener('astro:page-load', initNav);
 </script>

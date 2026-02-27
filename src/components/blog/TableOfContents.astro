@@ -7,7 +7,6 @@ interface Props {
 
 const { locale = defaultLocale } = Astro.props;
 const tocTitle = locale === 'fr' ? 'Table des matières' : 'Table of contents';
-const openLabel = locale === 'fr' ? 'Ouvrir' : 'Open';
 ---
 
 <details class="toc-details mb-8 bg-secondary/30 border border-border-default rounded-lg overflow-hidden hidden" id="toc-details" open>
@@ -112,34 +111,15 @@ const openLabel = locale === 'fr' ? 'Ouvrir' : 'Open';
       headings.forEach((heading) => observer.observe(heading));
     };
     
-    // Rotate chevron on details toggle
-    const rotateChevron = () => {
-      const details = document.getElementById('toc-details');
-      if (details) {
-        details.addEventListener('toggle', () => {
-          const chevron = details.querySelector('.toc-chevron');
-          if (chevron) {
-            if (details.open) {
-              chevron.style.transform = 'rotate(0deg)';
-            } else {
-              chevron.style.transform = 'rotate(-90deg)';
-            }
-          }
-        });
-      }
-    };
-    
     // Wait for content to be rendered
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         generateTOC();
-        rotateChevron();
       });
     } else {
       // Use setTimeout to ensure content is rendered
       setTimeout(() => {
         generateTOC();
-        rotateChevron();
       }, 100);
     }
   }

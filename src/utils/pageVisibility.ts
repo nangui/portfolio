@@ -4,8 +4,6 @@
  */
 
 let isPageVisible = true;
-let animationFrameId: number | null = null;
-let gsapPaused = false;
 
 /**
  * Check if page is currently visible
@@ -21,7 +19,6 @@ export const pauseGSAP = () => {
   if (typeof window !== 'undefined' && (window as any).gsap) {
     const gsap = (window as any).gsap;
     gsap.globalTimeline.pause();
-    gsapPaused = true;
   }
 };
 
@@ -32,7 +29,6 @@ export const resumeGSAP = () => {
   if (typeof window !== 'undefined' && (window as any).gsap) {
     const gsap = (window as any).gsap;
     gsap.globalTimeline.resume();
-    gsapPaused = false;
   }
 };
 

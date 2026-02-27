@@ -37,12 +37,7 @@
       const themeToggles = document.querySelectorAll('#theme-toggle');
       const html = document.documentElement;
       
-      if (themeToggles.length === 0) {
-        console.warn('ThemeToggle: theme-toggle elements not found');
-        return;
-      }
-      
-      console.log(`ThemeToggle: Found ${themeToggles.length} button(s), initializing...`);
+      if (themeToggles.length === 0) return;
       
       // Get initial theme from localStorage or system preference
       const getInitialTheme = () => {
@@ -85,7 +80,6 @@
       
       // Event handlers
       const handleToggle = (e: Event) => {
-        console.log('ThemeToggle: handleToggle called', e.type);
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation(); // Prevent other handlers from executing

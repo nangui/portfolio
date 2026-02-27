@@ -72,21 +72,49 @@ const getSlugForUrl = (entry: CollectionEntry<'blog'>) => {
   const filename = entry.id.split('/').pop() || entry.id;
   return filename.replace(/\.(md|mdx)$/, '');
 };
+const siteUrl = String(Astro.site || 'https://adonainangui.dev').replace(/\/$/, '');
 const postSlug = getSlugForUrl(post);
-const postUrl = `${Astro.site || 'https://adonainangui.dev'}/blog/${postSlug}`;
+const postUrl = `${siteUrl}/blog/${postSlug}`;
 
 // Get image URL for Open Graph
-const siteUrl = Astro.site || 'https://adonainangui.dev';
 const ogImage = post.data.image 
   ? `${siteUrl}${post.data.image.startsWith('/') ? post.data.image : `/${post.data.image}`}`
   : undefined;
+const publishedTime = post.data.pubDate.toISOString();
+const articleKeywords = [...(post.data.tags || []), 'frontend engineering', 'web accessibility', 'performance'];
 ---
 
 <BlogLayout 
   title={`${post.data.title} - Blog Adonai Nangui`}
   description={post.data.description}
   ogImage={ogImage}
+  keywords={articleKeywords}
+  ogType="article"
+  publishedTime={publishedTime}
 >
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.data.title,
+      description: post.data.description,
+      datePublished: publishedTime,
+      dateModified: publishedTime,
+      mainEntityOfPage: postUrl,
+      image: ogImage || `${siteUrl}/hero-image.jpeg`,
+      author: {
+        '@type': 'Person',
+        name: 'Adonai Nangui',
+      },
+      publisher: {
+        '@type': 'Person',
+        name: 'Adonai Nangui',
+      },
+      keywords: post.data.tags || [],
+    })}
+  />
   <article class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
     <!-- Breadcrumb amélioré -->
     <nav class="mb-6 md:mb-8" aria-label="Breadcrumb">

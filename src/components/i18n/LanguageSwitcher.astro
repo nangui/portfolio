@@ -140,29 +140,6 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
           lastTouchTime = Date.now();
         };
 
-        const handleDocumentClick = (e: Event) => {
-          const target = e.target as Node;
-          // Don't close menu if clicking on a link inside the menu
-          if (target instanceof HTMLAnchorElement && langMenu.contains(target)) {
-            return;
-          }
-          // Only handle clicks for this specific switcher instance
-          if (langMenu && toggleButton && 
-              !langMenu.contains(target) && 
-              !toggleButton.contains(target)) {
-            langMenu.classList.add('hidden');
-            toggleButton.setAttribute('aria-expanded', 'false');
-          }
-        };
-
-        const handleKeydown = (e: KeyboardEvent) => {
-          if (e.key === 'Escape' && !langMenu.classList.contains('hidden')) {
-            langMenu.classList.add('hidden');
-            toggleButton.setAttribute('aria-expanded', 'false');
-            toggleButton.focus();
-          }
-        };
-
         // Close menu when clicking on a language option
         // Don't prevent default - let the link navigate naturally
         const langOptions = langMenu.querySelectorAll('[data-locale]');
@@ -314,19 +291,7 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
         }
         // Small delay to allow link navigation on iOS
         documentClickTimeout = setTimeout(() => {
-          // Call handleDocumentClick for each switcher instance
-          switchers.forEach((switcher) => {
-            const toggleButton = switcher.querySelector('[data-lang-toggle]') as HTMLElement;
-            const langMenu = switcher.querySelector('[data-lang-menu]') as HTMLElement;
-            const target = e.target as Node;
-            
-            if (langMenu && toggleButton && 
-                !langMenu.contains(target) && 
-                !toggleButton.contains(target)) {
-              langMenu.classList.add('hidden');
-              toggleButton.setAttribute('aria-expanded', 'false');
-            }
-          });
+          handleDocumentClick(e);
         }, 200);
       };
       

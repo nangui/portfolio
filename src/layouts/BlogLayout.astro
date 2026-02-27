@@ -7,16 +7,33 @@ interface Props {
   description?: string;
   ogImage?: string;
   locale?: Locale;
+  keywords?: string[];
+  ogType?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
 }
 
 const { 
   title, 
   description = "Articles techniques sur le développement frontend, l'architecture et la productivité développeur", 
   ogImage,
-  locale = defaultLocale
+  locale = defaultLocale,
+  keywords = [],
+  ogType = 'website',
+  publishedTime,
+  modifiedTime,
 } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} ogImage={ogImage} locale={locale} showCustomCursor={false}>
+<BaseLayout
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  locale={locale}
+  keywords={keywords}
+  ogType={ogType}
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+>
   <slot />
 </BaseLayout>

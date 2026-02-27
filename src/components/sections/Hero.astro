@@ -1,123 +1,303 @@
 ---
 import Button from '@components/ui/Button.astro';
 import HeroImage from '@components/ui/HeroImage.astro';
-import TextDistortion from '@components/ui/TextDistortion.astro';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
-import { formatPath } from '@i18n/utils';
 
 interface Props {
   locale?: Locale;
 }
 
 const { locale = defaultLocale } = Astro.props;
+const heroHeadline =
+  locale === 'fr'
+    ? 'Transformer les idées en expériences web accessibles'
+    : 'Transforming ideas into accessible web experiences';
+const heroDisplayLines =
+  locale === 'fr'
+    ? ['EXPERIENCES WEB', 'ACCESSIBLES']
+    : ['WEB EXPERIENCES', 'ACCESSIBLE'];
+const heroPills =
+  locale === 'fr'
+    ? ['Architecture Frontend', 'Accessibilité Web', 'Performance Produit']
+    : ['Frontend Architecture', 'Web Accessibility', 'Product Performance'];
 ---
 
-<section id="hero" class="min-h-[80vh] flex items-center justify-center bg-primary py-12 md:py-16 relative">
-  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-      <!-- Image avec effet 3D -->
-      <div class="shrink-0 order-2 lg:order-1">
-        <HeroImage />
-      </div>
-      
-      <!-- Contenu texte -->
-      <div class="flex-1 text-center lg:text-left order-1 lg:order-2">
-        <TextDistortion>
-    <h1 class="font-heading font-semibold text-5xl md:text-6xl lg:text-7xl mb-6 text-primary">
+<section id="hero" class="hero-section bg-primary" aria-labelledby="hero-heading">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
+    <div class="hero-panel rounded-2xl p-6 sm:p-8 md:p-10 lg:p-12">
+      <h1 id="hero-heading" class="sr-only">{heroHeadline}</h1>
+
+      <div class="hero-row flex items-center gap-4 sm:gap-7 md:gap-12">
+        <div class="hero-copy min-w-0 text-left">
+          <p class="hero-intent text-secondary text-sm md:text-base mb-3">
+            {heroHeadline}
+          </p>
+
+          <p class="font-heading text-xl md:text-2xl text-primary mb-1">
             {getTranslation('hero', 'name', locale)}
-    </h1>
-        </TextDistortion>
-        <TextDistortion>
-          <p class="font-heading font-medium text-2xl md:text-3xl mb-4 text-secondary hero-title" data-title={getTranslation('hero', 'title', locale)}>
+          </p>
+
+          <p class="font-heading text-lg md:text-xl text-secondary mb-3">
             {getTranslation('hero', 'title', locale)}
           </p>
-        </TextDistortion>
-        <TextDistortion>
-          <p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto lg:mx-0 mb-8">
+
+          <p class="text-sm sm:text-base md:text-lg text-secondary max-w-2xl mb-7">
             {getTranslation('hero', 'tagline', locale)}
-    </p>
-        </TextDistortion>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-      <Button href="#projects" variant="primary" size="lg">
-            {getTranslation('hero', 'ctaProjects', locale)}
-      </Button>
-      <Button href="#contact" variant="secondary" size="lg">
-            {getTranslation('hero', 'ctaContact', locale)}
-      </Button>
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-3 justify-start">
+            <Button
+              href="#projects"
+              variant="primary"
+              size="lg"
+              class="hero-primary-btn"
+              ariaLabel={getTranslation('hero', 'ctaProjects', locale)}
+              analyticsEvent="hero_cta_click"
+              analyticsLabel="projects"
+            >
+              {getTranslation('hero', 'ctaProjects', locale)}
+            </Button>
+            <Button
+              href="#contact"
+              variant="secondary"
+              size="lg"
+              class="hero-secondary-btn"
+              ariaLabel={getTranslation('hero', 'ctaContact', locale)}
+              analyticsEvent="hero_cta_click"
+              analyticsLabel="contact"
+            >
+              {getTranslation('hero', 'ctaContact', locale)}
+            </Button>
+          </div>
+        </div>
+
+        <div class="hero-media-wrap relative flex justify-end">
+          <div class="hero-visual relative w-full max-w-[430px]">
+            <p class="hero-display" aria-hidden="true">
+              <span>{heroDisplayLines[0]}</span>
+              <span>{heroDisplayLines[1]}</span>
+            </p>
+            <HeroImage />
+
+            <span class="hero-pill hero-pill-top">{heroPills[0]}</span>
+            <span class="hero-pill hero-pill-mid">{heroPills[1]}</span>
+            <span class="hero-pill hero-pill-bottom">{heroPills[2]}</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<script>
-  // Force line break before "Tech Lead" on mobile
-  if (typeof document !== 'undefined') {
-    const addMobileLineBreak = () => {
-      const heroTitle = document.querySelector('.hero-title');
-      if (!heroTitle) return;
-
-      // Wait for TextDistortion to finish processing
-      const checkAndProcess = () => {
-        const wrapper = heroTitle.closest('[data-text-distortion]');
-        if (!wrapper) return;
-
-        // Check if TextDistortion has created character spans
-        const charSpans = wrapper.querySelectorAll('span[data-char]');
-        if (charSpans.length === 0) {
-          // TextDistortion hasn't processed yet, try again
-          setTimeout(checkAndProcess, 100);
-          return;
-        }
-
-        // Find where " / Tech Lead" starts by looking for the "/" character
-        let foundSlash = false;
-        let foundBreak = false;
-
-        charSpans.forEach((span) => {
-          if (foundBreak) return;
-          
-          const spanText = span.textContent || '';
-          
-          // Look for the "/" character
-          if (!foundSlash && spanText.includes('/')) {
-            foundSlash = true;
-            // Insert <br> before the "/" on mobile
-            if (window.innerWidth < 768) {
-              const existingBr = span.parentElement?.querySelector('br.hero-mobile-break');
-              if (!existingBr) {
-                const br = document.createElement('br');
-                br.className = 'hero-mobile-break md:hidden';
-                span.parentElement?.insertBefore(br, span);
-                foundBreak = true;
-              }
-            }
-          }
-        });
-      };
-
-      // Start checking after a short delay to let TextDistortion initialize
-      setTimeout(checkAndProcess, 200);
-    };
-
-    // Run on page load
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', addMobileLineBreak);
-    } else {
-      addMobileLineBreak();
-    }
-
-    // Also run on Astro page navigation
-    document.addEventListener('astro:page-load', addMobileLineBreak);
-  }
-</script>
-
 <style>
-  /* Ensure line break is visible on mobile */
-  @media (max-width: 767px) {
-    .hero-mobile-break {
-      display: block;
+  .hero-section {
+    min-height: clamp(540px, 74vh, 800px);
+  }
+
+  .hero-row {
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    padding-top: clamp(1.6rem, 3.4vw, 2.4rem);
+  }
+
+  .hero-copy {
+    flex: 1 1 0%;
+    max-width: 44rem;
+  }
+
+  .hero-panel {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-bg-primary);
+  }
+
+  .hero-intent {
+    max-width: 40ch;
+    letter-spacing: 0.01em;
+  }
+
+  .hero-display {
+    position: absolute;
+    inset: auto auto 50% -7%;
+    transform: translateY(52%);
+    z-index: 1;
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(2.15rem, 7vw, 4.2rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: color-mix(in srgb, var(--color-text-primary) 9%, transparent);
+    pointer-events: none;
+    white-space: normal;
+  }
+
+  .hero-display span {
+    display: block;
+  }
+
+  .hero-visual {
+    z-index: 2;
+  }
+
+  .hero-pill {
+    position: absolute;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-bg-primary) 78%, #ffffff 22%);
+    border: 1px solid var(--color-border-default);
+    color: var(--color-text-primary);
+    font-size: 0.78rem;
+    line-height: 1;
+    font-weight: 600;
+    padding: 0.6rem 0.85rem;
+    white-space: nowrap;
+    transform: translateY(0);
+    will-change: transform;
+    animation-name: heroTagFloat;
+    animation-duration: 4.2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  .hero-pill-top {
+    top: 8%;
+    left: -8%;
+    animation-delay: 0s;
+  }
+
+  .hero-pill-mid {
+    right: -12%;
+    top: 44%;
+    animation-delay: 0.8s;
+    animation-duration: 3.7s;
+  }
+
+  .hero-pill-bottom {
+    bottom: 6%;
+    left: -2%;
+    animation-delay: 1.3s;
+    animation-duration: 4.6s;
+  }
+
+  @keyframes heroTagFloat {
+    0%,
+    100% {
+      transform: translateY(0);
     }
+    25% {
+      transform: translateY(-6px);
+    }
+    75% {
+      transform: translateY(6px);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .hero-pill {
+      display: none;
+    }
+  }
+
+  :global(.hero-primary-btn) {
+    background: #3b82f6;
+    color: #f8fbff;
+    border: 2px solid #9ec5ff;
+    border-radius: 28px 14px 32px 12px / 14px 30px 12px 28px;
+    box-shadow:
+      inset 0 0 0 1px rgba(11, 25, 44, 0.26),
+      0 7px 18px rgba(0, 0, 0, 0.22);
+  }
+
+  :global(.hero-primary-btn:hover) {
+    background: #2563eb;
+    border-color: #d5e6ff;
+  }
+
+  :global(.hero-secondary-btn) {
+    background: var(--color-bg-secondary);
+    border: 2px solid color-mix(in srgb, var(--color-accent-light) 60%, #ffffff 40%);
+    color: var(--color-text-primary);
+    border-radius: 26px 12px 30px 16px / 15px 28px 16px 30px;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-bg-primary) 45%, transparent);
+  }
+
+  :global(.hero-secondary-btn:hover) {
+    background: color-mix(in srgb, var(--color-bg-secondary) 82%, #111827 18%);
+    border-color: color-mix(in srgb, var(--color-accent-light) 45%, var(--color-border-light) 55%);
+  }
+
+  :root[data-theme='light'] .hero-pill {
+    background: #ffffff;
+    color: var(--color-text-primary);
+  }
+
+  @media (max-width: 1024px) {
+    .hero-section {
+      min-height: auto;
+    }
+
+    .hero-row {
+      padding-top: clamp(1.3rem, 3.2vw, 2rem);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero-row {
+      flex-direction: column-reverse;
+      align-items: stretch;
+      gap: 1.15rem;
+      padding-top: 0.85rem;
+    }
+
+    .hero-media-wrap {
+      justify-content: center;
+    }
+
+    .hero-visual {
+      max-width: min(100%, 360px);
+      margin-inline: auto;
+    }
+
+    .hero-panel {
+      padding: 1.1rem;
+    }
+
+    .hero-copy p {
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-copy .flex {
+      margin-top: 0.9rem;
+    }
+
+    :global(.hero-primary-btn),
+    :global(.hero-secondary-btn) {
+      border-radius: 22px 12px 24px 14px / 12px 24px 13px 22px;
+    }
+
+    .hero-intent {
+      font-size: 0.82rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .hero-display {
+      font-size: clamp(1.4rem, 10.5vw, 2rem);
+      inset: auto auto 49% -2%;
+      color: color-mix(in srgb, var(--color-text-primary) 7%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-pill {
+      animation: none;
+      transform: none;
+    }
+
   }
 </style>
