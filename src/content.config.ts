@@ -21,8 +21,8 @@ const projects = defineCollection({
     description_en: z.string().optional(),
     stack: z.array(z.string()),
     featured: z.boolean().optional().default(true),
-    demoUrl: z.string().url().optional(),
-    githubUrl: z.string().url().optional(),
+    demoUrl: z.url().optional(),
+    githubUrl: z.url().optional(),
     image: z.string().optional(),
     images: z.array(z.string()).optional(), // Support for multiple images
     role: z.string().optional(),
