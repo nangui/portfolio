@@ -3,7 +3,6 @@ import '../styles/global.css';
 import Analytics from '@vercel/analytics/astro';
 import Nav from '@components/ui/Nav.astro';
 import Footer from '@components/ui/Footer.astro';
-import Loader from '@components/ui/Loader.astro';
 import FloatingSignatureBadge from '@components/ui/FloatingSignatureBadge.astro';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
@@ -189,7 +188,6 @@ const ogImageType = getImageType(resolvedOgImage);
     
   </head>
   <body>
-    <Loader />
     <!-- Skip to main content link for keyboard navigation -->
     <a 
       href="#main-content" 
