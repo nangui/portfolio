@@ -58,26 +58,35 @@ const { class: className, animateOnLoad = true } = Astro.props;
       charsWrapper.style.display = 'inline-block';
       charsWrapper.setAttribute('aria-label', text);
 
-      // Split into characters
-      text.split('').forEach((char, index) => {
-        const charSpan = document.createElement('span');
-        charSpan.textContent = char === ' ' ? '\u00A0' : char;
-        charSpan.style.display = 'inline-block';
-        charSpan.style.willChange = 'transform, opacity';
-        charSpan.style.transformOrigin = 'center center';
-        charSpan.setAttribute('data-char-index', index.toString());
-        
-        // IMPORTANT: Set initial opacity to 0 if animation is enabled (will be animated in)
-        // This prevents flash of unstyled content
-        charSpan.style.opacity = this.shouldAnimate ? '0' : '1';
-        
-        // Preserve whitespace
-        if (char === ' ') {
-          charSpan.style.width = '0.3em';
+      // Split into characters, grouped by word so lines only break between words
+      let index = 0;
+      text.split(' ').forEach((word, wordIndex) => {
+        if (wordIndex > 0) {
+          charsWrapper.appendChild(document.createTextNode(' '));
         }
 
-        this.chars.push(charSpan);
-        charsWrapper.appendChild(charSpan);
+        const wordSpan = document.createElement('span');
+        wordSpan.style.display = 'inline-block';
+        wordSpan.style.whiteSpace = 'nowrap';
+
+        word.split('').forEach((char) => {
+          const charSpan = document.createElement('span');
+          charSpan.textContent = char;
+          charSpan.style.display = 'inline-block';
+          charSpan.style.willChange = 'transform, opacity';
+          charSpan.style.transformOrigin = 'center center';
+          charSpan.setAttribute('data-char-index', index.toString());
+          index += 1;
+
+          // IMPORTANT: Set initial opacity to 0 if animation is enabled (will be animated in)
+          // This prevents flash of unstyled content
+          charSpan.style.opacity = this.shouldAnimate ? '0' : '1';
+
+          this.chars.push(charSpan);
+          wordSpan.appendChild(charSpan);
+        });
+
+        charsWrapper.appendChild(wordSpan);
       });
 
       this.element.appendChild(charsWrapper);
@@ -239,13 +248,13 @@ const { class: className, animateOnLoad = true } = Astro.props;
   }
 
   /* Hide characters initially if animation is enabled, show if disabled */
-  .text-distortion-wrapper[data-animate-on-load="true"] > * > span > span {
+  .text-distortion-wrapper[data-animate-on-load="true"] :global([data-char-index]) {
     opacity: 0;
   }
 
   /* Fallback: ensure text is visible if JS fails and animation is disabled */
-  .text-distortion-wrapper[data-animate-on-load="false"] > * > span > span,
-  .text-distortion-wrapper:not([data-animate-on-load]) > * > span > span {
+  .text-distortion-wrapper[data-animate-on-load="false"] :global([data-char-index]),
+  .text-distortion-wrapper:not([data-animate-on-load]) :global([data-char-index]) {
     opacity: 1;
   }
 

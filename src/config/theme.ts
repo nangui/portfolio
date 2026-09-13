@@ -19,10 +19,6 @@ export const theme = {
       default: '#1F2937',
       light: '#374151',
     },
-    threejs: {
-      base: '#3B82F6',
-      secondary: '#1E293B',
-    },
   },
   typography: {
     fontHeading: "'Space Grotesk', system-ui, sans-serif",

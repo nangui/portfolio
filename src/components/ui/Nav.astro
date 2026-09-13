@@ -1,7 +1,7 @@
 ---
 import LanguageSwitcher from '@components/i18n/LanguageSwitcher.astro';
 import ThemeToggle from '@components/ui/ThemeToggle.astro';
-import { defaultLocale, type Locale } from '@i18n/config';
+import { defaultLocale, locales, localeCodes, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
 import { formatPath } from '@i18n/utils';
 
@@ -11,19 +11,22 @@ interface Props {
 
 const { locale = defaultLocale } = Astro.props;
 
+// "Home" is reached through the name, "Contact" is the call-to-action button
 const navItems = [
-  { key: 'home', href: '#hero', section: 'hero' },
   { key: 'projects', href: '#projects', section: 'projects' },
   { key: 'experience', href: '#experience', section: 'experience' },
   { key: 'blog', href: '/blog', section: 'blog-preview', homeHref: '#blog-preview' },
-  { key: 'contact', href: '#contact', section: 'contact' },
 ];
 
 const openMenuLabel = getTranslation('nav', 'openMenu', locale);
 const closeMenuLabel = getTranslation('nav', 'closeMenu', locale);
 const navLabel = locale === 'fr' ? 'Navigation principale' : 'Main navigation';
+const contactLabel = getTranslation('hero', 'ctaContact', locale);
+const themeLabel = locale === 'fr' ? 'Thème' : 'Theme';
+const languageLabel = locale === 'fr' ? 'Langue' : 'Language';
 const currentPathname = Astro.url.pathname;
 const homePath = formatPath('/', locale);
+const pathWithoutLocale = currentPathname.replace(/^\/(fr|en)/, '') || '/';
 
 const normalizePath = (path: string): string => {
   if (path !== '/' && path.endsWith('/')) return path.slice(0, -1);
@@ -31,6 +34,9 @@ const normalizePath = (path: string): string => {
 };
 
 const isSectionLink = (href: string): boolean => href.startsWith('#');
+
+const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
+const isProjectRoute = /\/projects\//.test(currentPathname);
 
 const buildHref = (href: string, homeHref?: string): string => {
   if (isHomeRoute && homeHref) return homeHref;
@@ -48,16 +54,24 @@ const isActivePath = (href: string): boolean => {
   return current === target || current.startsWith(`${target}/`);
 };
 
-const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
+// On the home page the section spy decides; elsewhere highlight the matching page
+const isItemActive = (item: (typeof navItems)[number]): boolean => {
+  if (isHomeRoute) return false;
+  if (item.key === 'projects') return isProjectRoute;
+  return isActivePath(item.href);
+};
+
+const contactHref = buildHref('#contact');
 ---
 
 <nav
-  class="sticky top-0 z-40 border-b border-border-default/70 bg-primary/92 backdrop-blur-md"
+  class="site-nav sticky top-0 z-40 border-b"
   aria-label={navLabel}
   data-home-path={normalizePath(homePath)}
+  data-scrolled="false"
 >
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="h-16 flex items-center justify-between gap-4">
+    <div class="h-16 md:h-[72px] flex items-center justify-between gap-6">
       <a
         href={formatPath('/', locale)}
         class="font-heading text-lg font-semibold tracking-tight text-primary hover:text-accent rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -66,80 +80,140 @@ const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
         Adonai Nangui
       </a>
 
-      <ul class="hidden md:flex items-center rounded-full border border-border-default bg-secondary/40 px-2 py-1">
+      <div class="hidden md:flex items-center gap-7">
+        <ul class="flex items-center gap-7">
+          {navItems.map((item) => {
+            const active = isItemActive(item);
+            return (
+              <li>
+                <a
+                  href={buildHref(item.href, item.homeHref)}
+                  data-nav-link="true"
+                  data-section={item.section}
+                  data-active={active ? 'true' : 'false'}
+                  class="nav-link-desktop block py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  aria-current={active ? 'page' : undefined}
+                >
+                  {getTranslation('nav', item.key, locale)}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+
+        <span class="h-5 w-px bg-border-light" aria-hidden="true"></span>
+
+        <div class="flex items-center gap-1">
+          <ThemeToggle />
+          <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
+        </div>
+
+        <a
+          href={contactHref}
+          class="nav-cta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          data-analytics-event="nav_cta_click"
+          data-analytics-label="contact"
+        >
+          {contactLabel}
+        </a>
+      </div>
+
+      <button
+        type="button"
+        class="md:hidden -mr-2 inline-flex h-11 w-11 items-center justify-center rounded-sm text-secondary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        aria-label={openMenuLabel}
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        id="mobile-menu-button"
+        data-open-label={openMenuLabel}
+        data-close-label={closeMenuLabel}
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="hidden md:hidden fixed inset-x-0 top-16 bottom-0 overflow-y-auto bg-primary">
+    <div class="flex min-h-full flex-col px-4 sm:px-6 pt-6 pb-8">
+      <ul class="flex flex-col">
         {navItems.map((item) => {
-          const href = buildHref(item.href, item.homeHref);
-          const label = getTranslation('nav', item.key, locale);
-          const sectionId = item.section;
-          const active = isHomeRoute ? sectionId === 'hero' : isActivePath(item.href);
+          const active = isItemActive(item);
           return (
             <li>
               <a
-                href={href}
+                href={buildHref(item.href, item.homeHref)}
                 data-nav-link="true"
-                data-section={sectionId}
+                data-section={item.section}
                 data-active={active ? 'true' : 'false'}
-                class="nav-link-desktop rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                class="nav-link-mobile flex min-h-16 items-center justify-between border-b border-border-default font-heading text-[28px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 aria-current={active ? 'page' : undefined}
               >
-                {label}
+                {getTranslation('nav', item.key, locale)}
+                <span class="nav-dot h-2 w-2 rounded-full bg-accent" aria-hidden="true"></span>
               </a>
             </li>
           );
         })}
       </ul>
 
-      <div class="flex items-center gap-2">
-        <ThemeToggle />
-        <LanguageSwitcher currentLocale={locale} currentPath={Astro.url.pathname} />
-        <button
-          type="button"
-          class="md:hidden inline-flex items-center justify-center rounded-sm p-2 text-secondary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          aria-label={openMenuLabel}
-          aria-expanded="false"
-          aria-controls="mobile-menu"
-          id="mobile-menu-button"
-          data-open-label={openMenuLabel}
-          data-close-label={closeMenuLabel}
+      <div class="mt-auto flex flex-col gap-4 pt-10">
+        <a
+          href={contactHref}
+          class="nav-cta nav-cta-mobile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          data-analytics-event="nav_cta_click"
+          data-analytics-label="contact_mobile"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"></path>
-          </svg>
-        </button>
+          {contactLabel}
+        </a>
+
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex rounded-full border border-border-default p-1" role="group" aria-label={languageLabel}>
+            {locales.map((targetLocale) => (
+              <a
+                href={formatPath(pathWithoutLocale, targetLocale)}
+                hreflang={targetLocale}
+                class="lang-segment flex h-9 min-w-[52px] items-center justify-center rounded-full text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                aria-current={targetLocale === locale ? 'true' : undefined}
+              >
+                {localeCodes[targetLocale]}
+              </a>
+            ))}
+          </div>
+
+          <div class="flex items-center gap-1 rounded-full border border-border-default pl-4 pr-1 text-sm text-secondary">
+            <span>{themeLabel}</span>
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div id="mobile-menu" class="hidden md:hidden border-t border-border-default bg-primary/98">
-    <ul class="px-4 py-4 sm:px-6 space-y-1">
-      {navItems.map((item) => {
-        const href = buildHref(item.href, item.homeHref);
-        const label = getTranslation('nav', item.key, locale);
-        const sectionId = item.section;
-        const active = isHomeRoute ? sectionId === 'hero' : isActivePath(item.href);
-        return (
-          <li>
-            <a
-              href={href}
-              data-nav-link="true"
-              data-section={sectionId}
-              data-active={active ? 'true' : 'false'}
-              class="nav-link-mobile block rounded-md px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              aria-current={active ? 'page' : undefined}
-            >
-              {label}
-            </a>
-          </li>
-        );
-      })}
-    </ul>
   </div>
 </nav>
 
 <style>
+  .site-nav {
+    background-color: transparent;
+    border-bottom-color: transparent;
+    transition-property: background-color, border-color;
+    transition-duration: 160ms;
+  }
+
+  /* No backdrop-filter here: it would become the containing block of the fixed mobile menu */
+  .site-nav[data-scrolled='true'],
+  .site-nav:has(#mobile-menu:not(.hidden)) {
+    background-color: color-mix(in srgb, var(--color-bg-primary) 94%, transparent);
+    border-bottom-color: color-mix(in srgb, var(--color-border-default) 70%, transparent);
+  }
+
+  .nav-link-desktop {
+    border-bottom: 2px solid transparent;
+  }
+
   .nav-link-desktop[data-active='true'] {
-    background: var(--color-bg-tertiary);
     color: var(--color-text-primary);
+    border-bottom-color: var(--color-accent);
   }
 
   .nav-link-desktop[data-active='false'] {
@@ -150,8 +224,33 @@ const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
     color: var(--color-text-primary);
   }
 
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    background: #3b82f6;
+    color: #f8fbff;
+    border: 2px solid #9ec5ff;
+    border-radius: 20px 10px 22px 9px / 10px 21px 9px 20px;
+  }
+
+  .nav-cta:hover {
+    background: #2563eb;
+    border-color: #d5e6ff;
+    color: #f8fbff;
+  }
+
+  .nav-cta-mobile {
+    min-height: 52px;
+    font-size: 1rem;
+    border-radius: 22px 12px 24px 14px / 12px 24px 13px 22px;
+  }
+
   .nav-link-mobile[data-active='true'] {
-    background: var(--color-bg-secondary);
     color: var(--color-text-primary);
   }
 
@@ -160,7 +259,19 @@ const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
   }
 
   .nav-link-mobile[data-active='false']:hover {
-    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  .nav-link-mobile[data-active='false'] .nav-dot {
+    display: none;
+  }
+
+  .lang-segment {
+    color: var(--color-text-secondary);
+  }
+
+  .lang-segment[aria-current='true'] {
+    background: var(--color-bg-tertiary);
     color: var(--color-text-primary);
   }
 </style>
@@ -175,6 +286,18 @@ const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
     } else {
       link.removeAttribute('aria-current');
     }
+  };
+
+  const initScrolledState = (signal: AbortSignal) => {
+    const navElement = document.querySelector('nav[data-home-path]');
+    if (!navElement) return;
+
+    const update = () => {
+      navElement.setAttribute('data-scrolled', window.scrollY > 8 ? 'true' : 'false');
+    };
+
+    update();
+    window.addEventListener('scroll', update, { signal, passive: true });
   };
 
   const initSectionSpy = (signal: AbortSignal) => {
@@ -196,13 +319,11 @@ const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
       )
     );
 
-    const sections = sectionIds
+    // The hero has no link: observing it clears the highlight when scrolling back to the top
+    const sections = [...sectionIds, 'hero']
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => Boolean(section));
     if (sections.length === 0) return;
-
-    const pathLinks = document.querySelectorAll('a[data-nav-link]:not([data-section])');
-    pathLinks.forEach((link) => setLinkState(link, false));
 
     const activateSection = (id: string) => {
       sectionLinks.forEach((link) => {
@@ -297,16 +418,12 @@ const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
       { signal }
     );
 
-    document.addEventListener(
-      'click',
-      (event) => {
-        if (!isOpen()) return;
-        const target = event.target as Node;
-        if (!mobileMenu.contains(target) && !menuButton.contains(target)) {
-          setOpen(false);
-        }
+    window.addEventListener(
+      'resize',
+      () => {
+        if (isOpen() && window.matchMedia('(min-width: 768px)').matches) setOpen(false);
       },
-      { signal }
+      { signal, passive: true }
     );
   };
 
@@ -314,6 +431,7 @@ const isHomeRoute = normalizePath(currentPathname) === normalizePath(homePath);
     controller?.abort();
     controller = new AbortController();
     const signal = controller.signal;
+    initScrolledState(signal);
     initMobileMenu(signal);
     initSectionSpy(signal);
   };

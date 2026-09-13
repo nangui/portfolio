@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
-import ProjectCardHover from '@components/ui/ProjectCardHover.astro';
+import { Image } from 'astro:assets';
+import PasteurFlowDiagram from '@components/projects/PasteurFlowDiagram.astro';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
 import { formatPath } from '@i18n/utils';
@@ -13,7 +14,7 @@ const { locale = defaultLocale } = Astro.props;
 
 const allProjects = (await getCollection('projects').catch(() => [])) as CollectionEntry<'projects'>[];
 
-const getSlugForDedup = (entry: CollectionEntry<'projects'>): string => {
+const getSlug = (entry: CollectionEntry<'projects'>): string => {
   if (entry.data.slug) return entry.data.slug.replace(/-(fr|en)$/, '');
   const filename = entry.id.split('/').pop() || entry.id;
   return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
@@ -28,7 +29,7 @@ const getLocaleFromId = (id: string): string | null => {
 
 const projectsBySlug = new Map<string, CollectionEntry<'projects'>>();
 allProjects.forEach((project: CollectionEntry<'projects'>) => {
-  const slug = getSlugForDedup(project);
+  const slug = getSlug(project);
   if (!projectsBySlug.has(slug)) {
     projectsBySlug.set(slug, project);
     return;
@@ -43,48 +44,79 @@ allProjects.forEach((project: CollectionEntry<'projects'>) => {
   }
 });
 
+const monthIndex: Record<string, number> = {
+  january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+  july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+  janvier: 0, février: 1, mars: 2, avril: 3, mai: 4, juin: 5,
+  juillet: 6, août: 7, septembre: 8, octobre: 9, novembre: 10, décembre: 11,
+};
+
+// Sort key from the end of the period ("March 2023 - April 2025" -> April 2025).
+// A period without an end year is treated as ongoing, so it comes first.
+const getPeriodEnd = (project: CollectionEntry<'projects'>): number => {
+  const period = project.data.period_en || project.data.period_fr || project.data.period || '';
+  const end = period.split(' - ').pop() ?? '';
+  const year = end.match(/\d{4}/)?.[0];
+  if (!year) return Number.POSITIVE_INFINITY;
+  const month = monthIndex[end.replace(year, '').trim().toLowerCase()] ?? 11;
+  return Number(year) * 12 + month;
+};
+
 const featuredProjects = Array.from(projectsBySlug.values())
   .filter((project: CollectionEntry<'projects'>) => project.data.featured !== false)
+  .sort((a, b) => getPeriodEnd(b) - getPeriodEnd(a))
   .slice(0, 6);
 
 interface ProjectCardData {
   slug: string;
-  title: string;
+  name: string;
+  subtitle?: string;
   description: string;
+  period: string;
   image?: string;
   stack: string[];
+  highlights: { value: string; label: string }[];
 }
 
-const getSlug = (entry: CollectionEntry<'projects'>): string => {
-  if (entry.data.slug) return entry.data.slug.replace(/-(fr|en)$/, '');
-  const filename = entry.id.split('/').pop() || entry.id;
-  return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
-};
-
-const getHoverImage = (project: CollectionEntry<'projects'>): string | undefined => {
+const getProjectImage = (project: CollectionEntry<'projects'>): string | undefined => {
   if (project.data.images && project.data.images.length > 0) return project.data.images[0];
   return project.data.image;
 };
 
-const getProjectTitle = (project: CollectionEntry<'projects'>): string => {
-  return locale === 'fr'
-    ? project.data.title_fr || project.data.title || ''
-    : project.data.title_en || project.data.title || '';
+const toCardData = (project: CollectionEntry<'projects'>): ProjectCardData => {
+  const title =
+    locale === 'fr'
+      ? project.data.title_fr || project.data.title || ''
+      : project.data.title_en || project.data.title || '';
+  const [name, ...subtitleParts] = title.split(' - ');
+  const description =
+    locale === 'fr'
+      ? project.data.description_fr || project.data.description || ''
+      : project.data.description_en || project.data.description || '';
+  const period =
+    locale === 'fr'
+      ? project.data.period_fr || project.data.period || ''
+      : project.data.period_en || project.data.period || '';
+
+  return {
+    slug: getSlug(project),
+    name,
+    subtitle: subtitleParts.join(' - ') || undefined,
+    description,
+    period: period.replace(' - ', ' – '),
+    image: getProjectImage(project),
+    stack: project.data.stack,
+    highlights: (locale === 'fr' ? project.data.highlights_fr : project.data.highlights_en) ?? [],
+  };
 };
 
-const getProjectDescription = (project: CollectionEntry<'projects'>): string => {
-  return locale === 'fr'
-    ? project.data.description_fr || project.data.description || ''
-    : project.data.description_en || project.data.description || '';
-};
-
-const featuredProjectCards: ProjectCardData[] = featuredProjects.map((project) => ({
-  slug: getSlug(project),
-  title: getProjectTitle(project),
-  description: getProjectDescription(project),
-  image: getHoverImage(project),
-  stack: project.data.stack.slice(0, 3),
-}));
+const [spotlight, ...otherProjects] = featuredProjects.map(toCardData);
+// Projects with a hand-drawn cover instead of a screenshot
+const hasDiagramCover = spotlight?.slug === 'institut-pasteur-dakar';
+const spotlightHasCover = Boolean(spotlight && (hasDiagramCover || spotlight.image));
+const spotlightStack = spotlight?.stack.slice(0, 5) ?? [];
+const spotlightExtraStack = spotlight ? spotlight.stack.length - spotlightStack.length : 0;
+const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies used';
 ---
 
 <section id="projects" class="py-section bg-primary" aria-labelledby="projects-heading">
@@ -95,50 +127,146 @@ const featuredProjectCards: ProjectCardData[] = featuredProjects.map((project) =
       </h2>
     </div>
 
-    {featuredProjects.length > 0 ? (
-      <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6" role="list">
-        {featuredProjectCards.map((project) => (
-          <li>
-            <a
-              href={formatPath(`/projects/${project.slug}`, locale)}
-              class="group block h-full rounded-xl border border-border-default bg-secondary p-5 md:p-6 hover:border-accent hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              aria-label={`${getTranslation('projects', 'learnMore', locale)} ${project.title}`}
-              data-project-image={project.image}
-              data-project-slug={project.slug}
-              data-project-title={project.title}
-            >
-              <article aria-labelledby={`project-title-${project.slug}`}>
-                <div class="mb-3 flex items-start justify-between gap-3">
-                  <h3 id={`project-title-${project.slug}`} class="font-heading text-xl font-semibold text-primary">
-                    {project.title}
-                  </h3>
-                  <span class="text-xs font-medium text-accent whitespace-nowrap">
-                    {getTranslation('projects', 'learnMore', locale)}
-                  </span>
-                </div>
+    {spotlight ? (
+      <div class="flex flex-col gap-5 md:gap-6">
+        <a
+          href={formatPath(`/projects/${spotlight.slug}`, locale)}
+          class:list={[
+            'group grid grid-cols-1 overflow-hidden rounded-xl border border-accent bg-secondary hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+            spotlightHasCover && 'lg:grid-cols-2',
+          ]}
+          aria-label={`${getTranslation('projects', 'readCaseStudy', locale)} ${spotlight.name}`}
+        >
+          <article class="order-2 lg:order-1 flex flex-col p-5 sm:p-8 lg:p-10" aria-labelledby={`project-title-${spotlight.slug}`}>
+            <div class="mb-3.5 lg:mb-[18px] flex flex-wrap items-center gap-2.5">
+              <span class="rounded-full border border-accent-light/40 px-2.5 py-1 text-xs font-semibold text-accent">
+                {getTranslation('projects', 'mostRecent', locale)}
+              </span>
+              <span class="text-[13px] text-text-tertiary">{spotlight.period}</span>
+            </div>
 
-                <p class="text-secondary text-sm leading-relaxed line-clamp-3 mb-4">
-                  {project.description}
-                </p>
+            <h3 id={`project-title-${spotlight.slug}`} class="font-heading text-2xl lg:text-[2rem] font-semibold leading-tight text-primary">
+              {spotlight.name}
+            </h3>
+            {spotlight.subtitle && (
+              <p class="mt-1 lg:mt-1.5 font-heading text-base lg:text-lg text-secondary">{spotlight.subtitle}</p>
+            )}
+            <p class="mt-3.5 lg:mt-[18px] text-sm lg:text-[15px] leading-relaxed text-secondary">
+              {spotlight.description}
+            </p>
 
-                <ul class="flex flex-wrap gap-2" aria-label="Technologies utilisées">
-                  {project.stack.map((tech) => (
-                    <li class="rounded-full border border-border-default bg-bg-tertiary px-2.5 py-1 text-xs text-secondary">
-                      {tech}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </a>
-          </li>
-        ))}
-      </ul>
+            {spotlight.highlights.length > 0 && (
+              <dl class="mt-5 lg:mt-7 grid grid-cols-3 gap-2.5 lg:gap-4 border-y border-bg-tertiary py-3.5 lg:py-[18px]">
+                {spotlight.highlights.map((highlight) => (
+                  <div class="flex flex-col-reverse justify-end gap-0.5">
+                    <dt class="text-xs lg:text-[13px] leading-snug text-secondary">{highlight.label}</dt>
+                    <dd class="font-heading text-[22px] lg:text-[26px] font-semibold text-primary">{highlight.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+
+            <ul class="mt-5 lg:mt-6 flex flex-wrap gap-2" aria-label={stackLabel}>
+              {spotlightStack.map((tech) => (
+                <li class="rounded-full border border-border-default bg-bg-tertiary px-2.5 py-1 text-xs text-secondary">
+                  {tech}
+                </li>
+              ))}
+              {spotlightExtraStack > 0 && (
+                <li class="px-1.5 py-1 text-xs text-text-tertiary">+{spotlightExtraStack}</li>
+              )}
+            </ul>
+
+            <span class="mt-auto pt-6 lg:pt-7 text-sm font-medium text-accent">
+              {getTranslation('projects', 'readCaseStudy', locale)}
+            </span>
+          </article>
+
+          {spotlightHasCover && (
+            <div class="project-cover order-1 lg:order-2 flex min-h-[176px] items-center justify-center border-b border-border-default p-6 lg:border-b-0 lg:border-l lg:p-10">
+              {hasDiagramCover ? (
+                <PasteurFlowDiagram locale={locale} />
+              ) : (
+                spotlight.image && (
+                  <Image
+                    src={spotlight.image}
+                    alt=""
+                    width={1120}
+                    height={640}
+                    sizes="(min-width: 1024px) 568px, 100vw"
+                    loading="lazy"
+                    class="w-full rounded-lg border border-border-default object-cover object-top"
+                  />
+                )
+              )}
+            </div>
+          )}
+        </a>
+
+        {otherProjects.length > 0 && (
+          <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6" role="list">
+            {otherProjects.map((project) => (
+              <li>
+                <a
+                  href={formatPath(`/projects/${project.slug}`, locale)}
+                  class="group flex h-full flex-col overflow-hidden rounded-xl border border-border-default bg-secondary hover:border-accent hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  aria-label={`${getTranslation('projects', 'learnMore', locale)} ${project.name}`}
+                >
+                  <article class="flex h-full flex-col" aria-labelledby={`project-title-${project.slug}`}>
+                    {project.image && (
+                      <Image
+                        src={project.image}
+                        alt=""
+                        width={1120}
+                        height={640}
+                        sizes="(min-width: 768px) 556px, 100vw"
+                        loading="lazy"
+                        class="h-[200px] md:h-[300px] w-full border-b border-border-default object-cover object-top"
+                      />
+                    )}
+                    <div class="flex flex-1 flex-col p-5 md:p-6">
+                      <span class="mb-1.5 md:mb-2 text-[13px] text-text-tertiary">{project.period}</span>
+                      <h3 id={`project-title-${project.slug}`} class="font-heading text-xl md:text-[22px] font-semibold text-primary">
+                        {project.name}
+                      </h3>
+                      {project.subtitle && <p class="mt-0.5 text-sm text-secondary">{project.subtitle}</p>}
+                      <p class="mt-2.5 md:mt-3 mb-4 text-sm leading-relaxed text-secondary line-clamp-3">
+                        {project.description}
+                      </p>
+                      <div class="mt-auto flex flex-wrap items-center justify-between gap-3">
+                        <ul class="flex flex-wrap gap-2" aria-label={stackLabel}>
+                          {project.stack.slice(0, 3).map((tech) => (
+                            <li class="rounded-full border border-border-default bg-bg-tertiary px-2.5 py-1 text-xs text-secondary">
+                              {tech}
+                            </li>
+                          ))}
+                        </ul>
+                        <span class="text-xs font-medium text-accent whitespace-nowrap">
+                          {getTranslation('projects', 'learnMore', locale)}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     ) : (
       <p class="text-secondary py-8">
         {getTranslation('projects', 'noProjects', locale)}
       </p>
     )}
   </div>
-
-  <ProjectCardHover />
 </section>
+
+<style>
+  .project-cover {
+    background-color: var(--color-bg-primary);
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--color-border-light) 25%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--color-border-light) 25%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+</style>
