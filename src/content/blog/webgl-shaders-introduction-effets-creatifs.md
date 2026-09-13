@@ -4,7 +4,7 @@ slug: "webgl-shaders-introduction-effets-creatifs"
 description: "Découverte de WebGL et des shaders GLSL. Retour sur mon apprentissage avec Yuri Artiukh et mes premiers pas dans le développement créatif, loin des grids et flexbox."
 pubDate: 2025-01-15T00:00:00.000Z
 tags: ["WebGL", "Shaders", "GLSL", "Three.js", "Creative Coding", "Frontend"]
-image: "/images/makoki/banner.png"
+image: "/images/webgl/cover.jpg"
 ---
 
 ## Introduction : Au-delà du CSS traditionnel
