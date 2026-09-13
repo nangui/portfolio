@@ -101,6 +101,8 @@ export const translations: Translations = {
     fr: {
       heading: 'Projets Sélectionnés',
       learnMore: 'En savoir plus →',
+      readCaseStudy: "Lire l'étude de cas →",
+      mostRecent: 'Mission la plus récente',
       noProjects: 'Les projets seront affichés ici une fois ajoutés dans le dossier content/projects.',
       viewDemo: 'Voir la démo',
       viewSource: 'Code source',
@@ -110,6 +112,8 @@ export const translations: Translations = {
     en: {
       heading: 'Featured Projects',
       learnMore: 'Learn more →',
+      readCaseStudy: 'Read the case study →',
+      mostRecent: 'Most recent engagement',
       noProjects: 'Projects will be displayed here once added to the content/projects folder.',
       viewDemo: 'View demo',
       viewSource: 'Source code',

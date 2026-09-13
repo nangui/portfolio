@@ -1,207 +1,249 @@
 ---
+import { getCollection, type CollectionEntry } from 'astro:content';
 import Button from '@components/ui/Button.astro';
-import HeroImage from '@components/ui/HeroImage.astro';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
+import { formatPath } from '@i18n/utils';
 
 interface Props {
   locale?: Locale;
 }
 
 const { locale = defaultLocale } = Astro.props;
-const heroHeadline =
+const heroIntro =
   locale === 'fr'
-    ? 'Transformer les idées en expériences web accessibles'
-    : 'Transforming ideas into accessible web experiences';
-const heroDisplayLines =
-  locale === 'fr'
-    ? ['EXPERIENCES WEB', 'ACCESSIBLES']
-    : ['WEB EXPERIENCES', 'ACCESSIBLE'];
-const heroPills =
-  locale === 'fr'
-    ? ['Architecture Frontend', 'Accessibilité Web', 'Performance Produit']
-    : ['Frontend Architecture', 'Web Accessibility', 'Product Performance'];
+    ? "Transformer les idées en expériences web accessibles, de l'architecture frontend à la mise en production."
+    : 'Transforming ideas into accessible web experiences, from frontend architecture to production.';
+const portraitAlt = locale === 'fr' ? "Portrait d'Adonai Nangui" : 'Portrait of Adonai Nangui';
+const recentMissionsLabel = locale === 'fr' ? 'Missions récentes' : 'Recent work';
+const allProjectsLabel = locale === 'fr' ? 'Tous les projets' : 'All projects';
+
+const recentMissionSummaries = [
+  {
+    slug: 'institut-pasteur-dakar',
+    fr: 'Plateforme de surveillance épidémiologique, en service dans 10 pays',
+    en: 'Epidemiological surveillance platform, running in 10 countries',
+  },
+  {
+    slug: 'gebeya',
+    fr: 'SaaS multi-tenant, 13 micro-frontends orchestrés via Single-SPA',
+    en: 'Multi-tenant SaaS, 13 micro-frontends orchestrated with Single-SPA',
+  },
+  {
+    slug: 'djoubo',
+    fr: 'Réservation de véhicules avec chauffeur, web et mobile',
+    en: 'Chauffeured vehicle booking, web and mobile',
+  },
+];
+
+const allProjects = (await getCollection('projects').catch(() => [])) as CollectionEntry<'projects'>[];
+
+const getBaseSlug = (entry: CollectionEntry<'projects'>): string => {
+  if (entry.data.slug) return entry.data.slug.replace(/-(fr|en)$/, '');
+  const filename = entry.id.split('/').pop() || entry.id;
+  return filename.replace(/\.(fr|en)\.(md|mdx)$/, '').replace(/\.(md|mdx)$/, '');
+};
+
+const findProject = (slug: string): CollectionEntry<'projects'> | undefined =>
+  allProjects.find((project) => project.data.slug === `${slug}-${locale}`) ??
+  allProjects.find((project) => getBaseSlug(project) === slug);
+
+const recentMissions = recentMissionSummaries.flatMap((mission) => {
+  const project = findProject(mission.slug);
+  if (!project) return [];
+
+  const title =
+    locale === 'fr'
+      ? project.data.title_fr || project.data.title || ''
+      : project.data.title_en || project.data.title || '';
+  const period =
+    locale === 'fr'
+      ? project.data.period_fr || project.data.period || ''
+      : project.data.period_en || project.data.period || '';
+
+  return [
+    {
+      slug: mission.slug,
+      name: title.split(' - ')[0],
+      period: period.replace(' - ', ' – '),
+      summary: mission[locale],
+      href: formatPath(`/projects/${mission.slug}`, locale),
+    },
+  ];
+});
 ---
 
-<section id="hero" class="hero-section bg-primary" aria-labelledby="hero-heading">
-  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
-    <div class="hero-panel rounded-2xl p-6 sm:p-8 md:p-10 lg:p-12">
-      <h1 id="hero-heading" class="sr-only">{heroHeadline}</h1>
-
-      <div class="hero-row flex items-center gap-4 sm:gap-7 md:gap-12">
-        <div class="hero-copy min-w-0 text-left">
-          <p class="hero-intent text-secondary text-sm md:text-base mb-3">
-            {heroHeadline}
-          </p>
-
-          <p class="font-heading text-xl md:text-2xl text-primary mb-1">
-            {getTranslation('hero', 'name', locale)}
-          </p>
-
-          <p class="font-heading text-lg md:text-xl text-secondary mb-3">
-            {getTranslation('hero', 'title', locale)}
-          </p>
-
-          <p class="text-sm sm:text-base md:text-lg text-secondary max-w-2xl mb-7">
-            {getTranslation('hero', 'tagline', locale)}
-          </p>
-
-          <div class="flex flex-col sm:flex-row gap-3 justify-start">
-            <Button
-              href="#projects"
-              variant="primary"
-              size="lg"
-              class="hero-primary-btn"
-              ariaLabel={getTranslation('hero', 'ctaProjects', locale)}
-              analyticsEvent="hero_cta_click"
-              analyticsLabel="projects"
-            >
-              {getTranslation('hero', 'ctaProjects', locale)}
-            </Button>
-            <Button
-              href="#contact"
-              variant="secondary"
-              size="lg"
-              class="hero-secondary-btn"
-              ariaLabel={getTranslation('hero', 'ctaContact', locale)}
-              analyticsEvent="hero_cta_click"
-              analyticsLabel="contact"
-            >
-              {getTranslation('hero', 'ctaContact', locale)}
-            </Button>
+<section id="hero" class="bg-primary" aria-labelledby="hero-heading">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-14 md:pt-20 md:pb-20 lg:pt-24">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div class="min-w-0">
+        <div class="flex items-center gap-3.5 sm:gap-4 mb-6 sm:mb-7">
+          <figure class="hero-portrait" aria-label={portraitAlt}>
+            <span class="hero-portrait-crop">
+              <img
+                src="/hero-image.jpeg"
+                alt={portraitAlt}
+                width="144"
+                height="144"
+                loading="eager"
+                decoding="async"
+                class="hero-portrait-image"
+              />
+            </span>
+          </figure>
+          <div class="flex flex-col gap-0.5">
+            <p class="font-heading text-[17px] sm:text-lg font-semibold text-primary">
+              {getTranslation('hero', 'name', locale)}
+            </p>
+            <p class="text-[13px] sm:text-sm text-secondary">
+              {getTranslation('hero', 'title', locale)}
+            </p>
           </div>
         </div>
 
-        <div class="hero-media-wrap relative flex justify-end">
-          <div class="hero-visual relative w-full max-w-[430px]">
-            <p class="hero-display" aria-hidden="true">
-              <span>{heroDisplayLines[0]}</span>
-              <span>{heroDisplayLines[1]}</span>
-            </p>
-            <HeroImage />
+        <h1
+          id="hero-heading"
+          class="hero-heading font-heading font-semibold text-primary text-[2.375rem] sm:text-5xl lg:text-[4rem] mb-4 sm:mb-6"
+        >
+          {getTranslation('hero', 'tagline', locale)}
+        </h1>
 
-            <span class="hero-pill hero-pill-top">{heroPills[0]}</span>
-            <span class="hero-pill hero-pill-mid">{heroPills[1]}</span>
-            <span class="hero-pill hero-pill-bottom">{heroPills[2]}</span>
-          </div>
+        <p class="text-base sm:text-lg text-secondary leading-relaxed max-w-[460px] mb-7 sm:mb-9">
+          {heroIntro}
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-start">
+          <Button
+            href="#projects"
+            variant="primary"
+            size="lg"
+            class="hero-primary-btn"
+            ariaLabel={getTranslation('hero', 'ctaProjects', locale)}
+            analyticsEvent="hero_cta_click"
+            analyticsLabel="projects"
+          >
+            {getTranslation('hero', 'ctaProjects', locale)}
+          </Button>
+          <Button
+            href="#contact"
+            variant="secondary"
+            size="lg"
+            class="hero-secondary-btn"
+            ariaLabel={getTranslation('hero', 'ctaContact', locale)}
+            analyticsEvent="hero_cta_click"
+            analyticsLabel="contact"
+          >
+            {getTranslation('hero', 'ctaContact', locale)}
+          </Button>
         </div>
       </div>
+
+      {recentMissions.length > 0 && (
+        <div class="rounded-xl border border-border-default bg-secondary py-1 sm:py-2">
+          <p
+            id="hero-missions-label"
+            class="px-[18px] sm:px-6 pt-3.5 sm:pt-4 pb-2.5 sm:pb-3 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]"
+          >
+            {recentMissionsLabel}
+          </p>
+          <ul aria-labelledby="hero-missions-label" role="list">
+            {recentMissions.map((mission) => (
+              <li class="border-t border-border-default">
+                <a
+                  href={mission.href}
+                  class="hero-mission group flex items-center justify-between gap-4 px-[18px] sm:px-6 py-4 sm:py-5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
+                  data-analytics-event="hero_recent_mission_click"
+                  data-analytics-label={mission.slug}
+                >
+                  <span class="flex flex-col gap-1 sm:gap-1.5 min-w-0">
+                    <span class="text-xs sm:text-[13px] text-[var(--color-text-tertiary)]">{mission.period}</span>
+                    <span class="font-heading text-lg sm:text-xl font-semibold text-primary">{mission.name}</span>
+                    <span class="text-sm leading-normal text-secondary">{mission.summary}</span>
+                  </span>
+                  <svg
+                    class="shrink-0 text-accent-light transition-transform group-hover:translate-x-0.5"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5 12h14M13 6l6 6-6 6"></path>
+                  </svg>
+                </a>
+              </li>
+            ))}
+            <li class="border-t border-border-default">
+              <a
+                href="#projects"
+                class="flex items-center min-h-12 px-[18px] sm:px-6 text-sm font-medium text-accent hover:text-accent-hover focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
+                data-analytics-event="hero_cta_click"
+                data-analytics-label="all_projects"
+              >
+                {allProjectsLabel} →
+              </a>
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   </div>
 </section>
 
 <style>
-  .hero-section {
-    min-height: clamp(540px, 74vh, 800px);
-  }
-
-  .hero-row {
-    align-items: center;
-    position: relative;
-    z-index: 2;
-    padding-top: clamp(1.6rem, 3.4vw, 2.4rem);
-  }
-
-  .hero-copy {
-    flex: 1 1 0%;
-    max-width: 44rem;
-  }
-
-  .hero-panel {
-    position: relative;
-    overflow: hidden;
-    background-color: var(--color-bg-primary);
-  }
-
-  .hero-intent {
-    max-width: 40ch;
-    letter-spacing: 0.01em;
-  }
-
-  .hero-display {
-    position: absolute;
-    inset: auto auto 50% -7%;
-    transform: translateY(52%);
-    z-index: 1;
-    margin: 0;
-    font-family: var(--font-heading);
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: clamp(2.15rem, 7vw, 4.2rem);
-    line-height: 0.9;
+  .hero-heading {
+    line-height: 1.02;
     letter-spacing: -0.03em;
-    color: color-mix(in srgb, var(--color-text-primary) 9%, transparent);
-    pointer-events: none;
-    white-space: normal;
+    text-wrap: balance;
   }
 
-  .hero-display span {
+  .hero-portrait {
+    width: 64px;
+    height: 64px;
+    margin: 0;
+    flex: 0 0 auto;
+    padding: 4px;
+    border-radius: 42% 58% 52% 48% / 46% 45% 55% 54%;
+    background: #facc15;
+  }
+
+  .hero-portrait-crop {
     display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 46% 54% 48% 52% / 49% 46% 54% 51%;
+    background: var(--color-bg-secondary);
   }
 
-  .hero-visual {
-    z-index: 2;
+  /* The source photo has a wide backdrop: zoom in so the face reads at avatar size */
+  .hero-portrait-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.75);
+    transform-origin: 50% 42%;
+    filter: grayscale(1) contrast(1.03);
   }
 
-  .hero-pill {
-    position: absolute;
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--color-bg-primary) 78%, #ffffff 22%);
-    border: 1px solid var(--color-border-default);
-    color: var(--color-text-primary);
-    font-size: 0.78rem;
-    line-height: 1;
-    font-weight: 600;
-    padding: 0.6rem 0.85rem;
-    white-space: nowrap;
-    transform: translateY(0);
-    will-change: transform;
-    animation-name: heroTagFloat;
-    animation-duration: 4.2s;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-  }
-
-  .hero-pill-top {
-    top: 8%;
-    left: -8%;
-    animation-delay: 0s;
-  }
-
-  .hero-pill-mid {
-    right: -12%;
-    top: 44%;
-    animation-delay: 0.8s;
-    animation-duration: 3.7s;
-  }
-
-  .hero-pill-bottom {
-    bottom: 6%;
-    left: -2%;
-    animation-delay: 1.3s;
-    animation-duration: 4.6s;
-  }
-
-  @keyframes heroTagFloat {
-    0%,
-    100% {
-      transform: translateY(0);
+  @media (min-width: 640px) {
+    .hero-portrait {
+      width: 72px;
+      height: 72px;
     }
-    25% {
-      transform: translateY(-6px);
-    }
-    75% {
-      transform: translateY(6px);
+
+    .hero-heading {
+      line-height: 1;
     }
   }
 
-  @media (max-width: 900px) {
-    .hero-pill {
-      display: none;
-    }
+  .hero-mission:hover {
+    background: var(--color-bg-tertiary);
   }
 
   :global(.hero-primary-btn) {
@@ -232,72 +274,10 @@ const heroPills =
     border-color: color-mix(in srgb, var(--color-accent-light) 45%, var(--color-border-light) 55%);
   }
 
-  :root[data-theme='light'] .hero-pill {
-    background: #ffffff;
-    color: var(--color-text-primary);
-  }
-
-  @media (max-width: 1024px) {
-    .hero-section {
-      min-height: auto;
-    }
-
-    .hero-row {
-      padding-top: clamp(1.3rem, 3.2vw, 2rem);
-    }
-  }
-
   @media (max-width: 767px) {
-    .hero-row {
-      flex-direction: column-reverse;
-      align-items: stretch;
-      gap: 1.15rem;
-      padding-top: 0.85rem;
-    }
-
-    .hero-media-wrap {
-      justify-content: center;
-    }
-
-    .hero-visual {
-      max-width: min(100%, 360px);
-      margin-inline: auto;
-    }
-
-    .hero-panel {
-      padding: 1.1rem;
-    }
-
-    .hero-copy p {
-      margin-bottom: 0.5rem;
-    }
-
-    .hero-copy .flex {
-      margin-top: 0.9rem;
-    }
-
     :global(.hero-primary-btn),
     :global(.hero-secondary-btn) {
       border-radius: 22px 12px 24px 14px / 12px 24px 13px 22px;
     }
-
-    .hero-intent {
-      font-size: 0.82rem;
-      margin-bottom: 0.45rem;
-    }
-
-    .hero-display {
-      font-size: clamp(1.4rem, 10.5vw, 2rem);
-      inset: auto auto 49% -2%;
-      color: color-mix(in srgb, var(--color-text-primary) 7%, transparent);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .hero-pill {
-      animation: none;
-      transform: none;
-    }
-
   }
 </style>

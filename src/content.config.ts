@@ -31,6 +31,9 @@ const projects = defineCollection({
     period: z.string().optional(),
     period_fr: z.string().optional(),
     period_en: z.string().optional(),
+    // Key figures shown on the spotlight card of the projects section
+    highlights_fr: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    highlights_en: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
   }).refine(
     (data) => data.title || data.title_fr || data.title_en,
     { message: "At least one title (title, title_fr, or title_en) must be provided" }
