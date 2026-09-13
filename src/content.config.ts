@@ -2,11 +2,38 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
+// Case study blocks rendered as structured sections on the project page.
+// Each locale file carries its own language (the .fr file uses *_fr, the .en file *_en).
+const titledTextSchema = z.object({ title: z.string(), text: z.string() });
+
+const contributionSchema = z.object({
+  title: z.string(),
+  role: z.string().optional(),
+  share: z.string().optional(),
+  stack: z.array(z.string()).optional(),
+  summary: z.string(),
+  // Rendered as "<strong>title</strong>text": keep any leading space or punctuation in text
+  details: z.array(titledTextSchema).optional(),
+});
+
+const deliveriesSchema = z.object({
+  intro: z.string().optional(),
+  items: z.array(titledTextSchema),
+  outro: z.string().optional(),
+});
+
+const proofSchema = z.object({
+  intro: z.string().optional(),
+  lead: z.string(),
+  text: z.string().optional(),
+  note: z.string().optional(),
+});
+
 // Collection Projets
 const projects = defineCollection({
-  loader: glob({ 
-    pattern: '**/*.md', 
-    base: './src/content/projects' 
+  loader: glob({
+    pattern: '**/*.md',
+    base: './src/content/projects'
   }),
   schema: z.object({
     slug: z.string(),
@@ -34,6 +61,14 @@ const projects = defineCollection({
     // Key figures shown on the spotlight card of the projects section
     highlights_fr: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
     highlights_en: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    contributions_fr: z.array(contributionSchema).optional(),
+    contributions_en: z.array(contributionSchema).optional(),
+    decisions_fr: z.array(titledTextSchema).optional(),
+    decisions_en: z.array(titledTextSchema).optional(),
+    deliveries_fr: deliveriesSchema.optional(),
+    deliveries_en: deliveriesSchema.optional(),
+    proof_fr: proofSchema.optional(),
+    proof_en: proofSchema.optional(),
   }).refine(
     (data) => data.title || data.title_fr || data.title_en,
     { message: "At least one title (title, title_fr, or title_en) must be provided" }
@@ -45,9 +80,9 @@ const projects = defineCollection({
 
 // Collection Blog
 const blog = defineCollection({
-  loader: glob({ 
-    pattern: '**/*.md', 
-    base: './src/content/blog' 
+  loader: glob({
+    pattern: '**/*.md',
+    base: './src/content/blog'
   }),
   schema: z.object({
     title: z.string(),

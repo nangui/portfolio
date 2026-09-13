@@ -86,37 +86,62 @@ export async function getStaticPaths() {
   return paths;
 }
 
+type ProjectData = CollectionEntry<'projects'>['data'];
+
 const { project, locale: localeParam } = Astro.props;
 const locale = isValidLocale(localeParam || '') ? localeParam as 'fr' | 'en' : defaultLocale;
 const { Content } = await render(project);
+const data = project.data as ProjectData;
 const projectTitle = locale === 'fr'
-  ? (project.data.title_fr || project.data.title || '')
-  : (project.data.title_en || project.data.title || '');
+  ? (data.title_fr || data.title || '')
+  : (data.title_en || data.title || '');
 const [projectName, ...subtitleParts] = projectTitle.split(' - ');
 const projectSubtitle = subtitleParts.join(' - ');
 const projectDescription = locale === 'fr'
-  ? (project.data.description_fr || project.data.description || '')
-  : (project.data.description_en || project.data.description || '');
+  ? (data.description_fr || data.description || '')
+  : (data.description_en || data.description || '');
 const projectRole = locale === 'fr'
-  ? (project.data.role_fr || project.data.role || '')
-  : (project.data.role_en || project.data.role || '');
+  ? (data.role_fr || data.role || '')
+  : (data.role_en || data.role || '');
 const projectPeriod = (locale === 'fr'
-  ? (project.data.period_fr || project.data.period || '')
-  : (project.data.period_en || project.data.period || '')).replace(' - ', ' – ');
-const projectHighlights = (locale === 'fr' ? project.data.highlights_fr : project.data.highlights_en) ?? [];
-const projectImages = project.data.images?.length
-  ? project.data.images
-  : project.data.image
-    ? [project.data.image]
+  ? (data.period_fr || data.period || '')
+  : (data.period_en || data.period || '')).replace(' - ', ' – ');
+const projectHighlights = (locale === 'fr' ? data.highlights_fr : data.highlights_en) ?? [];
+// Structured case study blocks (optional): rendered after the markdown body
+const contributions = (locale === 'fr' ? data.contributions_fr : data.contributions_en) ?? [];
+const decisions = (locale === 'fr' ? data.decisions_fr : data.decisions_en) ?? [];
+const deliveries = locale === 'fr' ? data.deliveries_fr : data.deliveries_en;
+const proof = locale === 'fr' ? data.proof_fr : data.proof_en;
+const caseLabels = locale === 'fr'
+  ? {
+      contributions: 'Ce que j’ai conçu et construit',
+      decisions: 'Décisions et arbitrages',
+      deliveries: 'Les fiches livrées',
+      proof: 'La preuve',
+      showDetails: 'Voir le détail',
+      hideDetails: 'Masquer le détail',
+    }
+  : {
+      contributions: 'What I designed and built',
+      decisions: 'Decisions and trade-offs',
+      deliveries: 'The forms delivered',
+      proof: 'The proof',
+      showDetails: 'See details',
+      hideDetails: 'Hide details',
+    };
+const projectImages = data.images?.length
+  ? data.images
+  : data.image
+    ? [data.image]
     : [];
 // Projects with a hand-drawn cover instead of screenshots
 const hasDiagramCover = Astro.params.slug === 'institut-pasteur-dakar';
 const siteUrl = String(Astro.site || 'https://adonainangui.dev').replace(/\/$/, '');
-const primaryImage = project.data.image || project.data.images?.[0];
+const primaryImage = data.image || data.images?.[0];
 const ogImage = primaryImage
   ? `${siteUrl}${primaryImage.startsWith('/') ? primaryImage : `/${primaryImage}`}`
   : undefined;
-const pageKeywords = [...project.data.stack, projectRole, 'frontend project', locale === 'fr' ? 'portfolio développeur' : 'developer portfolio'].filter(Boolean);
+const pageKeywords = [...data.stack, projectRole, 'frontend project', locale === 'fr' ? 'portfolio développeur' : 'developer portfolio'].filter(Boolean);
 const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies used';
 ---
 
@@ -197,7 +222,7 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
 
       {projectHighlights.length > 0 && (
         <dl class="mt-6 md:mt-7 grid grid-cols-3 gap-3 sm:gap-6">
-          {projectHighlights.map((highlight: { value: string; label: string }) => (
+          {projectHighlights.map((highlight) => (
             <div class="flex flex-col-reverse justify-end gap-1">
               <dt class="text-xs sm:text-sm leading-snug text-secondary">{highlight.label}</dt>
               <dd class="font-heading text-2xl sm:text-3xl font-semibold text-primary">{highlight.value}</dd>
@@ -207,18 +232,18 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
       )}
 
       <ul class="mt-6 md:mt-7 flex flex-wrap gap-2" aria-label={stackLabel}>
-        {project.data.stack.map((tech: string) => (
+        {data.stack.map((tech: string) => (
           <li class="px-3 py-1.5 bg-secondary/50 border border-border-default rounded-full text-xs sm:text-sm text-secondary whitespace-nowrap">
             {tech}
           </li>
         ))}
       </ul>
 
-      {(project.data.demoUrl || project.data.githubUrl) && (
+      {(data.demoUrl || data.githubUrl) && (
         <div class="mt-6 md:mt-8 flex flex-wrap gap-3 sm:gap-4">
-          {project.data.demoUrl && (
+          {data.demoUrl && (
             <Button
-              href={project.data.demoUrl}
+              href={data.demoUrl}
               variant="primary"
               target="_blank"
               rel="noopener noreferrer"
@@ -229,9 +254,9 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
               {getTranslation('projects', 'viewDemo', locale)}
             </Button>
           )}
-          {project.data.githubUrl && (
+          {data.githubUrl && (
             <Button
-              href={project.data.githubUrl}
+              href={data.githubUrl}
               variant="secondary"
               target="_blank"
               rel="noopener noreferrer"
@@ -267,6 +292,99 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
     <div class="prose max-w-none text-secondary leading-relaxed">
       <Content />
     </div>
+
+    {contributions.length > 0 && (
+      <section class="mt-14 md:mt-16" aria-labelledby="case-contributions-heading">
+        <h2 id="case-contributions-heading" class="case-heading">{caseLabels.contributions}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {contributions.map((contribution) => (
+            <article class="flex flex-col gap-2.5 rounded-xl border border-border-default bg-secondary p-5 md:p-[22px]">
+              <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <h3 class="font-heading text-lg font-semibold leading-snug text-primary">{contribution.title}</h3>
+                {contribution.share && (
+                  <span class="text-[13px] text-accent whitespace-nowrap">{contribution.share}</span>
+                )}
+              </div>
+              {contribution.role && (
+                <p class="text-xs uppercase tracking-wide text-text-tertiary">{contribution.role}</p>
+              )}
+              <p class="text-[15px] leading-relaxed text-secondary">{contribution.summary}</p>
+              {contribution.stack && contribution.stack.length > 0 && (
+                <ul class="flex flex-wrap gap-1.5" aria-label={stackLabel}>
+                  {contribution.stack.map((tech) => (
+                    <li class="rounded-full border border-border-default bg-bg-tertiary px-2.5 py-1 text-xs text-secondary">
+                      {tech}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {contribution.details && contribution.details.length > 0 && (
+                <details class="case-details mt-1">
+                  <summary class="flex min-h-11 md:min-h-0 w-fit cursor-pointer items-center text-sm font-medium text-accent hover:text-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                    <span class="case-details-show">{caseLabels.showDetails} ({contribution.details.length})</span>
+                    <span class="case-details-hide">{caseLabels.hideDetails}</span>
+                  </summary>
+                  <ul class="mt-3 flex flex-col gap-2.5">
+                    {contribution.details.map((detail) => (
+                      <li class="flex items-start gap-2.5 text-sm leading-relaxed text-secondary">
+                        <span class="mt-2 h-1.5 w-1.5 rounded-full bg-accent shrink-0" aria-hidden="true"></span>
+                        <span><strong class="font-semibold text-primary">{detail.title}</strong>{detail.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {decisions.length > 0 && (
+      <section class="mt-14 md:mt-16" aria-labelledby="case-decisions-heading">
+        <h2 id="case-decisions-heading" class="case-heading">{caseLabels.decisions}</h2>
+        <dl class="border-t border-border-default">
+          {decisions.map((decision) => (
+            <div class="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] gap-2 md:gap-8 border-b border-border-default py-5 md:py-6">
+              <dt class="font-heading text-[17px] font-semibold leading-snug text-primary">{decision.title}</dt>
+              <dd class="text-base leading-[1.7] text-secondary">{decision.text}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    )}
+
+    {deliveries && deliveries.items.length > 0 && (
+      <section class="mt-14 md:mt-16" aria-labelledby="case-deliveries-heading">
+        <h2 id="case-deliveries-heading" class="case-heading">{caseLabels.deliveries}</h2>
+        {deliveries.intro && (
+          <p class="text-base md:text-lg leading-[1.7] text-secondary">{deliveries.intro}</p>
+        )}
+        <ul class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {deliveries.items.map((item) => (
+            <li class="flex flex-col gap-2 rounded-xl border border-border-default bg-secondary p-5">
+              <h3 class="font-heading text-[17px] font-semibold leading-snug text-primary">{item.title}</h3>
+              <p class="text-[15px] leading-relaxed text-secondary">{item.text}</p>
+            </li>
+          ))}
+        </ul>
+        {deliveries.outro && (
+          <p class="mt-6 text-base md:text-lg leading-[1.7] text-secondary">{deliveries.outro}</p>
+        )}
+      </section>
+    )}
+
+    {proof && (
+      <section class="mt-14 md:mt-16 flex flex-col gap-3.5 rounded-xl border border-accent bg-secondary p-6 md:p-9" aria-labelledby="case-proof-heading">
+        <h2 id="case-proof-heading" class="text-xs font-semibold uppercase tracking-[0.08em] text-accent">{caseLabels.proof}</h2>
+        {proof.intro && <p class="text-sm text-secondary">{proof.intro}</p>}
+        <p class="font-heading text-xl md:text-[26px] leading-[1.35] text-primary">{proof.lead}</p>
+        {proof.text && <p class="text-base leading-[1.7] text-secondary">{proof.text}</p>}
+        {proof.note && (
+          <p class="mt-1 border-t border-border-default pt-3.5 text-sm leading-relaxed text-text-tertiary">{proof.note}</p>
+        )}
+      </section>
+    )}
   </article>
 </BaseLayout>
 
@@ -277,6 +395,39 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
       linear-gradient(color-mix(in srgb, var(--color-border-light) 25%, transparent) 1px, transparent 1px),
       linear-gradient(90deg, color-mix(in srgb, var(--color-border-light) 25%, transparent) 1px, transparent 1px);
     background-size: 32px 32px;
+  }
+
+  .case-heading {
+    margin-bottom: 1.25rem;
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.25;
+    color: var(--color-text-primary);
+  }
+
+  @media (min-width: 768px) {
+    .case-heading {
+      margin-bottom: 1.5rem;
+      font-size: 1.875rem;
+    }
+  }
+
+  .case-details summary {
+    list-style: none;
+  }
+
+  .case-details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .case-details-hide,
+  .case-details[open] .case-details-show {
+    display: none;
+  }
+
+  .case-details[open] .case-details-hide {
+    display: inline;
   }
 
   /* Markdown output is rendered by <Content />, outside this component's scope: target it with :global() */
