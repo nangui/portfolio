@@ -13,8 +13,8 @@ export function addExternalLinkIcons() {
     const href = link.getAttribute('href');
     if (!href) return;
 
-    // Skip if already has external icon
-    if (link.querySelector('.external-link-icon')) return;
+    // Skip if already has external icon, or if the link draws its own (e.g. card layouts)
+    if (link.querySelector('.external-link-icon') || link.hasAttribute('data-no-external-icon')) return;
 
     // Check if link is external
     try {
