@@ -135,6 +135,14 @@ export const translations: Translations = {
       'masskode.impact3': 'Développement full-stack de fonctionnalités critiques avec ownership complète',
       'masskode.impact4': 'Développement d\'applications mobiles cross-platform avec React Native pour iOS et Android',
       'masskode.impact5': 'Collaboration avec des équipes produit et techniques internationales en mode remote',
+      // Institut Pasteur de Dakar
+      'pasteur.role': 'Ingénieur logiciel full-stack - Consultant',
+      'pasteur.period': 'Mar 2026 - Août 2026',
+      'pasteur.impact1': 'Remplacement progressif, route par route et sans interruption, du service de formulaires d\'un programme de surveillance sanitaire en service dans 10 pays',
+      'pasteur.impact2': 'Service NestJS en architecture hexagonale : messagerie Kafka fiable par transactional outbox et sécurité Keycloak multi-realm',
+      'pasteur.impact3': 'Bibliothèque de 19 composants Angular partagée par trois applications et console d\'administration des formulaires',
+      'pasteur.impact4': 'Application terrain offline-first avec un moteur de rendu de formulaires sur mesure (environ 4 400 lignes)',
+      'pasteur.impact5': 'Fiche de surveillance de la diphtérie publiée pendant l\'épidémie via la console, sans code ni redéploiement',
       // Djoubo
       'djoubo.role': 'Tech Lead',
       'djoubo.period': 'Jan 2025 - Déc 2025',
@@ -183,6 +191,14 @@ export const translations: Translations = {
       'masskode.impact3': 'Full-stack development of critical features with complete ownership',
       'masskode.impact4': 'Cross-platform mobile application development with React Native for iOS and Android',
       'masskode.impact5': 'Collaboration with international product and technical teams in remote mode',
+      // Institut Pasteur de Dakar
+      'pasteur.role': 'Full-Stack Software Engineer - Consultant',
+      'pasteur.period': 'Mar 2026 - Aug 2026',
+      'pasteur.impact1': 'Progressive, route-by-route replacement with no downtime of the forms service of a health surveillance programme running in 10 countries',
+      'pasteur.impact2': 'NestJS service with hexagonal architecture: reliable Kafka messaging through a transactional outbox and multi-realm Keycloak security',
+      'pasteur.impact3': 'Library of 19 Angular components shared by three applications, plus the forms administration console',
+      'pasteur.impact4': 'Offline-first field application with a custom form rendering engine (roughly 4,400 lines)',
+      'pasteur.impact5': 'Diphtheria surveillance form published during the outbreak through the console, with no code and no redeployment',
       // Djoubo
       'djoubo.role': 'Tech Lead',
       'djoubo.period': 'Jan 2025 - Dec 2025',
