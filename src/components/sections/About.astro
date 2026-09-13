@@ -10,33 +10,123 @@ const { locale = defaultLocale } = Astro.props;
 const aiToolsLabel = locale === 'fr' ? 'Outils IA au quotidien' : 'Daily AI tooling';
 const aiToolsSummary =
   locale === 'fr'
-    ? 'J’intègre l’IA dans le cycle produit: exploration, prototypage, revue de code et livraison.'
+    ? 'J’intègre l’IA dans le cycle produit : exploration, prototypage, revue de code et livraison.'
     : 'I embed AI into the product cycle: exploration, prototyping, code review, and delivery.';
 const aiTools = ['Codex', 'Cursor', 'Claude Code', 'Warp'];
+
+const facts =
+  locale === 'fr'
+    ? [
+        { value: '9+ ans', label: 'd’expérience' },
+        { value: 'Dakar, Sénégal', label: 'Missions à distance' },
+      ]
+    : [
+        { value: '9+ years', label: 'of experience' },
+        { value: 'Dakar, Senegal', label: 'Remote engagements' },
+      ];
+
+// Formerly the "Skills" section, now shown next to the introduction
+const domains = locale === 'fr'
+  ? [
+      {
+        title: 'Frontend',
+        summary: 'Applications web robustes, accessibles et rapides.',
+        items: ['React / Next.js', 'Vue / Nuxt', 'Angular', 'TypeScript', 'Astro'],
+      },
+      {
+        title: 'Backend',
+        summary: 'APIs stables et orientées performance.',
+        items: ['Laravel', 'NestJS', 'PHP 8+', 'GraphQL', 'RESTful APIs'],
+      },
+      {
+        title: 'Architecture',
+        summary: 'Systèmes évolutifs pour équipes produit multi-domaines.',
+        items: ['NX Monorepo', 'Module Federation', 'Micro Frontend', 'Design Systems', 'SSR / SSG'],
+      },
+      {
+        title: 'Tooling',
+        summary: 'Qualité, observabilité, livraison continue et copilotes IA.',
+        items: ['Docker', 'CI/CD', 'Redis', 'Tests E2E', 'Monitoring produit'],
+      },
+    ]
+  : [
+      {
+        title: 'Frontend',
+        summary: 'Reliable, accessible, and fast web interfaces.',
+        items: ['React / Next.js', 'Vue / Nuxt', 'Angular', 'TypeScript', 'Astro'],
+      },
+      {
+        title: 'Backend',
+        summary: 'Stable API foundations built for performance.',
+        items: ['Laravel', 'NestJS', 'PHP 8+', 'GraphQL', 'RESTful APIs'],
+      },
+      {
+        title: 'Architecture',
+        summary: 'Scalable systems for multi-domain product teams.',
+        items: ['NX Monorepo', 'Module Federation', 'Micro Frontend', 'Design Systems', 'SSR / SSG'],
+      },
+      {
+        title: 'Tooling',
+        summary: 'Quality, observability, delivery workflow, and AI copilots.',
+        items: ['Docker', 'CI/CD', 'Redis', 'E2E Testing', 'Product Monitoring'],
+      },
+    ];
 ---
 
-<section id="about" class="py-section bg-primary relative">
+<section id="about" class="py-section bg-secondary" aria-labelledby="about-heading">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="font-heading font-semibold text-3xl md:text-4xl mb-6 text-primary">
-      {getTranslation('about', 'heading', locale)}
-    </h2>
-    <div class="max-w-3xl space-y-4">
-      <p class="text-lg text-secondary leading-relaxed">
-        {getTranslation('about', 'paragraph1', locale)}
-      </p>
-      <p class="text-lg text-secondary leading-relaxed">
-        {getTranslation('about', 'paragraph2', locale)}
-      </p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+      <div class="flex flex-col gap-5">
+        <h2 id="about-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+          {getTranslation('about', 'heading', locale)}
+        </h2>
+        <p class="text-base md:text-[17px] leading-[1.7] text-secondary">
+          {getTranslation('about', 'paragraph1', locale)}
+        </p>
+        <p class="text-base md:text-[17px] leading-[1.7] text-secondary">
+          {getTranslation('about', 'paragraph2', locale)}
+        </p>
 
-      <aside class="about-ai-tools rounded-xl border border-border-default bg-secondary/55 p-4 sm:p-5" aria-label={aiToolsLabel}>
-        <p class="font-heading text-base sm:text-lg text-primary mb-2">{aiToolsLabel}</p>
-        <p class="text-sm sm:text-base text-secondary mb-3">{aiToolsSummary}</p>
-        <ul class="flex flex-wrap gap-2" role="list">
-          {aiTools.map((tool) => (
-            <li class="about-ai-chip">{tool}</li>
+        <dl class="grid grid-cols-2 gap-4 border-y border-bg-tertiary py-4 md:py-5">
+          {facts.map((fact) => (
+            <div class="flex flex-col-reverse justify-end gap-0.5">
+              <dt class="text-xs md:text-[13px] text-secondary">{fact.label}</dt>
+              <dd class="font-heading text-xl md:text-[26px] font-semibold text-primary">{fact.value}</dd>
+            </div>
           ))}
-        </ul>
-      </aside>
+        </dl>
+
+        <aside class="flex flex-col gap-2.5 rounded-xl border border-border-default bg-primary p-4 md:p-5" aria-label={aiToolsLabel}>
+          <p class="font-heading text-base md:text-[17px] text-primary">{aiToolsLabel}</p>
+          <p class="text-sm leading-relaxed text-secondary">{aiToolsSummary}</p>
+          <ul class="flex flex-wrap gap-2" role="list">
+            {aiTools.map((tool) => (
+              <li class="about-ai-chip">{tool}</li>
+            ))}
+          </ul>
+        </aside>
+      </div>
+
+      <div class="flex flex-col gap-5" role="group" aria-labelledby="skills-heading">
+        <h3 id="skills-heading" class="font-heading font-semibold text-[22px] md:text-2xl text-primary lg:pt-2.5">
+          {getTranslation('skills', 'heading', locale)}
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {domains.map((domain) => (
+            <article class="flex flex-col gap-2 rounded-xl border border-border-default bg-primary p-4 md:p-5">
+              <h4 class="font-heading text-[17px] md:text-lg font-semibold text-primary">{domain.title}</h4>
+              <p class="mb-1.5 text-sm leading-normal text-secondary">{domain.summary}</p>
+              <ul class="flex flex-wrap gap-1.5" role="list" aria-label={domain.title}>
+                {domain.items.map((item) => (
+                  <li class="rounded-full border border-border-default bg-bg-tertiary px-2.5 py-1 text-xs text-secondary">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </div>
     </div>
   </div>
 </section>

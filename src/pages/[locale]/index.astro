@@ -2,7 +2,6 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Hero from '@components/sections/Hero.astro';
 import About from '@components/sections/About.astro';
-import Skills from '@components/sections/Skills.astro';
 import Projects from '@components/sections/Projects.astro';
 import Experience from '@components/sections/Experience.astro';
 import BlogPreview from '@components/sections/BlogPreview.astro';
@@ -79,10 +78,9 @@ const homepageKeywords = locale === 'fr'
 >
   <div class="max-w-[1200px] mx-auto">
     <Hero locale={locale} />
-    <About locale={locale} />
-    <Skills locale={locale} />
     <Projects locale={locale} />
     <Experience locale={locale} />
+    <About locale={locale} />
     <BlogPreview locale={locale} />
     <Contact locale={locale} />
   </div>

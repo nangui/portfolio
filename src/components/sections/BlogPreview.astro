@@ -1,5 +1,6 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 import Button from '@components/ui/Button.astro';
 import { defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
@@ -15,6 +16,7 @@ const allPosts = (await getCollection('blog').catch(() => [])) as CollectionEntr
 const sortedPosts = allPosts
   .sort((a: CollectionEntry<'blog'>, b: CollectionEntry<'blog'>) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
+const [featuredPost, ...otherPosts] = sortedPosts;
 
 const getSlug = (entry: CollectionEntry<'blog'>): string => {
   if (entry.data.slug) return entry.data.slug;
@@ -23,62 +25,111 @@ const getSlug = (entry: CollectionEntry<'blog'>): string => {
 };
 
 const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
+const formatDate = (date: Date): string =>
+  date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'short', year: 'numeric' });
+const latestLabel = locale === 'fr' ? 'Dernier article' : 'Latest article';
+const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
 ---
 
 <section id="blog-preview" class="py-section bg-primary" aria-labelledby="blog-heading">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8 md:mb-10">
-      <div>
+    <div class="flex items-end justify-between gap-6 mb-8 md:mb-10">
+      <div class="max-w-2xl">
         <h2 id="blog-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary mb-2">
           {getTranslation('blog', 'title', locale)}
         </h2>
-        <p class="text-secondary max-w-2xl text-sm md:text-base">
+        <p class="text-secondary text-[15px] md:text-base leading-relaxed">
           {getTranslation('blog', 'description', locale)}
         </p>
       </div>
-      <Button
-        href={formatPath('/blog', locale)}
-        variant="secondary"
-        size="sm"
-        analyticsEvent="blog_preview_click"
-        analyticsLabel="view_all"
-      >
-        {getTranslation('blog', 'viewAll', locale)}
-      </Button>
+      <div class="hidden sm:block shrink-0">
+        <Button
+          href={formatPath('/blog', locale)}
+          variant="secondary"
+          size="sm"
+          class="whitespace-nowrap"
+          analyticsEvent="blog_preview_click"
+          analyticsLabel="view_all"
+        >
+          {getTranslation('blog', 'viewAll', locale)}
+        </Button>
+      </div>
     </div>
 
-    {sortedPosts.length > 0 ? (
-      <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5" role="list">
-        {sortedPosts.map((post: CollectionEntry<'blog'>) => (
-          <li>
-            <a
-              href={formatPath(`/blog/${getSlug(post)}`, locale)}
-              class="group block h-full rounded-xl border border-border-default bg-secondary/70 p-5 hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-              aria-label={post.data.title}
-              data-analytics-event="blog_preview_click"
-              data-analytics-label={post.data.title}
-            >
-              <p class="text-xs font-medium uppercase tracking-wide text-accent mb-3">
-                {post.data.pubDate.toLocaleDateString(dateLocale, {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })}
+    {featuredPost ? (
+      <>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <a
+            href={formatPath(`/blog/${getSlug(featuredPost)}`, locale)}
+            class="group flex flex-col overflow-hidden rounded-xl border border-border-default bg-secondary hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            data-analytics-event="blog_preview_click"
+            data-analytics-label={featuredPost.data.title}
+          >
+            {featuredPost.data.image && (
+              <Image
+                src={featuredPost.data.image}
+                alt=""
+                width={1120}
+                height={560}
+                sizes="(min-width: 1024px) 568px, 100vw"
+                loading="lazy"
+                class="h-[190px] md:h-[260px] w-full border-b border-border-default object-cover object-top"
+              />
+            )}
+            <div class="flex flex-1 flex-col gap-2 md:gap-2.5 p-[18px] md:p-6">
+              <p class="text-xs font-medium uppercase tracking-wide text-accent">
+                {formatDate(featuredPost.data.pubDate)} · {latestLabel}
               </p>
-              <h3 class="font-heading font-semibold text-lg leading-snug text-primary mb-3 group-hover:text-accent">
-                {post.data.title}
+              <h3 class="font-heading text-[19px] md:text-[22px] font-semibold leading-snug text-primary group-hover:text-accent">
+                {featuredPost.data.title}
               </h3>
-              <p class="text-sm text-secondary line-clamp-3 mb-4">
-                {post.data.description}
+              <p class="hidden md:block text-[15px] leading-relaxed text-secondary line-clamp-3">
+                {featuredPost.data.description}
               </p>
-              <span class="inline-flex items-center gap-2 text-sm font-medium text-secondary group-hover:text-primary">
-                {locale === 'fr' ? 'Lire l’article' : 'Read article'}
-                <span aria-hidden="true">→</span>
+              <span class="mt-auto pt-2 text-sm font-medium text-accent">
+                {readLabel} <span aria-hidden="true">→</span>
               </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+            </div>
+          </a>
+
+          {otherPosts.length > 0 && (
+            <ul class="flex flex-col gap-4" role="list">
+              {otherPosts.map((post: CollectionEntry<'blog'>) => (
+                <li class="flex-1">
+                  <a
+                    href={formatPath(`/blog/${getSlug(post)}`, locale)}
+                    class="group flex h-full flex-col gap-2 md:gap-2.5 rounded-xl border border-border-default bg-secondary p-[18px] md:p-6 hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    data-analytics-event="blog_preview_click"
+                    data-analytics-label={post.data.title}
+                  >
+                    <p class="text-xs font-medium uppercase tracking-wide text-accent">
+                      {formatDate(post.data.pubDate)}
+                    </p>
+                    <h3 class="font-heading text-[17px] md:text-[19px] font-semibold leading-snug text-primary group-hover:text-accent">
+                      {post.data.title}
+                    </h3>
+                    <p class="hidden md:block text-sm leading-relaxed text-secondary line-clamp-2">
+                      {post.data.description}
+                    </p>
+                    <span class="hidden md:inline mt-auto text-sm font-medium text-accent">
+                      {readLabel} <span aria-hidden="true">→</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <a
+          href={formatPath('/blog', locale)}
+          class="sm:hidden mt-4 flex min-h-12 items-center justify-center rounded-lg border border-border-default bg-secondary text-[15px] font-medium text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          data-analytics-event="blog_preview_click"
+          data-analytics-label="view_all"
+        >
+          {getTranslation('blog', 'viewAll', locale)}
+        </a>
+      </>
     ) : (
       <p class="text-secondary text-center py-12">
         {getTranslation('blog', 'noPosts', locale)}
