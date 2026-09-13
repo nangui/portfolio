@@ -4,10 +4,10 @@ slug: "makoki-test-extension-chrome-developpeurs-africains"
 description: "Récit de la création de Makoki Test, une extension Chrome qui génère des données de test africaines authentiques. De l'idée à la publication, en passant par les défis techniques et les opportunités de contribution."
 pubDate: 2025-01-14T00:00:00.000Z
 tags: ["Chrome Extension", "Open Source", "Vue.js", "TypeScript", "Afrique", "Developer Tools"]
-image: "/images/makoki/banner.png"
+image: "/images/makoki/cover.jpg"
 ---
 
-![Makoki Test - Extension Chrome](/images/makoki/banner.png)
+![Makoki Test - Extension Chrome](/images/makoki/cover.jpg)
 
 ## Introduction : Le problème des données de test occidentales
 
