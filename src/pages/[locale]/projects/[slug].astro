@@ -283,7 +283,8 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
             alt={projectImages.length > 1 ? `${projectName} - Image ${index + 1}` : projectName}
             class="w-full h-auto rounded-lg border border-border-default shadow-lg object-cover"
             loading={index === 0 ? 'eager' : 'lazy'}
-            quality={90}
+            widths={[640, 1080, 1920]}
+            sizes="(min-width: 896px) 832px, calc(100vw - 32px)"
           />
         ))}
       </div>
