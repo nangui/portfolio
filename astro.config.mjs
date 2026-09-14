@@ -39,6 +39,9 @@ const legacyBlogRedirects = Object.fromEntries(
 // https://astro.build/config
 export default defineConfig({
   site: 'https://adonainangui.dev',
+  // Canonical URLs have no trailing slash. With 'never', the Vercel adapter redirects
+  // "/page/" to "/page" and lets config redirects match both forms.
+  trailingSlash: 'never',
   adapter: vercel({
     imageService: true,
   }),
