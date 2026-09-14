@@ -66,7 +66,7 @@ const resolvedOgImage = ogImage
   ? (ogImage.startsWith('http')
       ? ogImage
       : `${siteUrl}${ogImage.startsWith('/') ? ogImage : `/${ogImage}`}`)
-  : `${siteUrl}/hero-image.jpeg`;
+  : `${siteUrl}/images/og/site-${locale === 'en' ? 'en' : 'fr'}.jpg`;
 
 const getImageType = (url: string): string => {
   const lowered = url.toLowerCase();
