@@ -49,7 +49,7 @@ export async function getStaticPaths() {
 
 const { post, previous, next, locale: localeParam } = Astro.props;
 const locale = isValidLocale(localeParam || '') ? localeParam as 'fr' | 'en' : defaultLocale;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 
 // Get raw markdown content for reading time calculation
 const getSlug = (entry: CollectionEntry<'blog'>) => {
@@ -174,7 +174,7 @@ const articleKeywords = [...(post.data.tags || []), 'frontend engineering', 'web
     <hr class="border-border-default mb-8" />
     
     <!-- Table of Contents - Collapsible at top -->
-    <TableOfContents locale={locale} />
+    <TableOfContents locale={locale} headings={headings} />
     
     <!-- Main Content -->
     <div class="prose prose-invert prose-lg max-w-none text-secondary">
