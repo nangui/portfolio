@@ -49,6 +49,12 @@
   
   --color-border-default: #E5E7EB;
   --color-border-light: #D1D5DB;
+
+  /* The dark accent (#3B82F6) is only 3.5:1 on light backgrounds: #2563EB keeps accent text
+     above 4.5:1 on #FFFFFF and #F9FAFB. accent-light only draws arrows and borders (3:1 is enough) */
+  --color-accent: #2563EB;
+  --color-accent-hover: #1D4ED8;
+  --color-accent-light: #3B82F6;
 }
 
 @layer base {
