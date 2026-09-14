@@ -15,7 +15,7 @@ Voici pourquoi Zustand change la donne en termes de performance. ⚡
 
 Avec `useContext`, **TOUS** les composants qui consomment ce contexte se re-rendent à chaque changement d'état, même si seule une petite partie a changé.
 
-![Code Context API avec le problème](/images/zustand/image-1.png)
+![Code Context API avec le problème](../../assets/blog/zustand/image-1.png)
 
 ### Le problème en détail
 
@@ -45,7 +45,7 @@ Contrairement à Context API, les stores Zustand sont **externes** à l'arbre Re
 
 Imaginons un store pour gérer la Coupe d'Afrique avec les équipes (Sénégal 🇸🇳, Maroc 🇲🇦), les joueurs et les scores.
 
-![Store Zustand complet pour la CAN](/images/zustand/image-2.png)
+![Store Zustand complet pour la CAN](../../assets/blog/zustand/image-2.png)
 
 ```typescript
 import { create } from 'zustand';
@@ -95,7 +95,7 @@ const useCANStore = create<CANStore>((set) => ({
 
 ## Utilisation optimale avec selectors
 
-![Exemples d'utilisation avec selectors (BON vs MAUVAIS)](/images/zustand/image-3.png)
+![Exemples d'utilisation avec selectors (BON vs MAUVAIS)](../../assets/blog/zustand/image-3.png)
 
 ### ✅ BON : Utilisation avec selector
 
@@ -147,7 +147,7 @@ function TeamSelector() {
 
 Zustand utilise `useSyncExternalStoreWithSelector` qui permet de s'abonner **uniquement** à la valeur retournée par votre selector.
 
-![Code interne de useSyncExternalStoreWithSelector](/images/zustand/image-4.png)
+![Code interne de useSyncExternalStoreWithSelector](../../assets/blog/zustand/image-4.png)
 
 ```typescript
 // Code interne simplifié de Zustand
@@ -176,7 +176,7 @@ function useStore<T, U>(
 
 Par défaut, Zustand compare avec `===`. Si votre selector retourne une nouvelle référence à chaque fois, il y aura re-render.
 
-![Exemple avec useShallow pour éviter les re-renders](/images/zustand/image-5.png)
+![Exemple avec useShallow pour éviter les re-renders](../../assets/blog/zustand/image-5.png)
 
 ```typescript
 // ❌ PROBLÈME : Retourne un nouvel objet à chaque fois

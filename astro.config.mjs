@@ -42,6 +42,7 @@ export default defineConfig({
   // Canonical URLs have no trailing slash. With 'never', the Vercel adapter redirects
   // "/page/" to "/page" and lets config redirects match both forms.
   trailingSlash: 'never',
+  image: { layout: 'constrained' },
   adapter: vercel({
     imageService: true,
   }),
