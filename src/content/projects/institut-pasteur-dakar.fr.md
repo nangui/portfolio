@@ -2,8 +2,8 @@
 slug: "institut-pasteur-dakar-fr"
 title_fr: "Institut Pasteur de Dakar - Plateforme de surveillance épidémiologique"
 title_en: "Institut Pasteur de Dakar - Epidemiological Surveillance Platform"
-description_fr: "Conception et remplacement progressif du service de formulaires d'un programme national de surveillance sanitaire, en service au Sénégal et dans neuf autres pays."
-description_en: "Design and progressive replacement of the forms service of a national health surveillance programme, running in Senegal and nine other countries."
+description_fr: "Conception et remplacement progressif du service de formulaires d'un programme national de surveillance sanitaire, en service au Sénégal et prêt pour les autres pays où l'application Sentinelle est déployée."
+description_en: "Design and progressive replacement of the forms service of a national health surveillance programme, in service in Senegal and ready for the other countries where the Sentinelle app is deployed."
 stack: ["NestJS", "Angular", "Kafka", "PostgreSQL", "Keycloak", "Drizzle ORM", "Fastify", "TypeScript", "IndexedDB", "Storybook", "Kubernetes"]
 featured: true
 role_fr: "Ingénieur logiciel full-stack - Consultant"
@@ -12,25 +12,25 @@ period_fr: "Mars - Août 2026"
 period_en: "March - August 2026"
 ogImage: "/images/projects/institut-pasteur-dakar-og-fr.jpg"
 highlights_fr:
-  - value: "10"
-    label: "pays, sans interruption"
+  - value: "Sénégal"
+    label: "en service, prêt multi‑pays"
   - value: "4"
     label: "fiches mises en service"
   - value: "0"
     label: "ligne de code pour la 4ᵉ"
 highlights_en:
-  - value: "10"
-    label: "countries, no downtime"
+  - value: "Senegal"
+    label: "in service, multi‑country ready"
   - value: "4"
     label: "forms put into service"
   - value: "0"
     label: "lines of code for the 4th"
 contributions_fr:
-  - title: "Service de gestion des formulaires"
+  - title: "Service de gestion des formulaires (FMS)"
     role: "Conception et développement"
     share: "≈ 98 % des commits"
     stack: ["NestJS 10", "Fastify", "TypeScript", "Drizzle ORM", "PostgreSQL", "Kafka", "Keycloak", "Jest"]
-    summary: "Le cœur de la plateforme, écrit pour se substituer au service historique route par route."
+    summary: "FMS (Form Management Service), le cœur de la plateforme, écrit pour se substituer au service historique route par route."
     details:
       - title: "Migration progressive à contrat constant."
         text: " Le nouveau service reproduit exactement le contrat HTTP de l'ancien. Chaque route peut basculer indépendamment, sans qu'aucune application cliente ait à changer, et sans fenêtre d'interruption."
@@ -44,20 +44,20 @@ contributions_fr:
         text: " Un nouveau formulaire alimente le circuit des prélèvements dès que son schéma déclare le bloc correspondant. Plus de liste codée en dur, plus de redéploiement backend pour publier une fiche."
       - title: "Intégrations"
         text: " avec les services patients, analyses et biobanque, référentiels résolus et mis en cache, stockage objet MinIO, synchronisation avec le système de formulaires existant."
-  - title: "Bibliothèque de composants Angular"
+  - title: "Librairie de composants Angular partagés"
     role: "Conception et maintenance"
     share: "≈ 92 % des commits"
     stack: ["Angular", "PrimeNG", "ng-packagr", "Storybook", "jetons de design CSS", "publication par tags Git"]
     summary: "Dix-neuf composants partagés par trois applications, construits selon une stratégie « kit-first » : extraire plutôt que dupliquer. Wizard et navigation par sous-étapes, grilles éditables, champs texte, sélection, chips, tuiles, compteur, date et heure, téléversement, géolocalisation, enregistrement automatique."
-  - title: "Console d'administration des formulaires"
+  - title: "Console d'administration des formulaires (Form Admin)"
     role: "Conception et développement"
     share: "≈ 98 % des commits"
-    summary: "Application Angular de conception, versionnement, publication et gestion des accès aux formulaires. C'est elle qui rend le reste utilisable sans développeur."
-  - title: "Application de saisie terrain"
+    summary: "Form Admin, l'application Angular de conception, versionnement, publication et gestion des accès aux formulaires. C'est elle qui rend le reste utilisable sans développeur."
+  - title: "Application de saisie terrain (Sentinelle)"
     role: "Contributeur majeur"
     share: "≈ 24 % des commits"
     stack: ["Angular standalone", "PrimeNG", "Dexie / IndexedDB", "Keycloak", "service worker"]
-    summary: "Progressive Web App utilisée par les agents de santé."
+    summary: "Sentinelle, la Progressive Web App utilisée par les agents de santé, déjà en production à mon arrivée."
     details:
       - title: "Moteur de rendu de formulaires sur mesure"
         text: ", environ 4 400 lignes, sans dépendance à la bibliothèque tierce utilisée jusque-là : wizard, champs conditionnels, grilles, validation par étape, préremplissage."
@@ -73,7 +73,7 @@ contributions_fr:
     summary: "Overlays par environnement, chaînes CI/CD, gestion de la configuration et des secrets. Diagnostic et remise en état d'un environnement bloqué, avec la correction portée dans l'infrastructure-as-code plutôt qu'appliquée à la main."
 decisions_fr:
   - title: "Reproduire à l'identique le contrat HTTP du service historique"
-    text: "Cela oblige à hériter de choix d'API qu'on n'aurait pas faits soi-même, et à les porter dans une architecture neuve. En échange, la bascule se fait route par route, chaque étape est réversible, et aucune application cliente dans les dix pays n'a eu à être modifiée. Sur un système de surveillance sanitaire, la réversibilité vaut plus que l'élégance."
+    text: "Cela oblige à hériter de choix d'API qu'on n'aurait pas faits soi-même, et à les porter dans une architecture neuve. En échange, la bascule se fait route par route, chaque étape est réversible, et aucune application cliente n'a eu à être modifiée. Sur un système de surveillance sanitaire, la réversibilité vaut plus que l'élégance."
   - title: "Outbox transactionnel plutôt que publication directe vers Kafka"
     text: "Un worker de drainage et une purge de plus à exploiter, contre la garantie qu'une indisponibilité du broker ne remonte jamais jusqu'à l'agent. Quand la saisie a lieu sur le terrain, un échec d'envoi ne se rattrape pas : la personne est repartie."
   - title: "Doubles en mémoire plutôt que conteneurs de test"
@@ -87,7 +87,7 @@ decisions_fr:
   - title: "Corriger un environnement bloqué dans l'infrastructure-as-code"
     text: "Une remise en route manuelle aurait été plus rapide et se serait redéfaite au déploiement suivant."
 deliveries_fr:
-  intro: "Un moteur de formulaires ne vaut que par ce qu'il accepte de porter. Quatre fiches ont été mises en service, de natures délibérément éloignées."
+  intro: "Un moteur de formulaires ne vaut que par ce qu'il accepte de porter. Quatre fiches ont été mises en service au Sénégal, de natures délibérément éloignées."
   items:
     - title: "SARI — surveillance des infections respiratoires aiguës sévères"
       text: "Circuit hospitalier, avec rattachement des prélèvements et remontée vers le laboratoire puis la biobanque."
@@ -111,15 +111,17 @@ L'Institut Pasteur de Dakar est l'un des principaux acteurs de santé publique d
 
 Concrètement : des agents de santé recueillent sur le terrain des fiches épidémiologiques — infections respiratoires, surveillance communautaire, décès maternels et néonatals, diphtérie — et les prélèvements associés remontent vers le laboratoire puis vers la biobanque. La chaîne va du carnet de l'agent jusqu'à l'échantillon conservé.
 
+À mon arrivée, l'application Sentinelle était déjà déployée. J'ai ajouté les briques qui rendent les fiches configurables sans développeur : FMS (Form Management Service), le backend de gestion des formulaires ; Form Admin, l'application d'administration des formulaires ; et une librairie de composants partagés. Les fiches sont aujourd'hui en service au Sénégal ; la solution est livrée et configurée pour être utilisée dans les autres pays où Sentinelle est déployée.
+
 ## Le problème
 
 Le système reposait sur un service Django historique dans lequel chaque nouvelle fiche impliquait du code : une liste de types en dur, et un redéploiement du backend pour publier un formulaire. Une temporalité de développement logiciel imposée à un besoin de santé publique.
 
-La difficulté n'était pas de concevoir un meilleur système. Elle était de le substituer à un système déjà en service dans dix pays, sans interruption. On n'arrête pas une chaîne de surveillance sanitaire le temps d'une migration.
+La difficulté n'était pas de concevoir un meilleur système. Elle était de le substituer à un système déjà en production, utilisé dans plusieurs pays, sans interruption. On n'arrête pas une chaîne de surveillance sanitaire le temps d'une migration.
 
 ## Les contraintes
 
-**Pas d'interruption possible.** Des applications clientes en production, dans dix pays, dépendaient du service existant.
+**Pas d'interruption possible.** Des applications clientes en production, dans plusieurs pays, dépendaient du service existant.
 
 **Des environnements de déploiement hétérogènes.** Les pays ne sont pas tous outillés de la même manière. Une même livraison doit atteindre des cibles de nature différente.
 
