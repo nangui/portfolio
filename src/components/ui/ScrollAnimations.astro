@@ -10,8 +10,9 @@
       const { default: ScrollTrigger } = await import('gsap/ScrollTrigger');
       gsap.registerPlugin(ScrollTrigger);
 
-      // Animate sections on scroll
-      const sections = document.querySelectorAll('section[id]');
+      // Animate sections on scroll. The hero is excluded: it is above the fold and holds the
+      // largest contentful paint, so hiding it until GSAP loads delayed the first render.
+      const sections = document.querySelectorAll('section[id]:not(#hero)');
 
       sections.forEach((section) => {
         gsap.fromTo(
