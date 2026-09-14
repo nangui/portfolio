@@ -7,7 +7,7 @@ tags: ["Chrome Extension", "Open Source", "Vue.js", "TypeScript", "Afrique", "De
 image: "/images/makoki/cover.jpg"
 ---
 
-![Makoki Test - Extension Chrome](/images/makoki/cover.jpg)
+![Makoki Test - Extension Chrome](../../assets/blog/makoki/cover.jpg)
 
 ## Introduction : Le problème des données de test occidentales
 
@@ -118,7 +118,7 @@ Actuellement, **7 pays sont supportés** :
 - 🇨🇬 République du Congo
 - 🇨🇩 République Démocratique du Congo
 
-![Comparaison multi-pays](/images/makoki/countries-comparison.png)
+![Comparaison multi-pays](../../assets/blog/makoki/countries-comparison.png)
 
 ### Exemples de données générées
 
@@ -171,7 +171,7 @@ pnpm screenshots  # Génère 5 screenshots (1280x800)
 pnpm promo-images # Génère les images promotionnelles
 ```
 
-![Menu contextuel](/images/makoki/context-menu.png)
+![Menu contextuel](../../assets/blog/makoki/context-menu.png)
 
 ## En route vers le Chrome Web Store
 
@@ -194,7 +194,7 @@ L'extension est maintenant dans la file d'attente de review. Le processus peut p
 
 En attendant, le code source est déjà disponible sur [GitHub](https://github.com/nangui/makoki) et l'extension peut être installée manuellement pour les développeurs qui souhaitent l'essayer dès maintenant.
 
-![Formulaire rempli](/images/makoki/form-filled.png)
+![Formulaire rempli](../../assets/blog/makoki/form-filled.png)
 
 ## L'avenir de Makoki Test
 
