@@ -40,7 +40,8 @@ const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
           alt={title}
           class="w-full h-36 md:h-32 rounded-md border border-border-default object-cover bg-secondary"
           loading="lazy"
-          quality={85}
+          widths={[640, 1080]}
+          sizes="(min-width: 768px) 220px, calc(100vw - 32px)"
         />
       )}
 
