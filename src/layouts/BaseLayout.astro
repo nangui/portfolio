@@ -17,10 +17,12 @@ interface Props {
   ogType?: 'website' | 'article';
   publishedTime?: string;
   modifiedTime?: string;
+  /** Keeps utility pages such as the 404 out of search results */
+  noindex?: boolean;
 }
 
-const { 
-  title, 
+const {
+  title,
   description = "Portfolio d'Adonai Nangui - Senior Frontend Engineer & Tech Lead, du frontend au backend",
   ogImage,
   locale = defaultLocale,
@@ -28,6 +30,7 @@ const {
   ogType = 'website',
   publishedTime,
   modifiedTime,
+  noindex = false,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonainangui.dev');
@@ -87,9 +90,19 @@ const ogImageType = getImageType(resolvedOgImage);
     <meta name="description" content={description} />
     <meta name="keywords" content={keywordsContent} />
     <meta name="author" content="Adonai Nangui" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta
+      name="robots"
+      content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}
+    />
     <meta name="theme-color" content="#0F1117" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- Fonts linked from the head rather than @import in the CSS: the browser finds them one request earlier -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+    />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -118,10 +131,10 @@ const ogImageType = getImageType(resolvedOgImage);
     {ogType === 'article' && modifiedTime && (
       <meta property="article:modified_time" content={modifiedTime} />
     )}
-    {alternateUrls.map(({ lang, url }) => (
+    {!noindex && alternateUrls.map(({ lang, url }) => (
       <link rel="alternate" hreflang={lang} href={url} />
     ))}
-    <link rel="alternate" hreflang="x-default" href={`${siteUrl}/fr`} />
+    {!noindex && <link rel="alternate" hreflang="x-default" href={`${siteUrl}/fr`} />}
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />

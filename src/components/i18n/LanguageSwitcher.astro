@@ -9,8 +9,9 @@ interface Props {
 
 const { currentLocale, currentPath } = Astro.props;
 
-// Get the path without locale for switching
-const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
+// Get the path without locale for switching. The 404 page has no language versions: point to the home pages
+const strippedPath = currentPath.replace(/^\/(fr|en)/, '') || '/';
+const pathWithoutLocale = /^\/404(\.html)?\/?$/.test(strippedPath) ? '/' : strippedPath;
 ---
 
 <div class="language-switcher relative" data-language-switcher>
@@ -79,7 +80,6 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
         return;
       }
 
-      console.log(`LanguageSwitcher: Found ${switchers.length} switcher(s), initializing...`);
 
       // Store all handlers for cleanup
       const allHandlers: Array<() => void> = [];
@@ -105,11 +105,9 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
         };
         
         const handleClick: EventListener = (e: Event) => {
-          console.log('LanguageSwitcher: click event', e.type);
           // Ignore click if it came from a touch (within 500ms)
           const timeSinceTouch = Date.now() - lastTouchTime;
           if (timeSinceTouch < 500) {
-            console.log('LanguageSwitcher: ignoring click (came from touch)');
             return;
           }
           
@@ -120,14 +118,12 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
         };
         
         const handleTouchStart: EventListener = (e: Event) => {
-          console.log('LanguageSwitcher: touchstart event');
           touchStarted = true;
           lastTouchTime = Date.now();
           e.stopPropagation();
         };
         
         const handleTouchEnd: EventListener = (e: Event) => {
-          console.log('LanguageSwitcher: touchend event');
           if (!touchStarted) return;
           
           e.preventDefault();
@@ -145,13 +141,11 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
         const langOptions = langMenu.querySelectorAll('[data-locale]');
         let lastOptionTouchTime = 0;
         
-        const handleOptionClick = (e: Event) => {
-          console.log('LanguageSwitcher: option clicked', e.type);
+        const handleOptionClick = () => {
           const timeSinceTouch = Date.now() - lastOptionTouchTime;
           
           // If click came from a touch (within 500ms), ignore it - touchend already handled it
           if (timeSinceTouch < 500) {
-            console.log('LanguageSwitcher: ignoring click (came from touch)');
             return;
           }
           
@@ -162,7 +156,6 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
         };
         
         const handleOptionTouchEnd: EventListener = (e: Event) => {
-          console.log('LanguageSwitcher: option touchend');
           lastOptionTouchTime = Date.now();
           
           // Find the link element (could be the target or a parent)
@@ -185,7 +178,6 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
           toggleButton.setAttribute('aria-expanded', 'false');
           
           // Navigate manually for mobile devices
-          console.log('LanguageSwitcher: navigating to', link.href);
           // Use a small delay to ensure menu is closed, then navigate
           setTimeout(() => {
             window.location.href = link.href;
@@ -280,7 +272,6 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
             return langMenu && langMenu.contains(target);
           });
           if (linkInMenu) {
-            console.log('LanguageSwitcher: link clicked, allowing navigation');
             return;
           }
         }
