@@ -10,6 +10,7 @@ role_fr: "Ingénieur logiciel full-stack - Consultant"
 role_en: "Full-Stack Software Engineer - Consultant"
 period_fr: "Mars - Août 2026"
 period_en: "March - August 2026"
+ogImage: "/images/projects/institut-pasteur-dakar-og-fr.jpg"
 highlights_fr:
   - value: "10"
     label: "pays, sans interruption"
