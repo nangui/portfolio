@@ -235,7 +235,7 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
                       <p class="mt-2.5 md:mt-3 mb-4 text-sm leading-relaxed text-secondary line-clamp-3">
                         {project.description}
                       </p>
-                      <div class="mt-auto flex flex-wrap items-center justify-between gap-3">
+                      <div class="mt-auto flex flex-col items-start gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
                         <ul class="flex flex-wrap gap-2" aria-label={stackLabel}>
                           {project.stack.slice(0, 3).map((tech) => (
                             <li class="rounded-full border border-border-default bg-bg-tertiary px-2.5 py-1 text-xs text-secondary">

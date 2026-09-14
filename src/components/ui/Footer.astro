@@ -31,7 +31,8 @@ const backToTopLabel = locale === 'fr' ? 'Retour en haut' : 'Back to top';
 
 <footer class="border-t border-border-default/70 bg-primary">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-10 pb-8 flex flex-col gap-5 md:gap-7">
-    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-8">
+    <!-- Stacked until lg: on tablet the three groups squeezed the title and wrapped the nav -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 lg:gap-8">
       <div class="flex flex-col gap-1">
         <p class="font-heading text-lg font-semibold text-primary">Adonai Nangui</p>
         <p class="text-sm text-secondary">{getTranslation('hero', 'title', locale)}</p>
