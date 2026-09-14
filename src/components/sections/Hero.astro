@@ -246,8 +246,9 @@ const recentMissions = recentMissionSummaries.flatMap((mission) => {
     background: var(--color-bg-tertiary);
   }
 
+  /* #2563eb gives white text a 5:1 contrast (#3b82f6 was 3.5:1) */
   :global(.hero-primary-btn) {
-    background: #3b82f6;
+    background: #2563eb;
     color: #f8fbff;
     border: 2px solid #9ec5ff;
     border-radius: 28px 14px 32px 12px / 14px 30px 12px 28px;
