@@ -9,8 +9,8 @@ export const GET: APIRoute = async ({ site }) => {
   const blogPosts = await getCollection('blog').catch(() => []);
   const projects = await getCollection('projects').catch(() => []);
 
+  // "/" is only a redirect to /fr: list final URLs only
   const urls = new Set<string>();
-  urls.add('/');
 
   locales.forEach((locale) => {
     urls.add(`/${locale}`);

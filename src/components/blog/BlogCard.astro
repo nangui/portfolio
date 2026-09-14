@@ -7,9 +7,11 @@ import OptimizedImage from '@components/ui/OptimizedImage.astro';
 interface Props {
   entry: CollectionEntry<'blog'>;
   locale?: Locale;
+  /** First card of the list: its image is the page's LCP, so it must not wait for lazy loading */
+  eager?: boolean;
 }
 
-const { entry, locale = defaultLocale } = Astro.props;
+const { entry, locale = defaultLocale, eager = false } = Astro.props;
 const { title, description, pubDate, tags } = entry.data;
 
 // Get slug from id (filename without extension) or slug property
@@ -39,7 +41,8 @@ const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-US';
           src={entry.data.image}
           alt={title}
           class="w-full h-36 md:h-32 rounded-md border border-border-default object-cover bg-secondary"
-          loading="lazy"
+          loading={eager ? 'eager' : 'lazy'}
+          fetchpriority={eager ? 'high' : undefined}
           widths={[640, 1080]}
           sizes="(min-width: 768px) 220px, calc(100vw - 32px)"
         />

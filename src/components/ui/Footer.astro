@@ -67,8 +67,9 @@ const backToTopLabel = locale === 'fr' ? 'Retour en haut' : 'Back to top';
       </ul>
     </div>
 
-    <!-- Right padding on small screens keeps "back to top" clear of the fixed signature badge -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 border-t border-border-default pt-4 md:pt-5 pr-20 sm:pr-24 lg:pr-0">
+    <!-- Right padding keeps "back to top" clear of the fixed signature badge until the viewport
+         leaves enough margin beside the 1200px container for the badge (~1400px) -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 border-t border-border-default pt-4 md:pt-5 pr-20 sm:pr-24 lg:pr-28 min-[1400px]:pr-0">
       <p class="text-xs md:text-[13px] text-text-tertiary">
         © {currentYear} Adonai Nangui. {copyright}.
       </p>

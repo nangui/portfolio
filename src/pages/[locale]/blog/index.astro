@@ -49,8 +49,8 @@ const description = getTranslation('blog', 'description', locale);
     </header>
 
     <section class="space-y-8">
-      {blogPosts.map((post: CollectionEntry<'blog'>) => (
-        <BlogCard entry={post} locale={locale} />
+      {blogPosts.map((post: CollectionEntry<'blog'>, index: number) => (
+        <BlogCard entry={post} locale={locale} eager={index === 0} />
       ))}
     </section>
 
