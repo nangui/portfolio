@@ -52,6 +52,8 @@ const projects = defineCollection({
     githubUrl: z.url().optional(),
     image: z.string().optional(),
     images: z.array(z.string()).optional(), // Support for multiple images
+    // Share image (Open Graph), used instead of image/images and never shown on the page
+    ogImage: z.string().optional(),
     role: z.string().optional(),
     role_fr: z.string().optional(),
     role_en: z.string().optional(),

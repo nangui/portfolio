@@ -137,7 +137,7 @@ const projectImages = data.images?.length
 // Projects with a hand-drawn cover instead of screenshots
 const hasDiagramCover = Astro.params.slug === 'institut-pasteur-dakar';
 const siteUrl = String(Astro.site || 'https://adonainangui.dev').replace(/\/$/, '');
-const primaryImage = data.image || data.images?.[0];
+const primaryImage = data.ogImage || data.image || data.images?.[0];
 const ogImage = primaryImage
   ? `${siteUrl}${primaryImage.startsWith('/') ? primaryImage : `/${primaryImage}`}`
   : undefined;
