@@ -9,13 +9,18 @@ import { securityHeaders } from './security-headers.mjs';
 
 const configUrl = new URL('../.vercel/output/config.json', import.meta.url);
 
-if (!existsSync(configUrl)) {
-  console.warn('[add-security-headers] .vercel/output/config.json not found, skipping');
-  process.exit(0);
-}
+// Fail the build rather than deploy without headers when the adapter output changes shape
+const fail = (message) => {
+  console.error(`[add-security-headers] ${message}`);
+  process.exit(1);
+};
+
+if (!existsSync(configUrl)) fail('.vercel/output/config.json not found');
 
 const config = JSON.parse(readFileSync(configUrl, 'utf8'));
-const routes = Array.isArray(config.routes) ? config.routes : [];
+if (!Array.isArray(config.routes)) fail('config.json has no routes array');
+if (!config.routes.some((route) => route.handle === 'filesystem')) fail('config.json has no filesystem phase');
+const routes = config.routes;
 
 const isSecurityRoute = (route) =>
   route.src === '^/.*$' && route.continue === true && route.headers?.['x-content-type-options'];
