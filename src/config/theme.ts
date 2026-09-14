@@ -8,7 +8,7 @@ export const theme = {
     text: {
       primary: '#F5F5F5',
       secondary: '#A1A8B3',
-      tertiary: '#6B7280',
+      tertiary: '#8B93A1',
     },
     accent: {
       primary: '#3B82F6',

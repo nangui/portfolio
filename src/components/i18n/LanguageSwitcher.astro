@@ -16,7 +16,7 @@ const pathWithoutLocale = currentPath.replace(/^\/(fr|en)/, '') || '/';
 <div class="language-switcher relative" data-language-switcher>
   <button
     class="lang-toggle-button group flex items-center gap-2 px-3 py-2 bg-secondary/80 backdrop-blur-sm border border-border-default rounded-lg hover:border-accent hover:bg-secondary transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent relative z-50 touch-manipulation"
-    aria-label="Changer la langue"
+    aria-label={`${localeCodes[currentLocale]}, ${currentLocale === 'fr' ? 'changer la langue' : 'change language'}`}
     aria-expanded="false"
     aria-haspopup="true"
     data-lang-toggle

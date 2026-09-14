@@ -20,7 +20,8 @@
   /* Colors - Text (Dark mode - default) */
   --color-text-primary: #F5F5F5;
   --color-text-secondary: #A1A8B3;
-  --color-text-tertiary: #6B7280;
+  /* #8B93A1 keeps a 4.5:1 contrast on every dark background (#0F1117, #1A1D24, #252932) */
+  --color-text-tertiary: #8B93A1;
   
   /* Colors - Accent */
   --color-accent: #3B82F6;

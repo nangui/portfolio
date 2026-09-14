@@ -56,7 +56,8 @@ export default defineConfig({
     shikiConfig: {
       themes: {
         light: 'github-light',
-        dark: 'github-dark',
+        // github-dark-default keeps code comments readable (4.5:1+); github-dark comments were 3:1
+        dark: 'github-dark-default',
       },
       defaultColor: false,
       wrap: true,
