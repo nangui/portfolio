@@ -15,8 +15,9 @@ const tocTitle = locale === 'fr' ? 'Table des matières' : 'Table of contents';
 const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
 ---
 
+<!-- Closed by default: opened, the table pushed the first paragraph more than a screen down -->
 {tocHeadings.length >= 2 && (
-  <details class="toc-details mb-8 bg-secondary/30 border border-border-default rounded-lg overflow-hidden" id="toc-details" open>
+  <details class="toc-details mb-8 bg-secondary/30 border border-border-default rounded-lg overflow-hidden" id="toc-details">
     <summary class="cursor-pointer px-4 py-3 hover:bg-secondary/50 transition-colors flex items-center justify-between gap-3 select-none">
       <span class="font-heading font-semibold text-primary flex items-center gap-2">
         <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -54,10 +55,10 @@ const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.
 
     const tocLinks = Array.from(tocDetails.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
 
-    // Close the table on mobile after choosing a section
+    // Close the table on mobile and tablet after choosing a section
     tocLinks.forEach((link) => {
       link.addEventListener('click', () => {
-        if (window.innerWidth < 768) tocDetails.removeAttribute('open');
+        if (window.innerWidth < 1024) tocDetails.removeAttribute('open');
       });
     });
 
