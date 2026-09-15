@@ -73,9 +73,11 @@ const domains = locale === 'fr'
     ];
 ---
 
-<section id="about" class="py-section bg-secondary" aria-labelledby="about-heading">
+<section id="about" class="py-section bg-primary" aria-labelledby="about-heading">
   <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+    <!-- Same rounded panel as Contact: a section-wide background showed as a hard-edged slab
+         inside the 1200px page container -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 xl:gap-16 rounded-2xl border border-border-default bg-secondary p-5 sm:p-10 xl:p-14">
       <div class="flex flex-col gap-5">
         <h2 id="about-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
           {getTranslation('about', 'heading', locale)}
