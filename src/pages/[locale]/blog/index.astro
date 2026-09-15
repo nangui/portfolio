@@ -2,13 +2,13 @@
 import BlogLayout from '@layouts/BlogLayout.astro';
 import BlogCard from '@components/blog/BlogCard.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { isValidLocale, defaultLocale } from '@i18n/config';
+import { isValidLocale, defaultLocale, blogLocale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
 
 export async function getStaticPaths() {
   return [
-    { params: { locale: 'fr' } },
-    { params: { locale: 'en' } },
+    // Articles are written in French only (blogLocale); /en/blog redirects here
+    { params: { locale: blogLocale } },
   ];
 }
 

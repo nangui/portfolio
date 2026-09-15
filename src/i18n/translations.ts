@@ -159,7 +159,7 @@ export const translations: Translations = {
       'gebeya-senior.impact3': 'Garantie que les livrables répondent aux attentes du marché Gebeya SaaS',
       'gebeya-senior.impact4': 'Contribution directe aux efforts de développement avec focus sur la qualité',
       // Socium
-      'socium.role': 'Senior Software Engineering',
+      'socium.role': 'Senior Software Engineer',
       'socium.period': 'Nov 2022 - Sep 2024',
       'socium.impact1': 'Développement de modules critiques du SIRH : Socium Doc, Payroll, Perf avec NestJS et Angular',
       'socium.impact2': 'Architecture découplée pour portail de recrutement et blog (Nuxt.js + Strapi)',
@@ -215,7 +215,7 @@ export const translations: Translations = {
       'gebeya-senior.impact3': 'Ensuring deliverables meet Gebeya SaaS market expectations',
       'gebeya-senior.impact4': 'Direct contribution to development efforts with focus on quality',
       // Socium
-      'socium.role': 'Senior Software Engineering',
+      'socium.role': 'Senior Software Engineer',
       'socium.period': 'Nov 2022 - Sep 2024',
       'socium.impact1': 'Development of critical HRIS modules: Socium Doc, Payroll, Perf with NestJS and Angular',
       'socium.impact2': 'Decoupled architecture for recruitment portal and blog (Nuxt.js + Strapi)',
@@ -251,6 +251,7 @@ export const translations: Translations = {
       share: 'Partager',
       previous: 'Article précédent',
       next: 'Article suivant',
+      writtenInFrench: 'Articles rédigés en français.',
     },
     en: {
       title: 'Technical Blog',
@@ -263,6 +264,7 @@ export const translations: Translations = {
       share: 'Share',
       previous: 'Previous article',
       next: 'Next article',
+      writtenInFrench: 'Articles are written in French.',
     },
   },
 

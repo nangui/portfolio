@@ -20,6 +20,12 @@ export const localeCodes: Record<Locale, string> = {
 };
 
 /**
+ * Blog articles are written in French only: the blog exists under /fr/blog and every link to it
+ * points there, whatever the language of the page.
+ */
+export const blogLocale: Locale = 'fr';
+
+/**
  * Check if a string is a valid locale
  */
 export function isValidLocale(locale: string): locale is Locale {

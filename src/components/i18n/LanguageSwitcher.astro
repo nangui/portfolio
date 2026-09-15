@@ -1,6 +1,6 @@
 ---
 import { locales, localeLabels, localeCodes, type Locale } from '@i18n/config';
-import { formatPath } from '@i18n/utils';
+import { getLocaleSwitchPath } from '@i18n/utils';
 
 interface Props {
   currentLocale: Locale;
@@ -9,9 +9,6 @@ interface Props {
 
 const { currentLocale, currentPath } = Astro.props;
 
-// Get the path without locale for switching. The 404 page has no language versions: point to the home pages
-const strippedPath = currentPath.replace(/^\/(fr|en)/, '') || '/';
-const pathWithoutLocale = /^\/404(\.html)?\/?$/.test(strippedPath) ? '/' : strippedPath;
 ---
 
 <div class="language-switcher relative" data-language-switcher>
@@ -41,7 +38,7 @@ const pathWithoutLocale = /^\/404(\.html)?\/?$/.test(strippedPath) ? '/' : strip
   >
     {locales.map((locale: Locale) => (
       <a
-        href={formatPath(pathWithoutLocale, locale)}
+        href={getLocaleSwitchPath(currentPath, locale)}
         class={`lang-option w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-tertiary hover:text-accent flex items-center justify-between ${
           locale === currentLocale 
             ? 'bg-accent/10 text-accent font-medium' 
