@@ -44,8 +44,10 @@ export default defineConfig({
   trailingSlash: 'never',
   image: { layout: 'constrained' },
   // Google Fonts downloaded at build time and served from the site: no render-blocking third-party
-  // stylesheet, and metric-adjusted fallbacks keep the layout from shifting when the fonts swap in.
-  // Same families and weights as the former Google Fonts @import.
+  // stylesheet. Same families and weights as the former Google Fonts @import.
+  // display 'optional': with 'swap', text painted in the fallback font jumped when the web fonts
+  // arrived on slower connections (CLS up to 0.24) despite the metric-adjusted fallbacks. The
+  // preloaded fonts are used when they arrive in time, and from cache on the next pages otherwise.
   fonts: [
     {
       name: 'Inter',
@@ -55,6 +57,7 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['latin', 'latin-ext'],
       fallbacks: ['system-ui', 'sans-serif'],
+      display: 'optional',
     },
     {
       name: 'Space Grotesk',
@@ -64,6 +67,7 @@ export default defineConfig({
       styles: ['normal'],
       subsets: ['latin', 'latin-ext'],
       fallbacks: ['system-ui', 'sans-serif'],
+      display: 'optional',
     },
   ],
   adapter: vercel({

@@ -27,3 +27,6 @@ pnpm-debug.log*
 docs/
 .vercel
 .env*.local
+
+# local browser test captures (Playwright MCP)
+.playwright-mcp/
