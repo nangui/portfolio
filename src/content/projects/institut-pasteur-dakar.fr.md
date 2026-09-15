@@ -67,7 +67,7 @@ contributions_fr:
         text: " : passage d'un signalement communautaire à une fiche clinique préremplie."
   - title: "Application laboratoire"
     role: "Intégration"
-    summary: "Rattachement des fiches aux échantillons et publication des prélèvements vers la biobanque, principalement côté backend. Réalignement du moteur de rendu de cette application sur celui de l'application terrain."
+    summary: "Rattachement des prélèvements à une fiche : on choisit un projet puis une fiche, on la saisit et on l'envoie à FMS, qui transmet ensuite les données à la biobanque. Travail principalement côté backend, avec le réalignement du moteur de rendu de cette application sur celui de l'application terrain."
   - title: "Infrastructure et livraison"
     stack: ["Kubernetes", "kustomize", "Jenkins", "Docker"]
     summary: "Overlays par environnement, chaînes CI/CD, gestion de la configuration et des secrets. Diagnostic et remise en état d'un environnement bloqué, avec la correction portée dans l'infrastructure-as-code plutôt qu'appliquée à la main."
@@ -90,7 +90,7 @@ deliveries_fr:
   intro: "Un moteur de formulaires ne vaut que par ce qu'il accepte de porter. Quatre fiches ont été mises en service au Sénégal, de natures délibérément éloignées."
   items:
     - title: "SARI — surveillance des infections respiratoires aiguës sévères"
-      text: "Circuit hospitalier, avec rattachement des prélèvements et remontée vers le laboratoire puis la biobanque."
+      text: "Circuit hospitalier, avec des échantillons rattachés à la fiche, traités par FMS puis transmis à la biobanque."
     - title: "CVACi — Cellules de Veille et d'Alerte Communautaire intégrée"
       text: "La surveillance à base communautaire est l'un des piliers de la sécurité sanitaire : elle capte les signaux là où ils apparaissent, avant qu'ils n'atteignent une structure de soins. Le circuit est à deux étapes, d'un agent communautaire vers un professionnel de santé qui valide, avec passage automatique dans la file du valideur. Une passerelle bidirectionnelle relie ces signalements à la fiche clinique correspondante, préremplie depuis la source."
     - title: "Déclaration des décès maternels et néonatals"
@@ -109,7 +109,7 @@ proof_fr:
 
 L'Institut Pasteur de Dakar est l'un des principaux acteurs de santé publique d'Afrique de l'Ouest. Son programme 4S assure la surveillance sanitaire syndromique et sentinelle.
 
-Concrètement : des agents de santé recueillent sur le terrain des fiches épidémiologiques — infections respiratoires, surveillance communautaire, décès maternels et néonatals, diphtérie — et les prélèvements associés remontent vers le laboratoire puis vers la biobanque. La chaîne va du carnet de l'agent jusqu'à l'échantillon conservé.
+Concrètement : des agents de santé saisissent sur le terrain, dans l'application Sentinelle, des fiches épidémiologiques — infections respiratoires, surveillance communautaire, décès maternels et néonatals, diphtérie — accompagnées pour certaines d'échantillons. Au laboratoire, l'application Labo rattache les prélèvements à une fiche. Les deux applications envoient leurs données au service de formulaires, qui les traite puis les transmet à la biobanque.
 
 À mon arrivée, l'application Sentinelle était déjà déployée. J'ai ajouté les briques qui rendent les fiches configurables sans développeur : FMS (Form Management Service), le backend de gestion des formulaires ; Form Admin, l'application d'administration des formulaires ; et une librairie de composants partagés. Les fiches sont aujourd'hui en service au Sénégal ; la solution est livrée et configurée pour être utilisée dans les autres pays où Sentinelle est déployée.
 
