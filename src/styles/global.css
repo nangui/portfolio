@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Typography */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  /* Typography: --font-inter and --font-space-grotesk come from the Astro Fonts API (<Font /> in
+     BaseLayout) and already include the metric-adjusted fallbacks */
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-space-grotesk);
   
   /* Font weights */
   --font-weight-normal: 400;

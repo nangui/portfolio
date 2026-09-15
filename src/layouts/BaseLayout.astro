@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import Analytics from '@vercel/analytics/astro';
 import Nav from '@components/ui/Nav.astro';
 import Footer from '@components/ui/Footer.astro';
@@ -96,6 +97,11 @@ const ogImageType = getImageType(resolvedOgImage);
     />
     <meta name="theme-color" content="#0F1117" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- Self-hosted fonts: preload the latin file of each family. Both are variable fonts (one file
+         per subset for every weight), and Astro records a single weight per preloaded file, so the
+         filter matches on style and subset rather than on a weight -->
+    <Font cssVariable="--font-inter" preload={[{ style: 'normal', subset: 'latin' }]} />
+    <Font cssVariable="--font-space-grotesk" preload={[{ style: 'normal', subset: 'latin' }]} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />

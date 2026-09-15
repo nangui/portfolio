@@ -1,6 +1,6 @@
 // @ts-check
 import { readdirSync, readFileSync } from 'node:fs';
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -43,6 +43,29 @@ export default defineConfig({
   // "/page/" to "/page" and lets config redirects match both forms.
   trailingSlash: 'never',
   image: { layout: 'constrained' },
+  // Google Fonts downloaded at build time and served from the site: no render-blocking third-party
+  // stylesheet, and metric-adjusted fallbacks keep the layout from shifting when the fonts swap in.
+  // Same families and weights as the former Google Fonts @import.
+  fonts: [
+    {
+      name: 'Inter',
+      cssVariable: '--font-inter',
+      provider: fontProviders.google(),
+      weights: [400, 500, 600],
+      styles: ['normal'],
+      subsets: ['latin', 'latin-ext'],
+      fallbacks: ['system-ui', 'sans-serif'],
+    },
+    {
+      name: 'Space Grotesk',
+      cssVariable: '--font-space-grotesk',
+      provider: fontProviders.google(),
+      weights: [500, 600, 700],
+      styles: ['normal'],
+      subsets: ['latin', 'latin-ext'],
+      fallbacks: ['system-ui', 'sans-serif'],
+    },
+  ],
   adapter: vercel({
     imageService: true,
   }),
