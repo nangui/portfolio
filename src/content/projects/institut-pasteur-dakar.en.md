@@ -67,7 +67,7 @@ contributions_en:
         text: ": moving from a community alert to a prefilled clinical form."
   - title: "Laboratory application"
     role: "Integration"
-    summary: "Linking forms to specimens and publishing samples to the biobank, primarily on the backend side. Realigning this application's rendering engine with the field application's."
+    summary: "Linking specimens to a form: pick a project, then a form, fill it in and send it to FMS, which then forwards the data to the biobank. Mostly backend work, along with realigning this application's rendering engine with the field application's."
   - title: "Infrastructure and delivery"
     stack: ["Kubernetes", "kustomize", "Jenkins", "Docker"]
     summary: "Per-environment overlays, CI/CD pipelines, configuration and secrets management. Diagnosis and recovery of a blocked environment, with the fix carried into infrastructure-as-code rather than applied by hand."
@@ -90,7 +90,7 @@ deliveries_en:
   intro: "A forms engine is only worth what it is willing to carry. Four forms went into service in Senegal, deliberately different in nature."
   items:
     - title: "SARI — surveillance of severe acute respiratory infections"
-      text: "A hospital circuit, with specimens attached and passed on to the laboratory and then the biobank."
+      text: "A hospital circuit, with samples attached to the form, processed by FMS and then forwarded to the biobank."
     - title: "CVACi — integrated community alert and surveillance cells"
       text: "Community-based surveillance is one of the pillars of health security: it picks up signals where they appear, before they reach a care facility. The circuit has two steps, from a community worker to a health professional who validates, with automatic routing into the validator's queue. A bidirectional bridge links these alerts to the corresponding clinical form, prefilled from the source."
     - title: "Maternal and neonatal death notification"
@@ -109,7 +109,7 @@ proof_en:
 
 Institut Pasteur de Dakar is one of West Africa's leading public health institutions. Its 4S programme runs syndromic and sentinel health surveillance.
 
-In practice: health workers collect epidemiological forms in the field — respiratory infections, community surveillance, maternal and neonatal deaths, diphtheria — and the associated samples travel on to the laboratory and then the biobank. The chain runs from the field worker's notebook to the stored specimen.
+In practice: health workers enter epidemiological forms in the field, in the Sentinelle app — respiratory infections, community surveillance, maternal and neonatal deaths, diphtheria — some of them with samples. At the laboratory, the Labo app links specimens to a form. Both apps send their data to the forms service, which processes it and then forwards it to the biobank.
 
 When I joined, the Sentinelle app was already deployed. I added the building blocks that make forms configurable without a developer: FMS (Form Management Service), the forms management backend; Form Admin, the forms administration application; and a shared component library. The forms are in service in Senegal today; the solution is delivered and configured to be used in the other countries where Sentinelle is deployed.
 
