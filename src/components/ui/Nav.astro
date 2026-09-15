@@ -3,7 +3,7 @@ import LanguageSwitcher from '@components/i18n/LanguageSwitcher.astro';
 import ThemeToggle from '@components/ui/ThemeToggle.astro';
 import { defaultLocale, locales, localeCodes, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
-import { formatPath } from '@i18n/utils';
+import { formatPath, getLocaleSwitchPath } from '@i18n/utils';
 
 interface Props {
   locale?: Locale;
@@ -11,11 +11,11 @@ interface Props {
 
 const { locale = defaultLocale } = Astro.props;
 
-// "Home" is reached through the name, "Contact" is the call-to-action button
-const navItems = [
+// "Home" is reached through the name, "Contact" is the call-to-action button.
+// The blog stays reachable from its home page section and the footer, not from the main menu.
+const navItems: Array<{ key: string; href: string; section: string; homeHref?: string }> = [
   { key: 'projects', href: '#projects', section: 'projects' },
   { key: 'experience', href: '#experience', section: 'experience' },
-  { key: 'blog', href: '/blog', section: 'blog-preview', homeHref: '#blog-preview' },
 ];
 
 const openMenuLabel = getTranslation('nav', 'openMenu', locale);
@@ -26,7 +26,6 @@ const themeLabel = locale === 'fr' ? 'Thème' : 'Theme';
 const languageLabel = locale === 'fr' ? 'Langue' : 'Language';
 const currentPathname = Astro.url.pathname;
 const homePath = formatPath('/', locale);
-const pathWithoutLocale = currentPathname.replace(/^\/(fr|en)/, '') || '/';
 
 const normalizePath = (path: string): string => {
   if (path !== '/' && path.endsWith('/')) return path.slice(0, -1);
@@ -172,7 +171,7 @@ const contactHref = buildHref('#contact');
           <div class="flex rounded-full border border-border-default p-1" role="group" aria-label={languageLabel}>
             {locales.map((targetLocale) => (
               <a
-                href={formatPath(pathWithoutLocale, targetLocale)}
+                href={getLocaleSwitchPath(currentPathname, targetLocale)}
                 hreflang={targetLocale}
                 class="lang-segment flex h-9 min-w-[52px] items-center justify-center rounded-full text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 aria-current={targetLocale === locale ? 'true' : undefined}

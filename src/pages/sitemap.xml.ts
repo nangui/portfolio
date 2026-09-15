@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { blogLocale } from '@i18n/config';
 
 const locales = ['fr', 'en'] as const;
 
@@ -14,14 +15,13 @@ export const GET: APIRoute = async ({ site }) => {
 
   locales.forEach((locale) => {
     urls.add(`/${locale}`);
-    urls.add(`/${locale}/blog`);
   });
 
+  // The blog is French only: English blog URLs are redirects
+  urls.add(`/${blogLocale}/blog`);
   blogPosts.forEach((post) => {
     const slug = post.data.slug || post.id.replace(/\.(md|mdx)$/, '');
-    locales.forEach((locale) => {
-      urls.add(`/${locale}/blog/${slug}`);
-    });
+    urls.add(`/${blogLocale}/blog/${slug}`);
   });
 
   const normalizedProjectSlugs = new Set<string>();

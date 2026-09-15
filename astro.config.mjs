@@ -36,6 +36,12 @@ const legacyBlogRedirects = Object.fromEntries(
     })
 );
 
+// The blog is written in French only: English blog URLs point to the French articles.
+const englishBlogRedirects = Object.fromEntries([
+  ['/en/blog', '/fr/blog'],
+  ...Object.values(legacyBlogRedirects).map((frenchPath) => [frenchPath.replace(/^\/fr\//, '/en/'), frenchPath]),
+]);
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://adonainangui.dev',
@@ -78,6 +84,7 @@ export default defineConfig({
     '/blog': '/fr/blog',
     ...legacyProjectRedirects,
     ...legacyBlogRedirects,
+    ...englishBlogRedirects,
   },
   markdown: {
     shikiConfig: {

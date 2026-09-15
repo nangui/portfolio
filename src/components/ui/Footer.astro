@@ -1,5 +1,5 @@
 ---
-import { defaultLocale, type Locale } from '@i18n/config';
+import { blogLocale, defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
 import { formatPath } from '@i18n/utils';
 
@@ -13,7 +13,8 @@ const homePath = formatPath('/', locale);
 const navLinks = [
   { key: 'projects', href: `${homePath}#projects` },
   { key: 'experience', href: `${homePath}#experience` },
-  { key: 'blog', href: formatPath('/blog', locale) },
+  // The blog is French only: on other languages the link says so
+  { key: 'blog', href: formatPath('/blog', blogLocale), hreflang: locale === blogLocale ? undefined : blogLocale },
   { key: 'contact', href: `${homePath}#contact` },
 ];
 
@@ -42,8 +43,8 @@ const backToTopLabel = locale === 'fr' ? 'Retour en haut' : 'Back to top';
         <ul class="flex flex-wrap gap-x-5 md:gap-x-7 gap-y-1" role="list">
           {navLinks.map((link) => (
             <li>
-              <a href={link.href} class="footer-link flex min-h-11 md:min-h-0 items-center text-sm font-medium">
-                {getTranslation('nav', link.key, locale)}
+              <a href={link.href} hreflang={link.hreflang} class="footer-link flex min-h-11 md:min-h-0 items-center text-sm font-medium">
+                {getTranslation('nav', link.key, locale)}{link.hreflang && ' (FR)'}
               </a>
             </li>
           ))}

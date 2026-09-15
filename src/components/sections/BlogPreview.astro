@@ -2,7 +2,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import Button from '@components/ui/Button.astro';
-import { defaultLocale, type Locale } from '@i18n/config';
+import { blogLocale, defaultLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
 import { formatPath } from '@i18n/utils';
 
@@ -29,6 +29,8 @@ const formatDate = (date: Date): string =>
   date.toLocaleDateString(dateLocale, { day: '2-digit', month: 'short', year: 'numeric' });
 const latestLabel = locale === 'fr' ? 'Dernier article' : 'Latest article';
 const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
+// Articles exist in French only: on other languages, links and titles are marked as French
+const contentLang = locale === blogLocale ? undefined : blogLocale;
 ---
 
 <section id="blog-preview" class="py-section bg-primary" aria-labelledby="blog-heading">
@@ -41,10 +43,13 @@ const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
         <p class="text-secondary text-[15px] md:text-base leading-relaxed">
           {getTranslation('blog', 'description', locale)}
         </p>
+        {contentLang && (
+          <p class="mt-1 text-sm text-text-tertiary">{getTranslation('blog', 'writtenInFrench', locale)}</p>
+        )}
       </div>
       <div class="hidden sm:block shrink-0">
         <Button
-          href={formatPath('/blog', locale)}
+          href={formatPath('/blog', blogLocale)}
           variant="secondary"
           size="sm"
           class="whitespace-nowrap"
@@ -60,7 +65,8 @@ const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
       <>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <a
-            href={formatPath(`/blog/${getSlug(featuredPost)}`, locale)}
+            href={formatPath(`/blog/${getSlug(featuredPost)}`, blogLocale)}
+            hreflang={contentLang}
             class="group flex flex-col overflow-hidden rounded-xl border border-border-default bg-secondary hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             data-analytics-event="blog_preview_click"
             data-analytics-label={featuredPost.data.title}
@@ -81,10 +87,10 @@ const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
               <p class="text-xs font-medium uppercase tracking-wide text-accent">
                 {formatDate(featuredPost.data.pubDate)} · {latestLabel}
               </p>
-              <h3 class="font-heading text-[19px] md:text-[22px] font-semibold leading-snug text-primary group-hover:text-accent">
+              <h3 lang={contentLang} class="font-heading text-[19px] md:text-[22px] font-semibold leading-snug text-primary group-hover:text-accent">
                 {featuredPost.data.title}
               </h3>
-              <p class="hidden md:block text-[15px] leading-relaxed text-secondary line-clamp-3">
+              <p lang={contentLang} class="hidden md:block text-[15px] leading-relaxed text-secondary line-clamp-3">
                 {featuredPost.data.description}
               </p>
               <span class="mt-auto pt-2 text-sm font-medium text-accent">
@@ -98,7 +104,8 @@ const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
               {otherPosts.map((post: CollectionEntry<'blog'>) => (
                 <li class="flex-1">
                   <a
-                    href={formatPath(`/blog/${getSlug(post)}`, locale)}
+                    href={formatPath(`/blog/${getSlug(post)}`, blogLocale)}
+                    hreflang={contentLang}
                     class="group flex h-full flex-col gap-2 md:gap-2.5 rounded-xl border border-border-default bg-secondary p-[18px] md:p-6 hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     data-analytics-event="blog_preview_click"
                     data-analytics-label={post.data.title}
@@ -106,10 +113,10 @@ const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
                     <p class="text-xs font-medium uppercase tracking-wide text-accent">
                       {formatDate(post.data.pubDate)}
                     </p>
-                    <h3 class="font-heading text-[17px] md:text-[19px] font-semibold leading-snug text-primary group-hover:text-accent">
+                    <h3 lang={contentLang} class="font-heading text-[17px] md:text-[19px] font-semibold leading-snug text-primary group-hover:text-accent">
                       {post.data.title}
                     </h3>
-                    <p class="hidden md:block text-sm leading-relaxed text-secondary line-clamp-2">
+                    <p lang={contentLang} class="hidden md:block text-sm leading-relaxed text-secondary line-clamp-2">
                       {post.data.description}
                     </p>
                     <span class="hidden md:inline mt-auto text-sm font-medium text-accent">
@@ -123,7 +130,7 @@ const readLabel = locale === 'fr' ? 'Lire l’article' : 'Read article';
         </div>
 
         <a
-          href={formatPath('/blog', locale)}
+          href={formatPath('/blog', blogLocale)}
           class="sm:hidden mt-4 flex min-h-12 items-center justify-center rounded-lg border border-border-default bg-secondary text-[15px] font-medium text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           data-analytics-event="blog_preview_click"
           data-analytics-label="view_all"

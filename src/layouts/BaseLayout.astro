@@ -20,6 +20,8 @@ interface Props {
   modifiedTime?: string;
   /** Keeps utility pages such as the 404 out of search results */
   noindex?: boolean;
+  /** hreflang links to the other languages; off for pages that exist in one language only */
+  alternates?: boolean;
 }
 
 const {
@@ -32,7 +34,10 @@ const {
   publishedTime,
   modifiedTime,
   noindex = false,
+  alternates = true,
 } = Astro.props;
+
+const showAlternates = alternates && !noindex;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://adonainangui.dev');
 const alternateUrls = getAlternateUrls(Astro.url.pathname, Astro.site ? String(Astro.site) : undefined);
@@ -130,10 +135,10 @@ const ogImageType = getImageType(resolvedOgImage);
     {ogType === 'article' && modifiedTime && (
       <meta property="article:modified_time" content={modifiedTime} />
     )}
-    {!noindex && alternateUrls.map(({ lang, url }) => (
+    {showAlternates && alternateUrls.map(({ lang, url }) => (
       <link rel="alternate" hreflang={lang} href={url} />
     ))}
-    {!noindex && <link rel="alternate" hreflang="x-default" href={`${siteUrl}/fr`} />}
+    {showAlternates && <link rel="alternate" hreflang="x-default" href={`${siteUrl}/fr`} />}
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />

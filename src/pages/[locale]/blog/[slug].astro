@@ -7,12 +7,13 @@ import SocialShare from '@components/blog/SocialShare.astro';
 import BlogNavigation from '@components/blog/BlogNavigation.astro';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { isValidLocale, defaultLocale } from '@i18n/config';
+import { isValidLocale, defaultLocale, blogLocale } from '@i18n/config';
 import { formatPath } from '@i18n/utils';
 
 export async function getStaticPaths() {
   const blogPosts = await getCollection('blog');
-  const locales = ['fr', 'en'];
+  // Articles are written in French only (blogLocale); /en/blog/<slug> redirects here
+  const locales = [blogLocale];
   
   // Helper function to get slug from entry
   const getSlug = (entry: CollectionEntry<'blog'>) => {
