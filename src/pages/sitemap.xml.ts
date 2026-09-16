@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import { blogLocale } from '@i18n/config';
+import { blogLocale, offerLocale } from '@i18n/config';
 
 const locales = ['fr', 'en'] as const;
 
@@ -17,7 +17,8 @@ export const GET: APIRoute = async ({ site }) => {
     urls.add(`/${locale}`);
   });
 
-  // The blog is French only: English blog URLs are redirects
+  // The blog and the offer page are French only: their English URLs are redirects
+  urls.add(`/${offerLocale}/offre`);
   urls.add(`/${blogLocale}/blog`);
   blogPosts.forEach((post) => {
     const slug = post.data.slug || post.id.replace(/\.(md|mdx)$/, '');

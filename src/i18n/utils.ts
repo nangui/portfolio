@@ -3,7 +3,7 @@
  * Helper functions for working with translations and locales
  */
 
-import { blogLocale, type Locale } from './config';
+import { blogLocale, offerLocale, type Locale } from './config';
 import { getTranslation, getSectionTranslations } from './translations';
 
 /**
@@ -49,14 +49,17 @@ export function formatPath(path: string, locale: Locale): string {
 
 /**
  * Path of the current page in another language, for the language switchers.
- * Pages without a version in that language lead to its home page: the 404 page, and the blog in
- * any language other than blogLocale.
+ * Pages without a version in that language lead to its home page: the 404 page, the blog outside
+ * blogLocale, and the offer page outside offerLocale.
  */
 export function getLocaleSwitchPath(pathname: string, targetLocale: Locale): string {
   const pathWithoutLocale = pathname.replace(/^\/(fr|en)(?=\/|$)/, '') || '/';
   const isNotFound = /^\/404(\.html)?\/?$/.test(pathWithoutLocale);
   const isBlog = /^\/blog(\/|$)/.test(pathWithoutLocale);
-  if (isNotFound || (isBlog && targetLocale !== blogLocale)) return formatPath('/', targetLocale);
+  const isOffer = /^\/offre\/?$/.test(pathWithoutLocale);
+  if (isNotFound || (isBlog && targetLocale !== blogLocale) || (isOffer && targetLocale !== offerLocale)) {
+    return formatPath('/', targetLocale);
+  }
   return formatPath(pathWithoutLocale, targetLocale);
 }
 

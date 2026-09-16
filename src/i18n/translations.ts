@@ -20,6 +20,7 @@ export const translations: Translations = {
   nav: {
     fr: {
       home: 'Accueil',
+      offer: 'Offre',
       projects: 'Projets',
       experience: 'Expérience',
       blog: 'Blog',
@@ -29,6 +30,7 @@ export const translations: Translations = {
     },
     en: {
       home: 'Home',
+      offer: 'Offre',
       projects: 'Projects',
       experience: 'Experience',
       blog: 'Blog',
