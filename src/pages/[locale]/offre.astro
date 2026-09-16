@@ -1,0 +1,329 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { isValidLocale, defaultLocale, offerLocale } from '@i18n/config';
+import { formatPath } from '@i18n/utils';
+
+export async function getStaticPaths() {
+  return [
+    // Written for French-speaking direct clients; /offre and /en/offre redirect here
+    { params: { locale: offerLocale } },
+  ];
+}
+
+const { locale: localeParam } = Astro.params;
+const locale = isValidLocale(localeParam || '') ? (localeParam as 'fr' | 'en') : defaultLocale;
+
+const emailAddress = 'adonainangui03@gmail.com';
+// The message asks for scope, deadline and budget: it filters enquiries without posting a price
+const mailSubject = 'Projet web — prise de contact';
+const mailBody = [
+  'Bonjour Adonai,',
+  '',
+  'Voici mon projet :',
+  '- Ce que je veux faire :',
+  '- Pour quand :',
+  '- Budget envisagé :',
+  '- Mon entreprise ou mon site :',
+  '',
+  'Merci.',
+].join('\n');
+const mailtoHref = `mailto:${emailAddress}?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
+
+const services = [
+  {
+    title: 'Mission longue',
+    audience: 'Votre produit avance en continu et vous avez besoin de renfort durable.',
+    detail:
+      'Je rejoins votre équipe comme développeur senior, du frontend au backend jusqu’à la mise en production. Temps plein ou partiel, sur plusieurs mois.',
+  },
+  {
+    title: 'Projet au forfait',
+    audience: 'Vous avez un périmètre défini et un budget à tenir.',
+    detail:
+      'Un cadrage écrit, un prix et un délai annoncés avant de commencer, puis des livraisons intermédiaires pour suivre l’avancement.',
+  },
+  {
+    title: 'Accompagnement d’équipe',
+    audience: 'Votre équipe avance, mais les choix techniques vous inquiètent.',
+    detail:
+      'Revues de code, décisions d’architecture tranchées et expliquées, montée en compétence des développeurs déjà en place. Quelques jours par mois.',
+  },
+  {
+    title: 'Audit ou conseil',
+    audience: 'Vous voulez un avis extérieur avant d’engager des dépenses.',
+    detail:
+      'Un rapport écrit en quelques jours : ce qui tient, ce qui coûte cher, et quoi traiter en premier.',
+  },
+];
+
+const steps = [
+  {
+    title: 'Un échange de 30 minutes',
+    detail: 'Vous décrivez votre besoin. Je vous dis franchement si je suis la bonne personne, ou non.',
+  },
+  {
+    title: 'Un cadrage écrit',
+    detail: 'Périmètre, étapes, hypothèses et ce qui n’est pas inclus. Vous validez avant que je commence.',
+  },
+  {
+    title: 'Des livraisons visibles',
+    detail: 'Vous voyez le produit avancer régulièrement, pas seulement à la fin.',
+  },
+  {
+    title: 'Le transfert',
+    detail: 'Code, documentation et accès vous appartiennent. Vous pouvez continuer sans moi.',
+  },
+];
+
+const deliverables = [
+  'Un produit en ligne, pas une maquette.',
+  'Un code lisible et documenté, avec les tests qui comptent.',
+  'Des pages rapides et accessibles, mesurées plutôt que supposées.',
+  'La propriété complète du code et des accès.',
+];
+
+const stack = [
+  'React / Next.js',
+  'Vue / Nuxt',
+  'Angular',
+  'TypeScript',
+  'NestJS',
+  'Laravel',
+  'PostgreSQL',
+  'Docker · CI/CD',
+];
+
+const faq = [
+  {
+    question: 'Combien ça coûte ?',
+    answer:
+      'Cela dépend entièrement du périmètre. Écrivez-moi ce que vous voulez faire, pour quand, et le budget que vous avez en tête : je réponds avec une proposition chiffrée, ou je vous dis que je ne suis pas la bonne personne.',
+  },
+  {
+    question: 'Vous travaillez à distance ?',
+    answer:
+      'Oui. Je travaille depuis Dakar avec des équipes réparties sur plusieurs fuseaux horaires, et je m’aligne sur vos horaires de réunion.',
+  },
+  {
+    question: 'Vous intervenez sur un projet déjà commencé ?',
+    answer:
+      'C’est le cas le plus fréquent : reprendre un existant, le stabiliser, puis le faire évoluer sans tout arrêter.',
+  },
+  {
+    question: 'Qui possède le code ?',
+    answer: 'Vous. Le dépôt, les accès et la documentation sont à votre nom du premier jour au dernier.',
+  },
+];
+---
+
+<BaseLayout
+  title="Offre — développement web pour clients directs - Adonai Nangui"
+  description="Développeur web senior indépendant : mission longue, projet au forfait, accompagnement d’équipe ou audit. Du frontend au backend, jusqu’à la mise en production."
+  locale={locale}
+  alternates={false}
+  keywords={[
+    'développeur web freelance',
+    'développeur senior indépendant',
+    'prestation développement web',
+    'mission freelance react',
+    'audit technique web',
+    'Dakar',
+  ]}
+>
+  <section class="py-section bg-primary" aria-labelledby="offer-heading">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+      <p class="flex w-fit items-center gap-2 rounded-full border border-border-default bg-secondary px-3 py-1.5 text-xs md:text-[13px] font-medium text-secondary">
+        <span class="h-2 w-2 rounded-full bg-accent" aria-hidden="true"></span>
+        Disponible pour de nouvelles missions
+      </p>
+
+      <h1
+        id="offer-heading"
+        class="mt-5 max-w-[760px] font-heading font-semibold text-4xl md:text-5xl lg:text-[52px] leading-[1.05] tracking-[-0.02em] text-primary"
+      >
+        Faire développer votre produit web par un seul interlocuteur
+      </h1>
+
+      <p class="mt-5 max-w-[680px] text-base md:text-lg leading-relaxed text-secondary">
+        Je suis développeur web indépendant, avec plus de neuf ans d’expérience. Je prends en charge un
+        produit de bout en bout : l’interface, le serveur, la base de données et la mise en production.
+        Vous avez un seul interlocuteur, et vous savez à tout moment où en est votre projet.
+      </p>
+
+      <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+        <a href={mailtoHref} class="offer-cta" data-analytics-event="offer_cta_click" data-analytics-label="hero">
+          Décrire mon projet
+        </a>
+        <p class="text-sm text-text-tertiary">Réponse en moins de 24 heures ouvrées.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-section bg-primary" aria-labelledby="services-heading">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 id="services-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+        Ce que je peux faire pour vous
+      </h2>
+      <p class="mt-3 max-w-[680px] text-base leading-relaxed text-secondary">
+        Quatre façons de travailler ensemble. Si vous hésitez, décrivez simplement votre situation :
+        je vous dirai laquelle convient.
+      </p>
+
+      <ul class="mt-8 md:mt-10 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6" role="list">
+        {services.map((service) => (
+          <li class="flex flex-col gap-2.5 rounded-xl border border-border-default bg-secondary p-5 md:p-6">
+            <h3 class="font-heading text-[19px] md:text-[22px] font-semibold text-primary">{service.title}</h3>
+            <p class="text-sm md:text-[15px] font-medium text-primary">{service.audience}</p>
+            <p class="text-sm md:text-[15px] leading-relaxed text-secondary">{service.detail}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="py-section bg-primary" aria-labelledby="process-heading">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="rounded-2xl border border-border-default bg-secondary p-5 sm:p-10 xl:p-14">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16">
+          <div>
+            <h2 id="process-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+              Comment on travaille
+            </h2>
+            <p class="mt-4 text-base leading-relaxed text-secondary">
+              Pas de jargon ni de surprise en fin de projet. Vous savez ce qui est fait, ce qui reste à
+              faire, et ce que ça change pour vous.
+            </p>
+
+            <h3 class="mt-8 font-heading text-lg font-semibold text-primary">Ce que vous avez à la fin</h3>
+            <ul class="mt-3 flex flex-col gap-2" role="list">
+              {deliverables.map((item) => (
+                <li class="flex items-start gap-2.5 text-sm md:text-[15px] leading-relaxed text-secondary">
+                  <span class="mt-2 h-1.5 w-1.5 rounded-full bg-accent shrink-0" aria-hidden="true"></span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <ol class="flex flex-col" role="list">
+            {steps.map((step, index) => (
+              <li class="flex gap-4 border-b border-border-default py-4 first:pt-0 last:border-0 last:pb-0">
+                <span class="font-heading text-sm font-semibold text-accent pt-0.5">0{index + 1}</span>
+                <div class="flex flex-col gap-1">
+                  <p class="font-heading text-[17px] md:text-lg font-semibold text-primary">{step.title}</p>
+                  <p class="text-sm md:text-[15px] leading-relaxed text-secondary">{step.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-section bg-primary" aria-labelledby="proof-heading">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 id="proof-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+        Un exemple concret
+      </h2>
+      <p class="mt-3 max-w-[680px] text-base leading-relaxed text-secondary">
+        Pour l’Institut Pasteur de Dakar, j’ai remplacé le service de formulaires d’un programme national
+        de surveillance sanitaire, route par route et sans interruption. Quatre fiches sont en service au
+        Sénégal, et la dernière a été publiée sans écrire une ligne de code.
+      </p>
+
+      <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
+        <a
+          href={formatPath('/projects/institut-pasteur-dakar', locale)}
+          class="inline-flex min-h-12 items-center justify-center rounded-lg border border-border-default bg-secondary px-5 text-[15px] font-medium text-primary hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Lire l’étude de cas
+        </a>
+        <a
+          href={`${formatPath('/', locale)}#projects`}
+          class="inline-flex min-h-12 items-center justify-center rounded-lg px-2 text-[15px] font-medium text-accent hover:text-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Voir tous les projets →
+        </a>
+      </div>
+
+      <h3 class="mt-10 font-heading text-lg font-semibold text-primary">Les outils que j’utilise</h3>
+      <ul class="mt-3 flex flex-wrap gap-2" role="list" aria-label="Technologies">
+        {stack.map((item) => (
+          <li class="rounded-full border border-border-default bg-bg-tertiary px-3 py-1.5 text-[13px] text-secondary">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="py-section bg-primary" aria-labelledby="faq-heading">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 id="faq-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+        Questions fréquentes
+      </h2>
+
+      <dl class="mt-8 border-t border-border-default">
+        {faq.map((item) => (
+          <div class="grid grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)] gap-2 md:gap-10 border-b border-border-default py-5 md:py-6">
+            <dt class="font-heading text-[17px] md:text-lg font-semibold text-primary">{item.question}</dt>
+            <dd class="text-sm md:text-[15px] leading-relaxed text-secondary">{item.answer}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="py-section bg-primary" aria-labelledby="offer-contact-heading">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="rounded-2xl border border-border-default bg-secondary p-5 sm:p-10 xl:p-14">
+        <h2 id="offer-contact-heading" class="font-heading font-semibold text-3xl md:text-4xl text-primary">
+          Parlons de votre projet
+        </h2>
+        <p class="mt-4 max-w-[620px] text-base md:text-lg leading-relaxed text-secondary">
+          Dites-moi ce que vous voulez faire, pour quand, et le budget que vous avez en tête. Je vous
+          réponds avec une proposition, ou je vous oriente vers quelqu’un de plus adapté.
+        </p>
+
+        <div class="mt-7 flex flex-col sm:flex-row sm:items-center gap-3">
+          <a href={mailtoHref} class="offer-cta" data-analytics-event="offer_cta_click" data-analytics-label="footer">
+            Décrire mon projet
+          </a>
+          <a
+            href={`mailto:${emailAddress}`}
+            class="text-[15px] font-medium text-accent hover:text-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [overflow-wrap:anywhere]"
+            data-no-external-icon
+          >
+            {emailAddress}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Same blue as the other primary calls to action: #2563eb keeps white text at 5:1 */
+  .offer-cta {
+    display: inline-flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.5rem;
+    border-radius: 0.5rem;
+    background: #2563eb;
+    color: #f8fbff;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .offer-cta:hover {
+    background: #1d4ed8;
+  }
+
+  .offer-cta:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+</style>

@@ -1,7 +1,7 @@
 ---
 import LanguageSwitcher from '@components/i18n/LanguageSwitcher.astro';
 import ThemeToggle from '@components/ui/ThemeToggle.astro';
-import { defaultLocale, locales, localeCodes, type Locale } from '@i18n/config';
+import { defaultLocale, locales, localeCodes, offerLocale, type Locale } from '@i18n/config';
 import { getTranslation } from '@i18n/translations';
 import { formatPath, getLocaleSwitchPath } from '@i18n/utils';
 
@@ -13,7 +13,8 @@ const { locale = defaultLocale } = Astro.props;
 
 // "Home" is reached through the name, "Contact" is the call-to-action button.
 // The blog stays reachable from its home page section and the footer, not from the main menu.
-const navItems: Array<{ key: string; href: string; section: string; homeHref?: string }> = [
+const navItems: Array<{ key: string; href: string; section?: string; homeHref?: string; hreflang?: Locale }> = [
+  { key: 'offer', href: '/offre', hreflang: locale === offerLocale ? undefined : offerLocale },
   { key: 'projects', href: '#projects', section: 'projects' },
   { key: 'experience', href: '#experience', section: 'experience' },
 ];
@@ -57,6 +58,7 @@ const isActivePath = (href: string): boolean => {
 const isItemActive = (item: (typeof navItems)[number]): boolean => {
   if (isHomeRoute) return false;
   if (item.key === 'projects') return isProjectRoute;
+  if (item.key === 'offer') return normalizePath(currentPathname) === `/${offerLocale}/offre`;
   return isActivePath(item.href);
 };
 
@@ -86,14 +88,15 @@ const contactHref = buildHref('#contact');
             return (
               <li>
                 <a
-                  href={buildHref(item.href, item.homeHref)}
+                  href={item.key === 'offer' ? formatPath(item.href, offerLocale) : buildHref(item.href, item.homeHref)}
+                  hreflang={item.hreflang}
                   data-nav-link="true"
                   data-section={item.section}
                   data-active={active ? 'true' : 'false'}
                   class="nav-link-desktop block py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   aria-current={active ? 'page' : undefined}
                 >
-                  {getTranslation('nav', item.key, locale)}
+                  {getTranslation('nav', item.key, locale)}{item.hreflang && ' (FR)'}
                 </a>
               </li>
             );
@@ -142,14 +145,15 @@ const contactHref = buildHref('#contact');
           return (
             <li>
               <a
-                href={buildHref(item.href, item.homeHref)}
+                href={item.key === 'offer' ? formatPath(item.href, offerLocale) : buildHref(item.href, item.homeHref)}
+                hreflang={item.hreflang}
                 data-nav-link="true"
                 data-section={item.section}
                 data-active={active ? 'true' : 'false'}
                 class="nav-link-mobile flex min-h-16 items-center justify-between border-b border-border-default font-heading text-[28px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 aria-current={active ? 'page' : undefined}
               >
-                {getTranslation('nav', item.key, locale)}
+                {getTranslation('nav', item.key, locale)}{item.hreflang && ' (FR)'}
                 <span class="nav-dot h-2 w-2 rounded-full bg-accent" aria-hidden="true"></span>
               </a>
             </li>

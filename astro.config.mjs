@@ -82,6 +82,9 @@ export default defineConfig({
   redirects: {
     '/': '/fr',
     '/blog': '/fr/blog',
+    // The offer page is French only
+    '/offre': '/fr/offre',
+    '/en/offre': '/fr/offre',
     ...legacyProjectRedirects,
     ...legacyBlogRedirects,
     ...englishBlogRedirects,

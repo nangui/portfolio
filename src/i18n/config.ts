@@ -26,6 +26,12 @@ export const localeCodes: Record<Locale, string> = {
 export const blogLocale: Locale = 'fr';
 
 /**
+ * The offer page targets French-speaking direct clients: it exists under /fr/offre only, and
+ * /en/offre redirects there.
+ */
+export const offerLocale: Locale = 'fr';
+
+/**
  * Check if a string is a valid locale
  */
 export function isValidLocale(locale: string): locale is Locale {
