@@ -162,7 +162,7 @@ const stackLabel = locale === 'fr' ? 'Technologies utilisées' : 'Technologies u
         </li>
         <li class="text-secondary/60" aria-hidden="true">/</li>
         <li>
-          <a href={formatPath('/#projects', locale)} class="hover:text-accent transition-colors">
+          <a href={`${formatPath('/', locale)}#projects`} class="hover:text-accent transition-colors">
             {getTranslation('nav', 'projects', locale)}
           </a>
         </li>
