@@ -42,7 +42,9 @@ const buildHref = (href: string, homeHref?: string): string => {
   if (isHomeRoute && homeHref) return homeHref;
   if (isHomeRoute && isSectionLink(href)) return href;
   if (isSectionLink(href)) {
-    return `${homePath}/${href}`;
+    // No slash before the anchor: /fr#projects, not /fr/#projects (which 404s in dev and
+    // costs a 308 redirect in production)
+    return `${homePath}${href}`;
   }
   return formatPath(href, locale);
 };
