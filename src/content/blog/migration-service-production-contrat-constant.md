@@ -3,7 +3,7 @@ title: "Remplacer un service en production sans fenêtre d'interruption"
 slug: "migration-service-production-contrat-constant"
 description: "Comment remplacer un service critique route par route, sans interruption : reproduire le contrat HTTP à l'identique, garantir qu'aucun envoi n'est perdu avec un outbox transactionnel, et tester de bout en bout sans infrastructure."
 pubDate: 2026-09-15T00:00:00.000Z
-tags: ["Architecture", "NestJS", "Migration", "Kafka", "TypeScript", "Backend"]
+tags: ["Architecture", "NestJS", "Migration", "TypeScript", "Backend"]
 image: "/images/migration-contrat-constant/cover.jpg"
 ---
 
@@ -60,14 +60,14 @@ Cette dernière règle est la plus contraignante, et la plus importante. Tant qu
 
 ## 3. Ne jamais perdre un envoi : l'outbox transactionnel
 
-Le nouveau service devait publier des événements vers Kafka : d'autres services attendent de savoir qu'une donnée est arrivée.
+Le nouveau service devait publier des événements vers une messagerie : d'autres services attendent de savoir qu'une donnée est arrivée.
 
 La version naïve enregistre en base, puis publie :
 
 ```typescript
 // À éviter : deux systèmes, aucune garantie commune
 await this.repository.save(submission);
-await this.kafka.emit('submission.created', submission); // et si ça échoue ici ?
+await this.messageBus.emit('submission.created', submission); // et si ça échoue ici ?
 ```
 
 Si la publication échoue, la donnée est en base mais personne n'est prévenu. Si on inverse l'ordre, on peut annoncer une donnée qui n'a jamais été enregistrée. Dans les deux cas, l'incohérence est silencieuse.
@@ -85,7 +85,7 @@ await this.db.transaction(async (tx) => {
 });
 ```
 
-Un worker dédié lit ensuite la table `outbox` et publie vers Kafka, en marquant chaque ligne traitée :
+Un worker dédié lit ensuite la table `outbox` et publie vers la messagerie, en marquant chaque ligne traitée :
 
 ```typescript
 @Cron('*/5 * * * * *')
@@ -94,7 +94,7 @@ async drain(): Promise<void> {
 
   for (const message of pending) {
     try {
-      await this.kafka.emit(message.topic, message.payload);
+      await this.messageBus.emit(message.topic, message.payload);
       await this.outbox.markSent(message.id);
     } catch (error) {
       // On laisse la ligne en attente : elle repartira au prochain passage
@@ -154,4 +154,3 @@ Remplacer un service en production n'est pas un problème de framework, c'est un
 
 Aucune de ces décisions n'est élégante prise isolément. Ensemble, elles permettent de remplacer un système critique sans que personne ne s'en aperçoive, ce qui est exactement le résultat recherché.
 
-Si vous voulez le contexte complet de cette migration, je l'ai détaillé dans [l'étude de cas du projet](/fr/projects/institut-pasteur-dakar) : contraintes, arbitrages et résultats.

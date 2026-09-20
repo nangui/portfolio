@@ -7,49 +7,50 @@ interface Props {
 
 const { locale = defaultLocale } = Astro.props;
 
-// Data flow: Sentinelle (field forms and samples) and Labo (specimens linked to a form) both send
-// to FMS, which processes the data and forwards it to the biobank. Form Admin publishes the forms.
+// Data flow, described by role rather than by the client's internal application names: the field
+// app and the lab app both send to the forms service, which forwards to the biobank. The admin
+// console publishes the forms.
 const labels =
   locale === 'fr'
     ? {
-        aria: "Circuit de données : les fiches et échantillons saisis dans Sentinelle et les prélèvements rattachés à une fiche dans Labo sont envoyés à FMS, qui les traite et les transmet à la biobanque. Form Admin publie les formulaires.",
-        field: 'Sentinelle · terrain',
+        aria: "Circuit de données : les fiches et échantillons saisis sur le terrain et les prélèvements rattachés à une fiche au laboratoire sont envoyés au service de formulaires, qui les traite et les transmet à la biobanque. La console d'administration publie les formulaires.",
+        field: 'Saisie terrain',
         fieldSub: 'Fiches et échantillons',
-        lab: 'Labo',
+        lab: 'Laboratoire',
         labSub: 'Prélèvements → fiche',
-        forms: 'FMS · service de formulaires',
-        formsSub: 'NestJS · outbox transactionnel → Kafka',
+        forms: 'Service de formulaires',
+        formsSub: 'Traitement et publication des données',
         formsContract: "Contrat HTTP identique à l'ancien service",
         biobank: 'Biobanque',
-        biobankSub: 'Reçoit via FMS',
-        admin: 'Form Admin',
+        biobankSub: 'Reçoit les données',
+        admin: 'Console d’administration',
         adminSub: 'Publier sans développeur',
         fieldShort: 'Terrain',
-        formsShort: 'FMS',
+        formsShort: 'Formulaires',
         labShort: 'Labo',
       }
     : {
-        aria: 'Data flow: forms and samples entered in Sentinelle and specimens linked to a form in Labo are sent to FMS, which processes them and forwards them to the biobank. Form Admin publishes the forms.',
-        field: 'Sentinelle · field',
+        aria: 'Data flow: forms and samples entered in the field and specimens linked to a form at the laboratory are sent to the forms service, which processes them and forwards them to the biobank. The administration console publishes the forms.',
+        field: 'Field entry',
         fieldSub: 'Forms and samples',
-        lab: 'Labo',
+        lab: 'Laboratory',
         labSub: 'Specimens → form',
-        forms: 'FMS · forms service',
-        formsSub: 'NestJS · transactional outbox → Kafka',
+        forms: 'Forms service',
+        formsSub: 'Processes and forwards the data',
         formsContract: 'Same HTTP contract as the legacy service',
         biobank: 'Biobank',
-        biobankSub: 'Receives via FMS',
-        admin: 'Form Admin',
+        biobankSub: 'Receives the data',
+        admin: 'Admin console',
         adminSub: 'Publish without a developer',
         fieldShort: 'Field',
-        formsShort: 'FMS',
-        labShort: 'Labo',
+        formsShort: 'Forms',
+        labShort: 'Lab',
       };
 ---
 
 <div class="flow-cover" role="img" aria-label={labels.aria}>
   <svg class="hidden lg:block w-full max-w-[460px] h-auto" viewBox="0 0 460 420" fill="none" aria-hidden="true">
-    <!-- Clients: the field app (offline sync, dashed) and the lab app send to FMS -->
+    <!-- Clients: the field app (offline sync, dashed) and the lab app send to the forms service -->
     <rect class="flow-node" x="20" y="30" width="190" height="72" rx="10"></rect>
     <text class="flow-title" x="40" y="60">{labels.field}</text>
     <text class="flow-sub" x="40" y="82">{labels.fieldSub}</text>
@@ -67,14 +68,14 @@ const labels =
     <text class="flow-sub" x="40" y="208">{labels.formsSub}</text>
     <text class="flow-sub flow-accent" x="40" y="228">{labels.formsContract}</text>
 
-    <!-- FMS forwards to the biobank -->
+    <!-- The forms service forwards to the biobank -->
     <path class="flow-edge" d="M115 252 V 300"></path>
     <path class="flow-edge" d="M109 294 L115 302 L121 294"></path>
     <rect class="flow-node" x="20" y="306" width="190" height="72" rx="10"></rect>
     <text class="flow-title" x="40" y="336">{labels.biobank}</text>
     <text class="flow-sub" x="40" y="358">{labels.biobankSub}</text>
 
-    <!-- Form Admin publishes the forms FMS serves -->
+    <!-- The admin console publishes the forms the service serves -->
     <rect class="flow-node flow-node-ghost" x="250" y="306" width="190" height="72" rx="10" stroke-dasharray="4 4"></rect>
     <text class="flow-title" x="270" y="336">{labels.admin}</text>
     <text class="flow-sub" x="270" y="358">{labels.adminSub}</text>
@@ -90,8 +91,7 @@ const labels =
     <path class="flow-edge" d="M92 41 L 114 56" stroke-dasharray="3 3"></path>
     <path class="flow-edge" d="M92 91 L 114 76"></path>
     <rect class="flow-node flow-node-key" x="116" y="36" width="96" height="58" rx="8"></rect>
-    <text class="flow-title flow-title-sm" x="128" y="62">{labels.formsShort}</text>
-    <text class="flow-sub flow-accent flow-sub-sm" x="128" y="80">Kafka · outbox</text>
+    <text class="flow-title flow-title-sm" x="128" y="70">{labels.formsShort}</text>
     <path class="flow-edge" d="M212 65 H 232"></path>
     <path class="flow-edge" d="M227 60 L 233 65 L 227 70"></path>
     <rect class="flow-node" x="234" y="44" width="82" height="42" rx="8"></rect>
