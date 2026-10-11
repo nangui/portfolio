@@ -328,6 +328,24 @@ const store = useCANStore.getState();
 store.matches[0].score1 = 2; // Modification directe
 ```
 
+## Et sur mobile ? Parfois, le meilleur re-render est celui qui n'a pas lieu
+
+Tout ce qui précède vaut aussi pour React Native : un selector bien choisi limite les rendus de la même façon.
+
+Mais sur mobile, certaines mises à jour n'ont pas intérêt à passer par React du tout. Une touche qui s'enfonce sous le doigt, par exemple, doit réagir même si le thread JavaScript est occupé. Avec Reanimated, on écrit dans une valeur partagée, et l'animation tourne sur le thread UI :
+
+```tsx
+const scale = useSharedValue(1);
+const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
+
+// Aucun setState, aucun re-render : le composant ne sait même pas qu'il bouge.
+<AnimatedPressable onPressIn={() => scale.set(withSpring(0.95))} style={style} />
+```
+
+La règle reste la même qu'avec Zustand, poussée un cran plus loin : ne faites re-rendre un composant que pour ce qui change vraiment son contenu. Un état d'animation n'en fait pas partie.
+
+J'ai détaillé ce parcours, du doigt jusqu'au serveur, dans [Le trajet d'un tap dans une app React Native](/fr/blog/trajet-tap-react-native).
+
 ## Conclusion
 
 Zustand offre une solution élégante et performante pour la gestion d'état dans React. En utilisant `useSyncExternalStoreWithSelector` sous le capot, il permet des re-renders sélectifs qui améliorent significativement les performances de votre application.
