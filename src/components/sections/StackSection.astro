@@ -1,0 +1,271 @@
+---
+import { defaultLocale, type Locale } from '@i18n/config';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
+const fr = locale === 'fr';
+
+const eyebrow = fr ? 'Ce que je prends en charge' : 'What I take on';
+const heading = fr ? 'Quatre couches, un seul interlocuteur.' : 'Four layers, one person to talk to.';
+const intro = fr
+  ? 'Du premier écran à la mise en production. Survolez ou touchez une couche pour la détacher.'
+  : 'From the first screen to production. Hover or tap a layer to pull it out.';
+const sceneLabel = fr
+  ? 'Illustration en trois dimensions : quatre plaques empilées, interface, serveur, données et production.'
+  : 'Three-dimensional illustration: four stacked slabs, interface, server, data and production.';
+
+// Top to bottom, in the order of the slabs in the scene
+const layers = fr
+  ? [
+      { name: 'Interface', detail: 'Ce que vos utilisateurs voient et touchent. React, Vue, Angular.' },
+      { name: 'Serveur', detail: 'Les règles métier et les API. NestJS, Laravel.' },
+      { name: 'Données', detail: 'Le modèle, les migrations, les sauvegardes. PostgreSQL.' },
+      { name: 'Production', detail: 'La mise en ligne et son suivi. Docker, CI/CD.' },
+    ]
+  : [
+      { name: 'Interface', detail: 'What your users see and touch. React, Vue, Angular.' },
+      { name: 'Server', detail: 'Business rules and APIs. NestJS, Laravel.' },
+      { name: 'Data', detail: 'The model, migrations, backups. PostgreSQL.' },
+      { name: 'Production', detail: 'Going live and keeping watch. Docker, CI/CD.' },
+    ];
+---
+
+<section id="stack" class="py-section bg-primary" aria-labelledby="stack-heading">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+      <div class="min-w-0">
+        <p class="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-text-tertiary)]" data-reveal>{eyebrow}</p>
+        <h2 id="stack-heading" class="mt-3 font-heading font-semibold text-3xl md:text-4xl text-primary">{heading}</h2>
+        <p class="mt-4 max-w-[460px] text-base leading-relaxed text-secondary" data-reveal>{intro}</p>
+
+        <ol class="stack-list mt-7 border-t border-border-default" role="list" data-stack-list>
+          {layers.map((layer, index) => (
+            <li class="border-b border-border-default" data-reveal>
+              <button type="button" class="stack-item" data-stack-item={index} aria-pressed="false">
+                <span class="stack-index" aria-hidden="true">0{index + 1}</span>
+                <span class="flex flex-col gap-1">
+                  <span class="font-heading text-[17px] md:text-lg font-semibold text-primary">{layer.name}</span>
+                  <span class="text-sm md:text-[15px] leading-relaxed text-secondary">{layer.detail}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="stack-stage order-first lg:order-none" data-stack-stage data-layers={layers.length} data-reveal>
+        <!-- Shown until the scene is ready, and kept when WebGL is not available -->
+        <div class="stack-poster" data-stack-poster aria-hidden="true">
+          {layers.map(() => <span></span>)}
+        </div>
+        <canvas class="stack-canvas" data-stack-canvas role="img" aria-label={sceneLabel}></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .stack-stage {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
+    /* Reserved before the scene loads: no layout shift when the canvas appears */
+    aspect-ratio: 1 / 1;
+    touch-action: pan-y;
+  }
+
+  .stack-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .stack-stage[data-ready='true'] .stack-canvas {
+    opacity: 1;
+  }
+
+  .stack-poster {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    transition: opacity 0.4s ease;
+  }
+
+  .stack-poster span {
+    width: 58%;
+    height: 34px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-tertiary);
+    transform: perspective(700px) rotateX(58deg) rotateZ(-45deg);
+  }
+
+  .stack-stage[data-ready='true'] .stack-poster {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .stack-item {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 16px;
+    width: 100%;
+    min-height: 48px;
+    padding: 16px 12px 16px 0;
+    text-align: left;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition:
+      border-color 0.2s ease,
+      padding-left 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .stack-item:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+
+  .stack-item[aria-pressed='true'],
+  .stack-item:hover {
+    padding-left: 14px;
+    border-left-color: var(--color-accent-light);
+    background: var(--color-bg-secondary);
+  }
+
+  .stack-index {
+    padding-top: 3px;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 1023px) {
+    .stack-stage {
+      max-width: 360px;
+    }
+  }
+</style>
+
+<script>
+  import type { StackScene } from '../../scripts/stackScene';
+
+  const stage = document.querySelector<HTMLElement>('[data-stack-stage]');
+  const canvas = stage?.querySelector<HTMLCanvasElement>('[data-stack-canvas]');
+  const items = [...document.querySelectorAll<HTMLButtonElement>('[data-stack-item]')];
+
+  if (stage && canvas && items.length) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let scene: StackScene | null = null;
+    // The list is the control and the scene follows it. `chosen` survives the pointer leaving.
+    let chosen: number | null = null;
+    let hovered: number | null = null;
+    let tour = 0;
+    let touched = false;
+
+    const show = () => {
+      const active = hovered ?? chosen;
+      items.forEach((item, index) => item.setAttribute('aria-pressed', String(index === active)));
+      scene?.setActive(active);
+    };
+
+    const stopTour = () => {
+      touched = true;
+      window.clearInterval(tour);
+      tour = 0;
+    };
+
+    items.forEach((item, index) => {
+      item.addEventListener('pointerenter', () => {
+        stopTour();
+        hovered = index;
+        show();
+      });
+      item.addEventListener('pointerleave', () => {
+        hovered = null;
+        show();
+      });
+      item.addEventListener('focus', () => {
+        stopTour();
+        hovered = index;
+        show();
+      });
+      item.addEventListener('blur', () => {
+        hovered = null;
+        show();
+      });
+      item.addEventListener('click', () => {
+        stopTour();
+        chosen = chosen === index ? null : index;
+        show();
+      });
+    });
+
+    // Until someone touches it, the scene walks through its layers on its own
+    const startTour = () => {
+      if (reducedMotion || touched || tour) return;
+      tour = window.setInterval(() => {
+        chosen = chosen === null ? 0 : (chosen + 1) % items.length;
+        show();
+      }, 2600);
+    };
+
+    const load = async () => {
+      try {
+        const { createStackScene } = await import('../../scripts/stackScene');
+        scene = createStackScene({
+          canvas,
+          host: stage,
+          layers: items.length,
+          reducedMotion,
+          onPick: (index, held) => {
+            if (index !== null) stopTour();
+            // A tap has no hover to keep the layer out: it chooses it, and a tap outside lets go
+            if (held) chosen = index;
+            hovered = index;
+            show();
+          },
+        });
+        stage.dataset.ready = 'true';
+        show();
+      } catch {
+        // No WebGL, or the chunk failed to load: the poster and the list stay as they are
+      }
+    };
+
+    let loading = false;
+    new IntersectionObserver(
+      (entries) => {
+        const visible = entries[entries.length - 1].isIntersecting;
+        if (visible && !loading) {
+          loading = true;
+          void load();
+        }
+        if (visible) startTour();
+        else {
+          window.clearInterval(tour);
+          tour = 0;
+        }
+      },
+      // Fetch Three.js a little before the section arrives
+      { rootMargin: '400px 0px' },
+    ).observe(stage);
+
+    window.addEventListener('pagehide', () => {
+      window.clearInterval(tour);
+      scene?.dispose();
+    });
+  }
+</script>
