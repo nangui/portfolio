@@ -2,11 +2,14 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Hero from '@components/sections/Hero.astro';
 import About from '@components/sections/About.astro';
+import StackSection from '@components/sections/StackSection.astro';
 import Projects from '@components/sections/Projects.astro';
 import Experience from '@components/sections/Experience.astro';
 import BlogPreview from '@components/sections/BlogPreview.astro';
 import Contact from '@components/sections/Contact.astro';
 import ScrollAnimations from '@components/ui/ScrollAnimations.astro';
+import SignatureCoin from '@components/ui/SignatureCoin.astro';
+import ScrollThread from '@components/ui/ScrollThread.astro';
 import { isValidLocale, defaultLocale } from '@i18n/config';
 
 export async function getStaticPaths() {
@@ -76,13 +79,18 @@ const homepageKeywords = locale === 'fr'
   locale={locale}
   keywords={homepageKeywords}
 >
-  <div class="max-w-[1200px] mx-auto">
-    <Hero locale={locale} />
-    <Projects locale={locale} />
-    <Experience locale={locale} />
-    <About locale={locale} />
-    <BlogPreview locale={locale} />
-    <Contact locale={locale} />
+  <div class="relative" data-thread-host>
+    <ScrollThread />
+    <div class="max-w-[1200px] mx-auto">
+      <Hero locale={locale} />
+      <StackSection locale={locale} />
+      <Projects locale={locale} />
+      <Experience locale={locale} />
+      <About locale={locale} />
+      <BlogPreview locale={locale} />
+      <Contact locale={locale} />
+    </div>
   </div>
   <ScrollAnimations />
+  <SignatureCoin locale={locale} />
 </BaseLayout>

@@ -1,0 +1,239 @@
+---
+// Upgrades the floating signature badge to a 3D coin, on the page that includes it.
+// Large screens with a mouse only, and never with reduced motion: everywhere else the SVG badge stays.
+//
+// In its corner the coin sways and turns over under the pointer. A click brings it to the middle
+// of the screen, larger, where it can be turned by hand; Escape, a click outside or a scroll
+// sends it back.
+import { defaultLocale, type Locale } from '@i18n/config';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
+const fr = locale === 'fr';
+const obverse = 'ADONAI NANGUI • FULLSTACK DEVELOPER • ';
+const reverse = fr ? 'INTERFACE • SERVEUR • DONNÉES • PRODUCTION • ' : 'INTERFACE • SERVER • DATA • PRODUCTION • ';
+const openLabel = fr ? 'Agrandir la pièce pour la manipuler' : 'Enlarge the coin to handle it';
+const heldLabel = fr
+  ? 'Pièce agrandie. Flèches pour la tourner, Entrée pour la retourner, Échap pour la ranger.'
+  : 'Coin enlarged. Arrow keys to turn it, Enter to turn it over, Escape to put it back.';
+const hint = fr ? 'Glissez pour tourner · Cliquez pour retourner · Échap pour ranger' : 'Drag to turn · Click to turn over · Esc to put back';
+---
+
+<template
+  data-signature-coin
+  data-obverse={obverse}
+  data-reverse={reverse}
+  data-open-label={openLabel}
+  data-held-label={heldLabel}
+  data-hint={hint}></template>
+
+<style is:global>
+  .floating-signature-badge[data-coin='true'] {
+    width: 132px;
+    height: 132px;
+    border-color: transparent;
+    background: transparent;
+    opacity: 1;
+  }
+
+  .floating-signature-badge[data-coin='true'] > :not(canvas) {
+    display: none;
+  }
+
+  .floating-signature-badge[data-held='true'] {
+    z-index: 61;
+  }
+
+  .floating-signature-coin {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    touch-action: none;
+  }
+
+  .floating-signature-badge[data-coin='true'] .floating-signature-coin {
+    opacity: 1;
+  }
+
+  .floating-signature-badge[data-held='true'] .floating-signature-coin {
+    cursor: grab;
+  }
+
+  .floating-signature-badge[data-held='true'] .floating-signature-coin:active {
+    cursor: grabbing;
+  }
+
+  .floating-signature-coin:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .signature-coin-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: clamp(1.5rem, 6vh, 3.5rem);
+    background: color-mix(in srgb, var(--color-bg-primary) 82%, transparent);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+  }
+
+  .signature-coin-backdrop[data-open='true'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .signature-coin-backdrop p {
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--color-text-secondary);
+  }
+</style>
+
+<script>
+  import type { CoinScene } from '../../scripts/coinScene';
+
+  const config = document.querySelector<HTMLTemplateElement>('[data-signature-coin]');
+  const badge = document.querySelector<HTMLElement>('.floating-signature-badge');
+  const suited =
+    window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (config && badge && suited) {
+    let scene: CoinScene | null = null;
+    const labels = config.dataset;
+
+    const upgrade = async () => {
+      try {
+        const [{ createCoinScene }, { gsap }] = await Promise.all([import('../../scripts/coinScene'), import('gsap')]);
+        const canvas = document.createElement('canvas');
+        canvas.className = 'floating-signature-coin';
+        canvas.tabIndex = 0;
+        canvas.setAttribute('role', 'button');
+        canvas.setAttribute('aria-label', labels.openLabel ?? '');
+        canvas.setAttribute('aria-pressed', 'false');
+        badge.append(canvas);
+        // The badge was decoration only; it now holds a control
+        badge.removeAttribute('aria-hidden');
+        // Sized before the scene measures it
+        badge.dataset.coin = 'true';
+        // The legend is drawn with the site's heading font: wait for it rather than bake a fallback
+        await document.fonts.ready;
+        const coin = createCoinScene({
+          canvas,
+          obverseLegend: labels.obverse ?? '',
+          reverseLegend: labels.reverse ?? '',
+        });
+        scene = coin;
+
+        const backdrop = document.createElement('div');
+        backdrop.className = 'signature-coin-backdrop';
+        const hint = document.createElement('p');
+        hint.textContent = labels.hint ?? '';
+        backdrop.append(hint);
+        document.body.append(backdrop);
+
+        // ---------- from the corner to the middle of the screen, and back ----------
+        const rest = { size: badge.offsetWidth, right: parseFloat(getComputedStyle(badge).right), bottom: parseFloat(getComputedStyle(badge).bottom) };
+        const travel = { t: 0 };
+        let held = false;
+
+        const layout = () => {
+          if (travel.t === 0) {
+            // At rest the stylesheet rules again, so the badge keeps following the window's size
+            badge.style.width = badge.style.height = badge.style.right = badge.style.bottom = '';
+          } else {
+            const large = Math.min(580, Math.min(window.innerWidth, window.innerHeight) * 0.74);
+            const mix = (from: number, to: number) => from + (to - from) * travel.t;
+            const size = mix(rest.size, large);
+            badge.style.width = badge.style.height = `${size}px`;
+            badge.style.right = `${mix(rest.right, (window.innerWidth - large) / 2)}px`;
+            badge.style.bottom = `${mix(rest.bottom, (window.innerHeight - large) / 2)}px`;
+          }
+          coin.resize();
+        };
+
+        const hold = (next: boolean) => {
+          if (next === held) return;
+          held = next;
+          coin.setFocus(next);
+          if (next) badge.dataset.held = 'true';
+          backdrop.dataset.open = String(next);
+          canvas.setAttribute('aria-pressed', String(next));
+          canvas.setAttribute('aria-label', (next ? labels.heldLabel : labels.openLabel) ?? '');
+          gsap.to(travel, {
+            t: next ? 1 : 0,
+            duration: 0.8,
+            ease: 'power3.inOut',
+            overwrite: true,
+            onUpdate: layout,
+            onComplete: () => {
+              if (!held) delete badge.dataset.held;
+            },
+          });
+        };
+
+        canvas.addEventListener('click', () => {
+          if (!held) hold(true);
+          else if (!coin.dragged()) coin.flip();
+        });
+        backdrop.addEventListener('click', () => hold(false));
+        window.addEventListener('scroll', () => hold(false), { passive: true });
+        window.addEventListener('resize', () => held && layout(), { passive: true });
+        window.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && held) hold(false);
+        });
+        canvas.addEventListener('keydown', (event) => {
+          const step = Math.PI / 8;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            if (held) coin.flip();
+            else hold(true);
+          } else if (held && event.key.startsWith('Arrow')) {
+            event.preventDefault();
+            if (event.key === 'ArrowLeft') coin.nudge(-step, 0);
+            if (event.key === 'ArrowRight') coin.nudge(step, 0);
+            if (event.key === 'ArrowUp') coin.nudge(0, -step);
+            if (event.key === 'ArrowDown') coin.nudge(0, step);
+          }
+        });
+
+        if (import.meta.env.DEV) {
+          // Fixed poses for screenshots: window.dispatchEvent(new CustomEvent('coin:pose', { detail: [ry, rx] }))
+          window.addEventListener('coin:pose', (event) => {
+            const [ry, rx] = (event as CustomEvent<[number, number]>).detail;
+            coin.pose(ry, rx);
+            badge.dataset.coinInfo = JSON.stringify(coin.info());
+          });
+        }
+      } catch {
+        // No WebGL: put the SVG badge back
+        delete badge.dataset.coin;
+        badge.setAttribute('aria-hidden', 'true');
+        badge.querySelector('canvas')?.remove();
+      }
+    };
+
+    // After the page has loaded and the browser is idle: the coin never competes with the first paint
+    const whenIdle = () => {
+      if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(() => void upgrade(), { timeout: 2500 });
+      else setTimeout(() => void upgrade(), 600);
+    };
+    if (document.readyState === 'complete') whenIdle();
+    else window.addEventListener('load', whenIdle, { once: true });
+
+    window.addEventListener('pagehide', () => scene?.dispose());
+  }
+</script>

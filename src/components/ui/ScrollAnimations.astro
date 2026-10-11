@@ -1,60 +1,80 @@
 ---
-// ScrollTrigger animations for page sections
-// Fade in sections as they enter viewport
+// Scroll behaviour of the home page:
+// - smooth, inertial scrolling (Lenis) for mouse and trackpad users;
+// - a staggered reveal of each section's blocks as they enter the viewport.
+// Both are skipped when the visitor asks for reduced motion: the page then stays fully static.
 ---
 
 <script>
+  import 'lenis/dist/lenis.css';
+
   const initScrollAnimations = async () => {
+    // Nothing is hidden before this point, so a visitor without JavaScript or with reduced
+    // motion always sees the whole page.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     try {
       const { gsap } = await import('gsap');
       const { default: ScrollTrigger } = await import('gsap/ScrollTrigger');
       gsap.registerPlugin(ScrollTrigger);
 
-      // Animate sections on scroll. The hero is excluded: it is above the fold and holds the
-      // largest contentful paint, so hiding it until GSAP loads delayed the first render.
-      const sections = document.querySelectorAll('section[id]:not(#hero)');
+      // Touch devices keep their native momentum scrolling, which Lenis would only fight.
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        const { default: Lenis } = await import('lenis');
+        const lenis = new Lenis({ lerp: 0.11, anchors: true });
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => lenis.raf(time * 1000));
+        gsap.ticker.lagSmoothing(0);
+
+        // The mobile menu locks the page by setting overflow on <body>: stop Lenis with it
+        new MutationObserver(() => {
+          if (document.body.style.overflow === 'hidden') lenis.stop();
+          else lenis.start();
+        }).observe(document.body, { attributes: true, attributeFilter: ['style'] });
+      }
+
+      // The hero is excluded: it is above the fold and holds the largest contentful paint.
+      const sections = document.querySelectorAll<HTMLElement>('section[id]:not(#hero)');
+      const fold = window.innerHeight * 0.92;
 
       sections.forEach((section) => {
-        gsap.fromTo(
-          section,
-          {
-            opacity: 0,
-            y: 50,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top 85%',
-              end: 'top 50%',
-              toggleActions: 'play none none reverse',
-              once: false,
-            },
-          }
+        // A section's blocks: its heading, anything marked data-reveal, and its outermost cards and rows
+        // A card is revealed as a whole: an article inside a list item animates its item, frame included
+        const candidates = [
+          ...new Set(
+            [...section.querySelectorAll<HTMLElement>('h2, [data-reveal], article, ol[role="list"] > li')].map(
+              (element) => (element.tagName === 'ARTICLE' ? (element.closest<HTMLElement>('li') ?? element) : element),
+            ),
+          ),
+        ];
+        const blocks = candidates.filter(
+          (element) => !candidates.some((other) => other !== element && other.contains(element)),
         );
+        const targets = blocks.length > 1 ? blocks : [section];
+
+        // Only what is still below the fold is hidden: what the visitor already sees never flashes
+        const hidden = targets.filter((element) => element.getBoundingClientRect().top > fold);
+        if (!hidden.length) return;
+
+        gsap.set(hidden, { opacity: 0, y: 26 });
+        ScrollTrigger.batch(hidden, {
+          start: 'top 90%',
+          once: true,
+          onEnter: (batch) =>
+            gsap.to(batch, {
+              opacity: 1,
+              y: 0,
+              duration: 0.7,
+              ease: 'power3.out',
+              stagger: 0.07,
+              overwrite: true,
+              clearProps: 'transform',
+            }),
+        });
       });
 
-      // Pause/resume animations based on page visibility
-      const handleVisibilityChange = () => {
-        if (document.hidden) {
-          gsap.globalTimeline.pause();
-          ScrollTrigger.getAll().forEach((trigger) => trigger.disable());
-        } else {
-          gsap.globalTimeline.resume();
-          ScrollTrigger.getAll().forEach((trigger) => trigger.enable());
-        }
-      };
-
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
-      // Cleanup on page unload
-      window.addEventListener('beforeunload', () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-      });
+      // Images and fonts settle after this script runs: measure the trigger positions again
+      window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
     } catch (error) {
       console.error('Failed to initialize scroll animations:', error);
     }
