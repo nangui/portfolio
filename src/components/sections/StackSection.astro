@@ -245,13 +245,24 @@ const layers = fr
       }
     };
 
+    // When the section is already in view as the page opens, the scene waits for the page to
+    // finish loading and for a quiet moment: the poster holds its place until then
+    const whenSettled = (run: () => void) => {
+      const idle = () => {
+        if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(run, { timeout: 2000 });
+        else setTimeout(run, 200);
+      };
+      if (document.readyState === 'complete') idle();
+      else window.addEventListener('load', idle, { once: true });
+    };
+
     let loading = false;
     new IntersectionObserver(
       (entries) => {
         const visible = entries[entries.length - 1].isIntersecting;
         if (visible && !loading) {
           loading = true;
-          void load();
+          whenSettled(() => void load());
         }
         if (visible) startTour();
         else {
@@ -259,8 +270,9 @@ const layers = fr
           tour = 0;
         }
       },
-      // Fetch Three.js a little before the section arrives
-      { rootMargin: '400px 0px' },
+      // Fetch Three.js a little before the section arrives. Not from further away: on most
+      // screens that would reach the section from the top of the page and load it with the page.
+      { rootMargin: '200px 0px' },
     ).observe(stage);
 
     window.addEventListener('pagehide', () => {
