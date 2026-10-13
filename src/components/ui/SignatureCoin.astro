@@ -231,8 +231,15 @@ const hint = fr ? 'Glissez pour tourner · Cliquez pour retourner · Échap pour
       if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(() => void upgrade(), { timeout: 2500 });
       else setTimeout(() => void upgrade(), 600);
     };
-    if (document.readyState === 'complete') whenIdle();
-    else window.addEventListener('load', whenIdle, { once: true });
+    // And only once the visitor has moved: building the scene is the heaviest task on the page,
+    // and the coin is there to be played with. Until then the SVG badge is the same signature.
+    const signs = ['pointermove', 'pointerdown', 'keydown', 'scroll'] as const;
+    const onSign = () => {
+      signs.forEach((sign) => window.removeEventListener(sign, onSign));
+      if (document.readyState === 'complete') whenIdle();
+      else window.addEventListener('load', whenIdle, { once: true });
+    };
+    signs.forEach((sign) => window.addEventListener(sign, onSign, { passive: true }));
 
     window.addEventListener('pagehide', () => scene?.dispose());
   }

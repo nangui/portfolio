@@ -11,8 +11,6 @@
 ---
 
 <svg class="scroll-thread" data-scroll-thread aria-hidden="true" focusable="false">
-  <!-- The straight route the thread follows; never drawn -->
-  <path data-thread-guide fill="none" stroke="none"></path>
   <path data-thread-path></path>
   <circle data-thread-tip r="2.5"></circle>
 </svg>
@@ -51,15 +49,16 @@
   const svg = document.querySelector<SVGSVGElement>('[data-scroll-thread]');
   const host = svg?.closest<HTMLElement>('[data-thread-host]');
   const path = svg?.querySelector<SVGPathElement>('[data-thread-path]');
-  const guide = svg?.querySelector<SVGPathElement>('[data-thread-guide]');
   const tip = svg?.querySelector<SVGCircleElement>('[data-thread-tip]');
 
-  if (svg && host && path && guide && tip) {
+  if (svg && host && path && tip) {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const CORNER = 36;
     /** Where the thread's end sits in the viewport, from the top */
     const LEAD = 0.62;
     const STEP = 4;
+    /** Straight pieces a rounded corner of the route is measured with */
+    const CHORDS = 32;
     /** How far the heap spreads along the ground, and how many coils the fallen thread makes */
     const SPREAD = 120;
     const COILS = 7.5;
@@ -69,17 +68,37 @@
     // sideways, so a height maps to one length, however much the thread itself loops on the way.
     let heights: number[] = [];
     let lengths: number[] = [];
+    // The drawn thread, point by point, alongside `lengths`: its end is read from here
+    let xs: number[] = [];
+    let ys: number[] = [];
     /** Height where the hanging thread ends: below it, the thread only goes when it falls */
     let hangEnd = 0;
     /** Length paid out when the falling end touches the ground */
     let landing = 0;
     const state = { length: 0 };
 
+    /** Index of the last value at or below `target` in a sorted list */
+    const lastAtOrBelow = (values: number[], target: number) => {
+      let low = 0;
+      let high = values.length - 1;
+      while (low < high) {
+        const middle = (low + high + 1) >> 1;
+        if (values[middle] <= target) low = middle;
+        else high = middle - 1;
+      }
+      return low;
+    };
+
     const draw = () => {
       path.style.strokeDashoffset = String(total - state.length);
-      const point = path.getPointAtLength(state.length);
-      tip.setAttribute('cx', point.x.toFixed(1));
-      tip.setAttribute('cy', point.y.toFixed(1));
+      // The end of the thread, between the two drawn points around the length paid out.
+      // Asking the browser (getPointAtLength) walks the whole path on every frame.
+      const index = lastAtOrBelow(lengths, state.length);
+      const next = Math.min(index + 1, lengths.length - 1);
+      const span = lengths[next] - lengths[index];
+      const share = span > 0 ? Math.min(1, Math.max(0, (state.length - lengths[index]) / span)) : 0;
+      tip.setAttribute('cx', (xs[index] + (xs[next] - xs[index]) * share).toFixed(1));
+      tip.setAttribute('cy', (ys[index] + (ys[next] - ys[index]) * share).toFixed(1));
     };
 
     interface Loop {
@@ -88,11 +107,13 @@
       radius: number;
     }
 
+    /** What the last build was laid on: the same measures give the same thread */
+    let laid = '';
+
     const build = () => {
       const width = host.clientWidth;
       const height = host.offsetHeight;
       const top = host.getBoundingClientRect().top;
-      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
       const sections = [...host.querySelectorAll<HTMLElement>('section[id]')];
       const boundaries = sections.slice(1).map((section) => Math.round(section.getBoundingClientRect().top - top));
@@ -100,20 +121,49 @@
       hangEnd = last ? Math.round(last.getBoundingClientRect().top - top + last.offsetHeight * 0.5) : height - 140;
       // The ground is the bottom of the page's last section, in its empty padding
       const ground = height - 22;
+
+      const measures = [width, height, hangEnd, ...boundaries].join();
+      if (measures === laid) return false;
+      laid = measures;
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
       const start = 28;
 
       // Just outside the 1200px column, at the window's edge when there is no room, and one
       // straight line down the edge on small screens, which have no margin to wander in
       const margin = width < 1024 ? 6 : Math.max(12, (width - 1200) / 2 - 28);
+      // The straight route the thread follows, never drawn: lines and rounded corners, kept as a
+      // chain of points with the distance travelled at each one. Measuring it in script rather
+      // than through an SVG path spares tens of thousands of getPointAtLength calls per build.
       let x = margin;
-      let d = `M${x} ${start}`;
+      const routeX = [x];
+      const routeY = [start];
+      const routeAt = [0];
+      const lineTo = (toX: number, toY: number) => {
+        const from = routeX.length - 1;
+        routeAt.push(routeAt[from] + Math.hypot(toX - routeX[from], toY - routeY[from]));
+        routeX.push(toX);
+        routeY.push(toY);
+      };
+      // A corner is a quadratic curve: short chords follow it to a few hundredths of a pixel
+      const cornerTo = (viaX: number, viaY: number, toX: number, toY: number) => {
+        const fromX = routeX[routeX.length - 1];
+        const fromY = routeY[routeY.length - 1];
+        for (let chord = 1; chord <= CHORDS; chord++) {
+          const t = chord / CHORDS;
+          const u = 1 - t;
+          lineTo(u * u * fromX + 2 * u * t * viaX + t * t * toX, u * u * fromY + 2 * u * t * viaY + t * t * toY);
+        }
+      };
       if (width >= 1024) {
         const right = width - margin;
         for (const y of boundaries) {
           const next = x === margin ? right : margin;
           const toward = next > x ? 1 : -1;
           // Down to the gap between two sections, across it, and down the other margin
-          d += `V${y - CORNER}Q${x} ${y} ${x + toward * CORNER} ${y}H${next - toward * CORNER}Q${next} ${y} ${next} ${y + CORNER}`;
+          lineTo(x, y - CORNER);
+          cornerTo(x, y, x + toward * CORNER, y);
+          lineTo(next - toward * CORNER, y);
+          cornerTo(next, y, next, y + CORNER);
           x = next;
         }
       }
@@ -122,10 +172,18 @@
       // The stretch after the landing is only a ruler for the heap, which is drawn from it below
       const lie = 260;
       const spread = Math.min(SPREAD, width * 0.32);
-      d += `V${ground - 10}Q${x} ${ground} ${x + inward * 10} ${ground}H${x + inward * lie}`;
+      lineTo(x, ground - 10);
+      cornerTo(x, ground, x + inward * 10, ground);
+      lineTo(x + inward * lie, ground);
 
-      guide.setAttribute('d', d);
-      const route = guide.getTotalLength();
+      const route = routeAt[routeAt.length - 1];
+      const routePoint = (along: number) => {
+        const index = lastAtOrBelow(routeAt, along);
+        const next = Math.min(index + 1, routeAt.length - 1);
+        const span = routeAt[next] - routeAt[index];
+        const share = span > 0 ? Math.min(1, Math.max(0, (along - routeAt[index]) / span)) : 0;
+        return { x: routeX[index] + (routeX[next] - routeX[index]) * share, y: routeY[index] + (routeY[next] - routeY[index]) * share };
+      };
       const groundFrom = route - lie + 10;
 
       // How far the thread may stray from its route: the margin it runs in decides
@@ -133,17 +191,17 @@
 
       // Loops sit on straight stretches only: a loop on a corner would tie a knot
       const straight = (from: number, to: number) => {
-        const a0 = guide.getPointAtLength(from);
-        const a1 = guide.getPointAtLength(from + STEP);
-        const b0 = guide.getPointAtLength(to - STEP);
-        const b1 = guide.getPointAtLength(to);
+        const a0 = routePoint(from);
+        const a1 = routePoint(from + STEP);
+        const b0 = routePoint(to - STEP);
+        const b1 = routePoint(to);
         return Math.abs((a1.x - a0.x) * (b1.y - b0.y) - (a1.y - a0.y) * (b1.x - b0.x)) < 0.01 && (a1.x - a0.x) * (b1.x - b0.x) + (a1.y - a0.y) * (b1.y - b0.y) > 0;
       };
       // A loop crosses over itself only when its span is under about 1.4 times its radius
       const loops: Loop[] = [];
       if (margin >= 44) {
         for (let at = 330; at + 80 < groundFrom - 200; at += 560) {
-          if (guide.getPointAtLength(at).y < hangEnd - 40 && straight(at - 50, at + 68)) loops.push({ at, span: 18, radius: 15 });
+          if (routePoint(at).y < hangEnd - 40 && straight(at - 50, at + 68)) loops.push({ at, span: 18, radius: 15 });
         }
       }
 
@@ -169,15 +227,17 @@
       const points: string[] = [];
       heights = [];
       lengths = [];
+      xs = [];
+      ys = [];
       landing = 0;
       let paid = 0;
       let lastX = 0;
       let lastY = 0;
       // A loop packs a long turn into a short stretch of route: it is sampled finely to stay round
       for (let along = 0; along <= route; along += along >= groundFrom ? 0.35 : loopAt(along) ? 0.6 : STEP) {
-        const here = guide.getPointAtLength(along);
-        const ahead = guide.getPointAtLength(Math.min(route, along + 1));
-        const behind = guide.getPointAtLength(Math.max(0, along - 1));
+        const here = routePoint(along);
+        const ahead = routePoint(Math.min(route, along + 1));
+        const behind = routePoint(Math.max(0, along - 1));
         const length = Math.hypot(ahead.x - behind.x, ahead.y - behind.y) || 1;
         const tx = (ahead.x - behind.x) / length;
         const ty = (ahead.y - behind.y) / length;
@@ -210,6 +270,8 @@
         lastX = x1;
         lastY = y1;
         points.push(`${along ? 'L' : 'M'}${x1.toFixed(1)} ${y1.toFixed(1)}`);
+        xs.push(x1);
+        ys.push(y1);
         heights.push(here.y);
         lengths.push(paid);
         if (!landing && lying) landing = paid;
@@ -223,19 +285,11 @@
       lengths = lengths.map((length) => length * scale);
       landing *= scale;
       svg.dataset.ready = 'true';
+      return true;
     };
 
-    const lengthAt = (y: number) => {
-      // Last sample at or above y
-      let low = 0;
-      let high = heights.length - 1;
-      while (low < high) {
-        const middle = (low + high + 1) >> 1;
-        if (heights[middle] <= y) low = middle;
-        else high = middle - 1;
-      }
-      return heights[0] > y ? 0 : lengths[low];
-    };
+    // Last sample at or above y
+    const lengthAt = (y: number) => (heights[0] > y ? 0 : lengths[lastAtOrBelow(heights, y)]);
 
     let follow: ((target: number) => void) | null = null;
     let fall: (() => void) | null = null;
@@ -289,10 +343,11 @@
       window.addEventListener('scroll', update, { passive: true });
       let pending = 0;
       new ResizeObserver(() => {
-        // Sections change height when images load or a list expands: lay the thread again
+        // Sections change height when images load or a list expands: lay the thread again.
+        // An observer also reports once when it starts, with nothing changed: build() says so.
         cancelAnimationFrame(pending);
         pending = requestAnimationFrame(() => {
-          build();
+          if (!build()) return;
           fallen = false;
           update();
         });
