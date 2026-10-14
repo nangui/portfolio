@@ -1,7 +1,7 @@
 // Security headers sent with every response of the site.
 //
 // Every resource is served from the site's own origin: pages, /_astro assets and self-hosted fonts,
-// /_vercel/image and the proxied Vercel Analytics script and beacon.
+// /_vercel/image and the proxied Vercel Analytics and Speed Insights scripts and beacons.
 //
 // Inline scripts stay allowed: Astro inlines its small module scripts and the theme script runs
 // inline before first paint to avoid a flash. The site has no user input to inject into, so the
