@@ -17,7 +17,7 @@ highlights_fr:
   - value: "4"
     label: "fiches mises en service"
   - value: "0"
-    label: "ligne de code pour la 4ᵉ"
+    label: "ligne de code pour la 4e"
 highlights_en:
   - value: "Senegal"
     label: "in service, multi‑country ready"
